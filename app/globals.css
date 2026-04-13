@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fffdf5;
+  --foreground: #2d1b00;
+  --primary: #ff9500;
+  --secondary: #ffd200;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --font-sans: var(--font-poppins);
+}
+
+/* Hide all scrollbars globally across the site */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and Opera */
+}
+
+body {
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 210, 0, 0.25), transparent 34%),
+    radial-gradient(circle at 85% 12%, rgba(255, 149, 0, 0.18), transparent 30%),
+    linear-gradient(150deg, #fffdf5 0%, #fff9e6 45%, #fffcf0 100%);
+  color: var(--foreground);
+  font-family: var(--font-poppins), sans-serif;
+}
+
+* {
+  transition-property: color, background-color, border-color, opacity, transform,
+    box-shadow;
+  transition-duration: 220ms;
+  transition-timing-function: ease;
+}
+
+section {
+  @apply py-20;
+}
+
+@keyframes graffitiFloat {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0) scale(1.04);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes strokeDrift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate3d(12px, -10px, 0) rotate(3deg);
+    opacity: 0.72;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0.4;
+  }
+}
+
+.graffiti-blob {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7), rgba(255, 210, 0, 0.15) 42%, rgba(255, 149, 0, 0.05) 70%, transparent 100%);
+  filter: blur(14px);
+  animation: graffitiFloat 7s ease-in-out infinite;
+}
+
+.graffiti-stroke {
+  position: absolute;
+  opacity: 0.45;
+  filter: drop-shadow(0 6px 12px rgba(255, 149, 0, 0.2));
+  animation: strokeDrift 8.5s ease-in-out infinite;
+}
