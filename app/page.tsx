@@ -43,8 +43,10 @@ import { FounderSection } from "@/components/FounderSection";
 import { FAQSection } from "@/components/FAQSection";
 import { Footer } from "@/components/Footer";
 import { PortfolioShowcase } from "@/components/PortfolioShowcase";
+import { BiharServicesSEO } from "@/components/BiharServicesSEO";
 import Link from "next/link";
-import { ShoppingBag, Heart, GraduationCap, Briefcase } from "lucide-react";
+import { Code2, Server, Smartphone, Cloud } from "lucide-react";
+import { TechPhysicsBox } from "@/components/TechPhysicsBox";
 
 export default function Home() {
   return (
@@ -53,35 +55,6 @@ export default function Home() {
       <Navbar />
       <main className="flex-1">
         <Hero />
-
-        {/* SEO Internal Linking: Regional Success */}
-        <section className="bg-orange-50/30 py-16 border-y border-orange-100/50 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-3xl rounded-full -mr-32 -mt-32" />
-          <div className="container mx-auto px-4 text-center relative z-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-8">
-              Premier Software Development in <span className="text-orange-500">Gujarat, Maharashtra & Bihar</span>
-            </h2>
-            <div className="flex flex-wrap justify-center gap-6">
-              {[
-                { name: "Gujarat", slug: "gujarat", cities: "Ahmedabad, Surat, Rajkot, Bhavnagar" },
-                { name: "Maharashtra", slug: "maharashtra", cities: "Pune, Mumbai, Nagpur" },
-                { name: "Bihar", slug: "bihar", cities: "Patna, Muzaffarpur, Gaya, Sheikhpura" }
-              ].map((region) => (
-                <Link 
-                  key={region.name} 
-                  href={`/location/${region.slug}`}
-                  className="group flex flex-col p-6 bg-white/50 backdrop-blur-sm rounded-2xl border border-orange-100 shadow-sm hover:shadow-xl hover:border-orange-300 transition-all duration-300 min-w-[240px]"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xl font-bold text-slate-800 group-hover:text-orange-600 transition-colors">{region.name}</span>
-                    <span className="text-orange-400 group-hover:translate-x-1 transition-transform">→</span>
-                  </div>
-                  <span className="text-xs text-slate-500 font-medium text-left">{region.cities}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
 
         <StatsShowcase />
 
@@ -100,68 +73,34 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="pt-10 pb-16 md:pt-14 md:pb-20 bg-gradient-to-b from-slate-50/20 to-white">
-           <div className="container mx-auto px-4 max-w-5xl">
-              <div className="flex flex-col items-center mb-12 text-center">
-                <p className="mb-3 text-xs font-black uppercase tracking-[0.3em] text-orange-500">Market Reach</p>
-                <h2 className="text-3xl md:text-4.5xl font-black text-slate-900 mb-4">Industries We <span className="text-orange-500 italic font-black">Empower</span></h2>
-                <p className="text-slate-500 font-medium text-xs md:text-sm max-w-xl leading-relaxed">From Healthcare to E-commerce, we serve 50+ business sectors with custom-tailored technology.</p>
-              </div>
+        <section className="pt-12 pb-20 md:py-28 bg-gradient-to-b from-slate-50/20 to-white relative overflow-hidden" id="technology">
+           <div className="container mx-auto px-4 max-w-6xl">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                 
+                 {/* Left Side: Content & Features */}
+                 <div className="lg:col-span-5 flex flex-col justify-center text-left">
+                    <p className="mb-3 text-xs font-black uppercase tracking-[0.3em] text-orange-500">Our Stack</p>
+                    <h2 className="text-3xl md:text-4.5xl font-black text-slate-900 mb-4">
+                      Technology We <span className="text-orange-500 italic font-black">Use</span>
+                    </h2>
+                    <div className="max-w-xl pr-2 md:pr-4">
+                      <p className="text-slate-600 font-medium text-[15px] md:text-[17px] leading-relaxed mb-3.5 md:mb-5">
+                        We engineer high-performance web applications, robust server architectures, and native cross-platform mobile solutions. From next-generation AI integrations and machine learning pipelines to DevOps automation and secure blockchain networks, we use handpicked, enterprise-grade tools to build business-ready products.
+                      </p>
+                      <p className="text-slate-500 font-medium text-[13px] md:text-[14px] leading-relaxed">
+                        Our handpicked technology stack is optimized to maximize page load speeds, SEO visibility, and cloud deployment efficiency. Whether you need a secure, containerized web dashboard, a fast e-commerce platform, or a native Android and iOS mobile app, we leverage industry-grade frameworks to ensure your digital ecosystem scales effortlessly.
+                      </p>
+                    </div>
+                 </div>
 
-              {/* 4 Industries Preview Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto mb-12">
-                {[
-                  {
-                    title: "Startups & Retail",
-                    desc: "Digital setup, branding, and e-commerce growth strategies for new business ideas.",
-                    icon: ShoppingBag,
-                    colorClass: "border-l-4 border-l-orange-500/80 hover:border-orange-500 liquid-card-orange",
-                    iconColor: "text-orange-600 bg-orange-500/10",
-                  },
-                  {
-                    title: "Medical & Healthcare",
-                    desc: "Patient reach, appointment scheduling, and custom practice management systems.",
-                    icon: Heart,
-                    colorClass: "border-l-4 border-l-rose-500/80 hover:border-rose-500 liquid-card-rose",
-                    iconColor: "text-rose-600 bg-rose-500/10",
-                  },
-                  {
-                    title: "Education & Learning",
-                    desc: "LMS, student portals, and operational management tools for schools and academies.",
-                    icon: GraduationCap,
-                    colorClass: "border-l-4 border-l-amber-500/80 hover:border-amber-500 liquid-card-amber",
-                    iconColor: "text-amber-600 bg-amber-500/10",
-                  },
-                  {
-                    title: "Professional Services",
-                    desc: "Corporate landing pages, lead generation pipelines, and dashboard software.",
-                    icon: Briefcase,
-                    colorClass: "border-l-4 border-l-blue-500/80 hover:border-blue-500 liquid-card-blue",
-                    iconColor: "text-blue-600 bg-blue-500/10",
-                  }
-                ].map((ind, idx) => {
-                  const Icon = ind.icon;
-                  return (
-                    <Card key={idx} className={`p-6 h-full bg-white/60 border border-slate-100/50 backdrop-blur-md hover:shadow-lg hover:shadow-orange-500/5 transition-all duration-300 rounded-3xl group flex flex-col items-center text-center liquid-card ${ind.colorClass}`}>
-                      <div className={`w-11 h-11 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 ${ind.iconColor}`}>
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <h3 className="text-base font-black text-slate-900 mb-2 transition-colors">{ind.title}</h3>
-                      <p className="text-[11px] text-slate-500 font-medium leading-relaxed">{ind.desc}</p>
-                    </Card>
-                  );
-                })}
-              </div>
+                 {/* Right Side: Interactive Physics Box */}
+                 <div className="lg:col-span-7 w-full">
+                    <TechPhysicsBox />
+                 </div>
 
-              <div className="flex justify-center">
-                <Link href="/industries">
-                  <Button variant="primary" size="lg" className="rounded-full shadow-xl shadow-orange-500/15">
-                    View All 50+ Industries →
-                  </Button>
-                </Link>
               </div>
            </div>
-        </div>
+        </section>
 
         <FounderSection />
 
@@ -181,6 +120,7 @@ export default function Home() {
         </section>
 
         <ContactSection />
+        <BiharServicesSEO />
       </main>
       <Footer />
     </div>

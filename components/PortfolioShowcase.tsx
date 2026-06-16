@@ -1,54 +1,49 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
-import { ExternalLink, Eye, Smartphone, Laptop, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
-import { Card } from "@/components/ui/Card";
+import { 
+  ExternalLink, Sparkles, ChevronLeft, ChevronRight, 
+  Wifi, Battery, Signal, Loader2
+} from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 
-const projects = [
+const phoneProjects = [
   {
-    title: "EcoSphere SaaS Dashboard",
-    category: "Web Development",
-    image: "/projects/web-1.png",
-    type: "Web",
-    icon: <Laptop className="w-4 h-4" />,
-    description: "A comprehensive sustainability tracking platform for corporate environmental impact.",
-    tags: ["React", "Next.js", "Three.js"],
-    color: "from-blue-600 to-cyan-500"
+    id: 1,
+    title: "Jewellery Website",
+    url: "https://jewellery-website-neon.vercel.app/",
+    category: "E-commerce",
+    accentColor: "#f59e0b"
   },
   {
-    title: "FinFlow Mobile Wallet",
-    category: "Mobile App",
-    image: "/projects/mobile-1.png",
-    type: "Mobile",
-    icon: <Smartphone className="w-4 h-4" />,
-    description: "Next-generation fintech application featuring real-time crypto tracking and instant payments.",
-    tags: ["React Native", "Firebase", "Web3"],
-    color: "from-rose-500 to-orange-500"
+    id: 2,
+    title: "Travel Vista",
+    url: "https://travelvista-website.vercel.app/",
+    category: "Travel",
+    accentColor: "#3b82f6"
   },
   {
-    title: "LuxeFashion E-commerce",
-    category: "Web Development",
-    image: "/projects/web-2.png",
-    type: "Web",
-    icon: <Laptop className="w-4 h-4" />,
-    description: "High-end retail experience with immersive 3D product previews and seamless checkout.",
-    tags: ["Next.js", "Tailwind", "Shopify"],
-    color: "from-emerald-500 to-teal-400"
+    id: 3,
+    title: "The Sizzling Plate",
+    url: "https://thesizzlingplate.vercel.app/",
+    category: "Restaurant",
+    accentColor: "#ef4444"
   },
   {
-    title: "HealthTrack Pro",
-    category: "Mobile App",
-    image: "/projects/mobile-2.png",
-    type: "Mobile",
-    icon: <Smartphone className="w-4 h-4" />,
-    description: "Integrated health monitoring system with wearable sync and AI-driven insights.",
-    tags: ["Flutter", "Node.js", "AI"],
-    color: "from-indigo-600 to-purple-500"
+    id: 4,
+    title: "School Website",
+    url: "https://school-website-aarvjs.vercel.app/",
+    category: "Education",
+    accentColor: "#8b5cf6"
+  },
+  {
+    id: 5,
+    title: "Salon Website",
+    url: "https://salonaarvjs.vercel.app/",
+    category: "Beauty & Salon",
+    accentColor: "#ec4899"
   }
 ];
 
@@ -58,8 +53,84 @@ const ctaBackgrounds = [
   "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=1200"
 ];
 
+interface PhoneCardProps {
+  project: typeof phoneProjects[0];
+}
+
+function PhoneCard({ project }: PhoneCardProps) {
+  const [iframeLoading, setIframeLoading] = useState(true);
+
+  return (
+    <div 
+      className="relative w-[270px] md:w-[280px] h-[570px] md:h-[590px] flex-shrink-0 snap-center transition-all duration-500 hover:scale-[1.02] select-none"
+    >
+      {/* Outer Phone Mockup Case */}
+      <div 
+        className="w-full h-full rounded-[2.8rem] md:rounded-[3.2rem] bg-slate-950 p-[8px] md:p-[10px] shadow-2xl border-4 md:border-8 border-slate-900 flex flex-col relative overflow-hidden transition-shadow duration-500"
+        style={{
+          boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 15px ${project.accentColor}15`
+        }}
+      >
+        {/* Screen Bezel Glass */}
+        <div className="relative w-full h-full rounded-[2.2rem] md:rounded-[2.6rem] bg-slate-900 overflow-hidden flex flex-col">
+          
+          {/* Dynamic Island / Notch */}
+          <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-20 h-4 bg-slate-950 rounded-full z-30 flex items-center justify-between px-2.5 pointer-events-none">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-800" />
+            <span className="w-2.5 h-1 bg-slate-800 rounded-full" />
+            <span className="w-1 h-1 rounded-full bg-blue-900/60" />
+          </div>
+
+          {/* Status Bar */}
+          <div className="absolute top-0 inset-x-0 h-8 px-5 pt-2 flex justify-between items-center text-[8px] md:text-[9px] font-bold z-20 pointer-events-none select-none text-slate-700">
+            <span>09:41</span>
+            <div className="flex items-center gap-1.5">
+              <Signal className="w-2.5 h-2.5" />
+              <Wifi className="w-2.5 h-2.5" />
+              <Battery className="w-3.5 h-3.5" />
+            </div>
+          </div>
+
+          {/* Screen Viewport */}
+          <div className="relative w-full h-full pt-8 pb-3 bg-white overflow-hidden flex flex-col animate-fadeIn">
+            <div className="relative w-full h-full overflow-hidden bg-white">
+              {iframeLoading && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 z-10 pointer-events-none">
+                  <Loader2 className="w-6 h-6 text-orange-500 animate-spin mb-2" />
+                  <span className="text-[9px] uppercase font-bold tracking-widest text-slate-400">Loading Demo...</span>
+                </div>
+              )}
+              
+              <iframe
+                src={project.url}
+                title={project.title}
+                className="phone-iframe w-full h-full border-0 block bg-white"
+                loading="lazy"
+                onLoad={() => setIframeLoading(false)}
+              />
+            </div>
+          </div>
+
+          {/* Bottom Home Indicator */}
+          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-24 h-1.5 bg-slate-800 rounded-full z-20 pointer-events-none" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function PortfolioShowcase() {
   const [bgIndex, setBgIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  
+  // Drag states
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeftState, setScrollLeftState] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const [paddingStyle, setPaddingStyle] = useState({ paddingLeft: '20px', paddingRight: '20px' });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -67,6 +138,115 @@ export function PortfolioShowcase() {
     }, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const updatePadding = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setPaddingStyle({
+          paddingLeft: 'calc((100% - 270px) / 2)',
+          paddingRight: 'calc((100% - 270px) / 2)'
+        });
+      } else if (width < 768) {
+        setPaddingStyle({
+          paddingLeft: 'calc((100% - 270px) / 2)',
+          paddingRight: 'calc((100% - 270px) / 2)'
+        });
+      } else if (width < 1024) {
+        setPaddingStyle({
+          paddingLeft: 'calc((100% - 560px - 20px) / 2)', // 2 cards of 270px + 20px gap
+          paddingRight: 'calc((100% - 560px - 20px) / 2)'
+        });
+      } else {
+        // Desktop: 3 cards of 280px + 2 gaps of 24px = 888px
+        setPaddingStyle({
+          paddingLeft: 'calc((100% - 888px) / 2)',
+          paddingRight: 'calc((100% - 888px) / 2)'
+        });
+      }
+    };
+    updatePadding();
+    window.addEventListener('resize', updatePadding);
+    return () => window.removeEventListener('resize', updatePadding);
+  }, []);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!sliderRef.current) return;
+    setIsMouseDown(true);
+    setStartX(e.pageX - sliderRef.current.offsetLeft);
+    setScrollLeftState(sliderRef.current.scrollLeft);
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsMouseDown(false);
+    setIsDragging(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsMouseDown(false);
+    setTimeout(() => {
+      setIsDragging(false);
+    }, 50);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isMouseDown || !sliderRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - sliderRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    sliderRef.current.scrollLeft = scrollLeftState - walk;
+    if (Math.abs(walk) > 5) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleScroll = () => {
+    if (sliderRef.current) {
+      const { scrollLeft, clientWidth } = sliderRef.current;
+      const cards = sliderRef.current.children;
+      let closestIndex = 0;
+      let closestDistance = Infinity;
+      const containerCenter = scrollLeft + clientWidth / 2;
+
+      for (let i = 0; i < cards.length; i++) {
+        const card = cards[i] as HTMLElement;
+        const cardCenter = card.offsetLeft + card.clientWidth / 2;
+        const distance = Math.abs(cardCenter - containerCenter);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = i;
+        }
+      }
+      if (closestIndex !== activeIndex) {
+        setActiveIndex(closestIndex);
+      }
+    }
+  };
+
+  const scroll = (direction: 'left' | 'right') => {
+    const targetIndex = direction === 'left' ? activeIndex - 1 : activeIndex + 1;
+    if (targetIndex >= 0 && targetIndex < phoneProjects.length) {
+      scrollToCard(targetIndex);
+    }
+  };
+
+  const scrollToCard = (index: number) => {
+    if (sliderRef.current) {
+      const cards = sliderRef.current.children;
+      if (cards[index]) {
+        const card = cards[index] as HTMLElement;
+        const containerWidth = sliderRef.current.clientWidth;
+        const targetScroll = card.offsetLeft - (containerWidth - card.clientWidth) / 2;
+        
+        sliderRef.current.scrollTo({
+          left: targetScroll,
+          behavior: 'smooth',
+        });
+        setActiveIndex(index);
+      }
+    }
+  };
 
   return (
     <section id="portfolio" className="py-16 md:py-24 relative overflow-hidden bg-white">
@@ -95,85 +275,92 @@ export function PortfolioShowcase() {
           </p>
         </div>
 
-        {/* Scattered/Asymmetric Creative Grid Layout - Alternating Desktop layouts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
-          {projects.map((project, index) => {
-            const isHorizontal = index === 0 || index === 3;
-            const gridSpan = isHorizontal ? "md:col-span-2" : "md:col-span-1";
-            
-            return (
+        {/* Premium Horizontal Phone Mockup Slider */}
+        <div className="relative group/slider max-w-5xl mx-auto">
+          {/* Navigation Arrows */}
+          <button
+            onClick={() => scroll('left')}
+            className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md border border-slate-100 shadow-xl flex items-center justify-center text-slate-800 hover:text-orange-500 hover:scale-110 active:scale-95 transition-all opacity-0 group-hover/slider:opacity-100 hidden md:flex cursor-pointer"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          
+          <button
+            onClick={() => scroll('right')}
+            className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md border border-slate-100 shadow-xl flex items-center justify-center text-slate-800 hover:text-orange-500 hover:scale-110 active:scale-95 transition-all opacity-0 group-hover/slider:opacity-100 hidden md:flex cursor-pointer"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+
+          {/* Slider Container */}
+          <div
+            ref={sliderRef}
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeave}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onScroll={handleScroll}
+            className={`relative flex w-full gap-5 md:gap-6 overflow-x-auto snap-x snap-mandatory py-8 cursor-grab select-none ${
+              isMouseDown ? 'cursor-grabbing' : ''
+            }`}
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              paddingLeft: paddingStyle.paddingLeft,
+              paddingRight: paddingStyle.paddingRight,
+              scrollPaddingLeft: paddingStyle.paddingLeft,
+              scrollPaddingRight: paddingStyle.paddingRight
+            }}
+          >
+            {phoneProjects.map((project, index) => (
               <motion.div
-                key={project.title}
-                initial={{ opacity: 0, y: 20 }}
+                key={project.id}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.08, duration: 0.6 }}
-                className={`${gridSpan} h-full`}
+                transition={{ delay: index * 0.1, duration: 0.6 }}
+                className="flex-shrink-0 snap-center flex flex-col items-center"
               >
-                <Card className="group relative overflow-hidden rounded-[2rem] bg-white border border-slate-100/80 shadow-xl shadow-slate-200/40 hover:shadow-orange-500/5 transition-all duration-500 h-full flex flex-col justify-between">
-                  
-                  {/* Outer container adjusting for horizontal vs vertical layout */}
-                  <div className={`flex flex-col h-full ${isHorizontal ? (index === 0 ? "md:flex-row" : "md:flex-row-reverse") : "flex-col"}`}>
-                    
-                    {/* Image Area with Creative Positioning */}
-                    <div className={`relative flex-shrink-0 ${isHorizontal ? "w-full md:w-[45%] aspect-[16/10] md:aspect-auto md:self-stretch" : "w-full aspect-[16/10]"} overflow-hidden bg-slate-50 border-b md:border-b-0 border-slate-100`}>
-                      <Image
-                        src={project.image}
-                        alt={`${project.title} screenshot - Sabka Saathi Portfolio`}
-                        fill
-                        sizes={isHorizontal ? "(max-w-768px) 100vw, 45vw" : "(max-w-768px) 100vw, 50vw"}
-                        loading="lazy"
-                        className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-60 group-hover:opacity-20 transition-opacity" />
-                      
-                      <div className="absolute top-3.5 left-3.5">
-                        <Badge className="bg-white/95 backdrop-blur-md text-slate-950 border-none px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1.5 text-[8px] font-black">
-                          {project.icon}
-                          {project.type}
-                        </Badge>
-                      </div>
-
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
-                        <div className="flex gap-2.5">
-                          <div className="w-9 h-9 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-md cursor-pointer hover:scale-110 transition-transform">
-                            <Eye className="w-4 h-4" />
-                          </div>
-                          <div className="w-9 h-9 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-md cursor-pointer hover:scale-110 transition-transform">
-                            <ExternalLink className="w-4 h-4" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Content Section - Compact and clean padding */}
-                    <div className="p-5 md:p-6 lg:p-8 flex-1 flex flex-col justify-between">
-                      <div>
-                        <span className={`text-[8px] font-black uppercase tracking-[0.25em] bg-clip-text text-transparent bg-gradient-to-r ${project.color} mb-1.5 block`}>
-                          {project.category}
-                        </span>
-                        <h3 className="text-base md:text-lg font-black text-slate-900 mb-2 group-hover:text-orange-600 transition-colors">
-                          {project.title}
-                        </h3>
-                        <p className="text-slate-500 font-medium text-xs leading-relaxed mb-4">
-                          {project.description}
-                        </p>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-1 pt-3 border-t border-slate-50">
-                        {project.tags.map(tag => (
-                          <span key={tag} className="px-2 py-0.5 rounded-full bg-slate-50 text-slate-400 text-[8px] font-bold uppercase tracking-wider border border-slate-100">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                  </div>
-                </Card>
+                <PhoneCard
+                  project={project}
+                />
+                
+                {/* Meta details below phone card */}
+                <div className="text-center mt-4 select-none">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{project.category}</span>
+                  <h4 className="text-sm font-black text-slate-800 mt-0.5">{project.title}</h4>
+                  <a 
+                    href={project.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-[10px] font-extrabold hover:underline inline-flex items-center gap-1 mt-1"
+                    style={{ color: project.accentColor }}
+                  >
+                    Open Demo ↗
+                  </a>
+                </div>
               </motion.div>
-            );
-          })}
+            ))}
+          </div>
+
+          {/* Premium Clickable Pagination Dots */}
+          <div className="flex justify-center items-center gap-2.5 mt-6 relative z-20">
+            {phoneProjects.map((project, idx) => (
+              <button
+                key={project.id}
+                onClick={() => scrollToCard(idx)}
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                  activeIndex === idx 
+                    ? 'w-6' 
+                    : 'w-2 bg-slate-300 hover:bg-slate-400'
+                }`}
+                style={{
+                  backgroundColor: activeIndex === idx ? project.accentColor : undefined
+                }}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Improved Premium Ready to Build Masterpiece CTA Section with automatic background image slideshow */}

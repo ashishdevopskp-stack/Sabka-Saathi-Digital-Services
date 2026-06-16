@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import Image from "next/image";
-import { TeamSection } from "@/components/TeamSection";
+
 
 export function TrustContent() {
   return (
@@ -141,7 +141,7 @@ export function TrustContent() {
         </motion.div>
       </div>
 
-      <TeamSection />
+
 
       {/* Social Proof & Service Commitment */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">

@@ -17,9 +17,11 @@ function AnimatedNumber({ value }: { value: number }) {
 }
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { LiquidOrb3D } from "@/components/LiquidOrb3D";
 import { Rocket, Users, ChevronDown } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const Ballpit = dynamic(() => import("./Ballpit"), { ssr: false });
 
 export function Hero() {
   return (
@@ -37,6 +39,20 @@ export function Hero() {
             priority
           />
           <div className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.25)_0%,rgba(255,255,255,0.05)_40%,rgba(255,255,255,0.15)_100%)]" />
+
+          {/* Ballpit Bubble Background Effect */}
+          <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden rounded-[2rem] md:rounded-[2.5rem]">
+            <Ballpit
+              count={120}
+              gravity={0.6}
+              friction={0.8}
+              wallBounce={0.95}
+              followCursor={true}
+              colors={[0xff7a00, 0xffb347, 0xffffff, 0xffe0b2]}
+            />
+            {/* Subtle overlay/fade to keep text highly readable */}
+            <div className="absolute inset-0 bg-white/[0.12] backdrop-blur-[1px]" />
+          </div>
 
           {/* Central Content Stack with Staggered Entrance Animations */}
           <div className="relative z-30 flex flex-col items-center text-center gap-5 mt-8 md:mt-16">
@@ -155,14 +171,9 @@ export function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* Massive Central Orb (Layered) */}
-          <div className="absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 pointer-events-none scale-50 md:scale-100 opacity-30 md:opacity-80 hidden md:block">
-            <LiquidOrb3D />
-          </div>
-
-          {/* Mobile static ambient glow */}
-          <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none md:hidden">
-            <div className="w-64 h-64 bg-orange-400/10 blur-[80px] rounded-full" />
+          {/* Ambient background blur inside card */}
+          <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+            <div className="w-96 h-96 bg-orange-400/5 blur-[120px] rounded-full" />
           </div>
 
           <div className="absolute right-5 bottom-10 hidden h-32 w-32 items-center justify-center md:flex z-40">

@@ -1,167 +1,312 @@
 "use client";
 
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
-import { useEffect } from "react";
-import OrbitImages from "./OrbitImages";
-
-import { Briefcase, MapPin, Users } from "lucide-react";
-
-function StatCounter({ value, suffix = "" }: { value: number; suffix?: string }) {
-  const count = useMotionValue(0);
-  const rounded = useTransform(count, (latest) => Math.round(latest));
-
-  useEffect(() => {
-    const controls = animate(count, value, { duration: 2, ease: "easeOut" });
-    return controls.stop;
-  }, [value, count]);
-
-  return (
-    <div className="flex items-baseline justify-center">
-      <motion.span className="text-3xl md:text-4xl font-black tracking-tight text-slate-900">
-        {rounded}
-      </motion.span>
-      <span className="text-xl font-black text-orange-500 ml-0.5">{suffix}</span>
-    </div>
-  );
-}
-
-const images = [
-  "https://picsum.photos/id/1/300/300",
-  "https://picsum.photos/id/2/300/300",
-  "https://picsum.photos/id/3/300/300",
-  "https://picsum.photos/id/4/300/300",
-  "https://picsum.photos/id/5/300/300",
-  "https://picsum.photos/id/6/300/300",
-];
+import React from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/Button";
+import CardSwap, { Card } from "./CardSwap";
+import { 
+  Utensils, 
+  GraduationCap, 
+  Activity, 
+  ShoppingCart, 
+  Layers 
+} from "lucide-react";
 
 export function StatsShowcase() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white to-slate-50/50 py-16 md:py-24">
-      {/* Background Orbits - Deep Layer (Desktop only) */}
-      <div className="absolute inset-0 pointer-events-none opacity-30 select-none overflow-hidden hidden md:block">
-        <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 w-full h-full">
-          <OrbitImages
-            images={images}
-            shape="ellipse"
-            radiusX={800}
-            radiusY={600}
-            rotation={-8}
-            duration={40}
-            itemSize={120}
-            responsive={true}
-            showPath={false}
-          />
-        </div>
-      </div>
+    <section className="relative overflow-hidden bg-gradient-to-b from-white to-slate-50/50 pt-20 md:pt-28 pb-0 lg:pb-0" id="impact">
+      {/* Background radial highlights */}
+      <div className="absolute top-0 left-0 w-64 h-64 bg-orange-500/5 blur-3xl rounded-full -ml-32 -mt-32 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-72 h-72 bg-amber-500/5 blur-3xl rounded-full -mr-36 -mb-36 pointer-events-none" />
 
-      <div className="container relative z-10 mx-auto px-4 max-w-5xl">
-        <div className="flex flex-col items-center gap-12 text-center">
+      <div className="container relative z-10 mx-auto px-4 max-w-6xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           
-          {/* Main Title Block */}
-          <div className="max-w-2xl mx-auto text-center">
-             <p className="mb-3 text-xs font-black uppercase tracking-[0.3em] text-orange-500">Milestones</p>
-             <h2 className="text-3xl font-black text-slate-900 md:text-4xl tracking-tight leading-tight">
-               Local Businesses Served Across India
-             </h2>
-             <p className="mt-3 text-slate-500 font-medium text-xs md:text-sm leading-relaxed">
-               Empowering startups, retail brands, and regional companies with modern technology.
-             </p>
-          </div>
-
-          {/* 3 Compact Cards Grid */}
-          <div className="grid w-full grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            
-            {/* Card 1: Served Clients */}
-            <motion.div
-               initial={{ opacity: 0, y: 20 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               viewport={{ once: true }}
-               transition={{ duration: 0.5 }}
-               className="group relative rounded-2xl border border-orange-100/50 bg-white/60 p-5 shadow-sm backdrop-blur-xl transition-all duration-300 hover:bg-white hover:border-orange-300 hover:-translate-y-1 hover:shadow-md"
-            >
-               <div className="flex flex-col items-center text-center">
-                  <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-600 mb-3.5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                    <Users className="w-5 h-5" />
-                  </div>
-                  <div className="flex items-baseline justify-center">
-                    <StatCounter value={100} suffix="+" />
-                  </div>
-                  <h3 className="mt-2 text-base font-bold text-slate-900">Local Businesses</h3>
-                  <p className="mt-1.5 text-xs text-slate-500 font-medium leading-relaxed">Empowering local entrepreneurs and startups to launch online.</p>
-               </div>
-            </motion.div>
-
-            {/* Card 2: Projects Delivered */}
-            <motion.div
-               initial={{ opacity: 0, y: 20 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               viewport={{ once: true }}
-               transition={{ duration: 0.5, delay: 0.08 }}
-               className="group relative rounded-2xl border border-orange-100/50 bg-white/60 p-5 shadow-sm backdrop-blur-xl transition-all duration-300 hover:bg-white hover:border-orange-300 hover:-translate-y-1 hover:shadow-md"
-            >
-               <div className="flex flex-col items-center text-center">
-                  <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-600 mb-3.5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                    <Briefcase className="w-5 h-5" />
-                  </div>
-                  <div className="flex items-baseline justify-center">
-                    <StatCounter value={50} suffix="+" />
-                  </div>
-                  <h3 className="mt-2 text-base font-bold text-slate-900">Projects Delivered</h3>
-                  <p className="mt-1.5 text-xs text-slate-500 font-medium leading-relaxed">High-fidelity web designs and custom mobile applications.</p>
-               </div>
-            </motion.div>
-
-            {/* Card 3: Strategic Hubs */}
-            <motion.div
-               initial={{ opacity: 0, y: 20 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               viewport={{ once: true }}
-               transition={{ duration: 0.5, delay: 0.16 }}
-               className="group relative rounded-2xl border border-orange-100/50 bg-white/60 p-5 shadow-sm backdrop-blur-xl transition-all duration-300 hover:bg-white hover:border-orange-300 hover:-translate-y-1 hover:shadow-md"
-            >
-               <div className="flex flex-col items-center text-center">
-                  <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-600 mb-3.5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                    <MapPin className="w-5 h-5" />
-                  </div>
-                  <div className="flex items-baseline justify-center">
-                    <StatCounter value={3} suffix=" Hubs" />
-                  </div>
-                  <div className="mt-2.5 flex flex-wrap gap-1 justify-center">
-                    {["Gujarat", "Bihar", "Maharashtra"].map(state => (
-                      <span key={state} className="rounded bg-orange-50 px-2 py-0.5 text-[8px] font-black text-orange-600 border border-orange-100/70 uppercase tracking-wider">
-                        {state}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="mt-2.5 text-xs text-slate-500 font-medium leading-relaxed">Strategic development offices providing local support.</p>
-               </div>
-            </motion.div>
-
-          </div>
-
-          {/* Mobile static brand grid */}
-          <div className="md:hidden mt-4 w-full">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 text-center">
-              Trusted Partner Networks
+          {/* Left Side: Content Area (45% on desktop) */}
+          <div className="lg:col-span-5 flex flex-col justify-center text-left">
+            <p className="mb-3 text-xs font-black uppercase tracking-[0.3em] text-orange-500">OUR IMPACT</p>
+            <h2 className="text-3xl md:text-4.5xl font-black text-slate-900 mb-5 tracking-tight leading-tight">
+              Empowering Local Businesses Across India
+            </h2>
+            <p className="text-slate-500 font-medium text-sm md:text-base leading-relaxed mb-8 max-w-lg">
+              Helping startups, retailers, service providers, and regional enterprises build scalable websites, mobile apps, and custom software solutions.
             </p>
-            <div className="grid grid-cols-3 gap-3 max-w-[280px] mx-auto">
-              {images.map((src, idx) => (
-                <div key={idx} className="aspect-square rounded-2xl bg-white/40 border border-white/60 p-1.5 shadow-sm backdrop-blur-sm flex items-center justify-center overflow-hidden">
-                  <img
-                    src={src}
-                    alt={`Partner Logo ${idx + 1}`}
-                    className="w-full h-full object-cover rounded-xl"
-                    loading="lazy"
-                  />
-                </div>
+
+            {/* Feature Points */}
+            <ul className="space-y-3.5 mb-8">
+              {[
+                "Website Development",
+                "Mobile App Development",
+                "Custom Software Solutions"
+              ].map((point, index) => (
+                <li key={index} className="flex items-center text-sm font-bold text-slate-700">
+                  <span className="w-5 h-5 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-600 mr-3.5 text-xs font-extrabold select-none">
+                    ✓
+                  </span>
+                  {point}
+                </li>
               ))}
+            </ul>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap gap-4">
+              <Link href="/contact">
+                <Button variant="primary">Start a Project</Button>
+              </Link>
+              <Link href="/services">
+                <Button variant="outline">View Portfolio</Button>
+              </Link>
             </div>
           </div>
 
+          {/* Right Side: CardSwap Showcase (55% on desktop) */}
+          <div className="lg:col-span-7 w-full flex justify-center items-center relative h-[420px] sm:h-[480px] md:h-[540px] lg:h-[580px] overflow-visible">
+            
+            {/* CardSwap Component */}
+            <CardSwap
+              width={380}
+              height={440}
+              cardDistance={45}
+              verticalDistance={55}
+              delay={5000}
+              pauseOnHover={true}
+              easing="elastic"
+            >
+              
+              {/* Card 1: Restaurant Management Platform */}
+              <Card className="flex flex-col h-full w-full overflow-hidden p-0">
+                <div className="w-full h-[180px] bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+                  <div className="w-[88%] h-[82%] bg-white/10 backdrop-blur-md border border-white/20 rounded-t-xl mt-7 p-4 flex flex-col justify-start">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-white">
+                        <Utensils className="w-4 h-4" />
+                      </div>
+                      <div className="h-3 w-24 bg-white/20 rounded" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2.5 mt-2">
+                      <div className="h-12 bg-white/15 rounded p-2 flex flex-col justify-between">
+                        <span className="text-[9px] text-white/70 font-semibold">Orders</span>
+                        <span className="text-[11px] text-white font-black">142</span>
+                      </div>
+                      <div className="h-12 bg-white/15 rounded p-2 flex flex-col justify-between">
+                        <span className="text-[9px] text-white/70 font-semibold">Tables</span>
+                        <span className="text-[11px] text-white font-black">12/15</span>
+                      </div>
+                      <div className="h-12 bg-white/15 rounded p-2 flex flex-col justify-between">
+                        <span className="text-[9px] text-white/70 font-semibold">Revenue</span>
+                        <span className="text-[11px] text-white font-black">₹48K</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col justify-between flex-1 text-left">
+                  <div>
+                    <span className="rounded bg-orange-500/10 text-orange-600 border border-orange-500/20 text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-md">
+                      SaaS Dashboard
+                    </span>
+                    <h3 className="text-[17px] font-black text-slate-800 tracking-tight mt-3 mb-1.5">
+                      Restaurant Management Platform
+                    </h3>
+                    <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                      Modern restaurant ordering, live kitchen tracking, and table reservation solutions.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-4">
+                    {["Next.js", "Node.js", "MySQL", "Tailwind"].map((tag) => (
+                      <span key={tag} className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2.5 py-1 rounded-md">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+
+              {/* Card 2: School ERP System */}
+              <Card className="flex flex-col h-full w-full overflow-hidden p-0">
+                <div className="w-full h-[180px] bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+                  <div className="w-[88%] h-[82%] bg-white/10 backdrop-blur-md border border-white/20 rounded-t-xl mt-7 p-4 flex flex-col justify-start">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-white">
+                        <GraduationCap className="w-4 h-4" />
+                      </div>
+                      <div className="h-3 w-28 bg-white/20 rounded" />
+                    </div>
+                    <div className="space-y-2.5 mt-2">
+                      <div className="flex items-center justify-between bg-white/15 p-2 rounded">
+                        <span className="text-[9px] text-white font-bold">Standard 10 - Science</span>
+                        <span className="text-[9px] bg-emerald-500/35 text-emerald-300 font-extrabold px-1.5 py-0.5 rounded">Active</span>
+                      </div>
+                      <div className="flex items-center justify-between bg-white/15 p-2 rounded">
+                        <span className="text-[9px] text-white font-bold">Total Fees Collected</span>
+                        <span className="text-[9px] text-white font-black">₹3.8L</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col justify-between flex-1 text-left">
+                  <div>
+                    <span className="rounded bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-md">
+                      Management Software
+                    </span>
+                    <h3 className="text-[17px] font-black text-slate-800 tracking-tight mt-3 mb-1.5">
+                      School ERP System
+                    </h3>
+                    <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                      Comprehensive portal managing student attendance, fees, exams, and staff records.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-4">
+                    {["React", "TypeScript", "Node.js", "PostgreSQL"].map((tag) => (
+                      <span key={tag} className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2.5 py-1 rounded-md">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+
+              {/* Card 3: Healthcare Platform */}
+              <Card className="flex flex-col h-full w-full overflow-hidden p-0">
+                <div className="w-full h-[180px] bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+                  <div className="w-[88%] h-[82%] bg-white/10 backdrop-blur-md border border-white/20 rounded-t-xl mt-7 p-4 flex flex-col justify-start">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-white">
+                        <Activity className="w-4 h-4" />
+                      </div>
+                      <div className="h-3 w-24 bg-white/20 rounded" />
+                    </div>
+                    <div className="flex gap-3 mt-2">
+                      <div className="w-[42%] bg-white/15 rounded p-2 flex flex-col justify-between">
+                        <span className="text-[8px] text-white/80">Queue</span>
+                        <span className="text-[12px] text-white font-black">4 Patients</span>
+                      </div>
+                      <div className="w-[58%] bg-white/15 rounded p-2 flex flex-col gap-1.5 justify-center">
+                        <div className="h-2 w-full bg-white/20 rounded" />
+                        <div className="h-2 w-[80%] bg-white/20 rounded" />
+                        <div className="h-2 w-[50%] bg-white/20 rounded" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col justify-between flex-1 text-left">
+                  <div>
+                    <span className="rounded bg-rose-500/10 text-rose-600 border border-rose-500/20 text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-md">
+                      Medical App
+                    </span>
+                    <h3 className="text-[17px] font-black text-slate-800 tracking-tight mt-3 mb-1.5">
+                      Healthcare Platform
+                    </h3>
+                    <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                      Streamlined appointment scheduling, prescriptions, and digital patient record portals.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-4">
+                    {["Next.js", "Flutter", "Supabase", "Serverless"].map((tag) => (
+                      <span key={tag} className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2.5 py-1 rounded-md">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+
+              {/* Card 4: E-commerce Store */}
+              <Card className="flex flex-col h-full w-full overflow-hidden p-0">
+                <div className="w-full h-[180px] bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+                  <div className="w-[88%] h-[82%] bg-white/10 backdrop-blur-md border border-white/20 rounded-t-xl mt-7 p-4 flex flex-col justify-start">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-white">
+                        <ShoppingCart className="w-4 h-4" />
+                      </div>
+                      <div className="h-3 w-20 bg-white/20 rounded" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2.5 mt-2">
+                      <div className="bg-white/15 p-2 rounded flex flex-col gap-1.5">
+                        <div className="w-full h-5 bg-white/25 rounded" />
+                        <div className="h-1.5 w-12 bg-white/20 rounded" />
+                      </div>
+                      <div className="bg-white/15 p-2 rounded flex flex-col gap-1.5">
+                        <div className="w-full h-5 bg-white/25 rounded" />
+                        <div className="h-1.5 w-10 bg-white/20 rounded" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col justify-between flex-1 text-left">
+                  <div>
+                    <span className="rounded bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-md">
+                      E-commerce Web
+                    </span>
+                    <h3 className="text-[17px] font-black text-slate-800 tracking-tight mt-3 mb-1.5">
+                      E-commerce Store
+                    </h3>
+                    <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                      High-converting retail store, digital catalogs, and fast order checkout management.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-4">
+                    {["Next.js", "Tailwind CSS", "Vercel", "MongoDB"].map((tag) => (
+                      <span key={tag} className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2.5 py-1 rounded-md">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+
+              {/* Card 5: Business Automation */}
+              <Card className="flex flex-col h-full w-full overflow-hidden p-0">
+                <div className="w-full h-[180px] bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+                  <div className="w-[88%] h-[82%] bg-white/10 backdrop-blur-md border border-white/20 rounded-t-xl mt-7 p-4 flex flex-col justify-start">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-white">
+                        <Layers className="w-4 h-4" />
+                      </div>
+                      <div className="h-3 w-24 bg-white/20 rounded" />
+                    </div>
+                    <div className="flex justify-center items-center gap-3 mt-3">
+                      <div className="w-10 h-10 rounded bg-white/20 flex items-center justify-center text-white text-[9px] font-bold">Trigger</div>
+                      <span className="text-white/60 text-[9px]">→</span>
+                      <div className="w-10 h-10 rounded bg-white/25 border border-white/45 flex items-center justify-center text-white text-[9px] font-bold">Action</div>
+                      <span className="text-white/60 text-[9px]">→</span>
+                      <div className="w-10 h-10 rounded bg-white/20 flex items-center justify-center text-white text-[9px] font-bold">Sync</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col justify-between flex-1 text-left">
+                  <div>
+                    <span className="rounded bg-violet-500/10 text-violet-600 border border-violet-500/20 text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-md">
+                      Enterprise Tool
+                    </span>
+                    <h3 className="text-[17px] font-black text-slate-800 tracking-tight mt-3 mb-1.5">
+                      Business Automation
+                    </h3>
+                    <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                      Custom CRM, task workflows, analytics dashboards, and enterprise productivity systems.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-4">
+                    {["React", "TypeScript", "Node.js", "Docker"].map((tag) => (
+                      <span key={tag} className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2.5 py-1 rounded-md">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+
+            </CardSwap>
+          </div>
+
         </div>
       </div>
 
-      {/* Subtle floor gradient */}
+      {/* Subtle bottom boundary divider */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-200 to-transparent shadow-[0_4px_20px_rgba(255,149,0,0.1)]" />
     </section>
   );

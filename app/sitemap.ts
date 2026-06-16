@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { locationContent, expertiseContent, processContent } from '@/lib/content';
 import { blogPosts } from '@/lib/blogs';
+import { getPagesList } from '@/lib/localSeo';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://sabkasathi.com';
@@ -83,5 +84,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  return [...staticRoutes, ...dynamicRoutes];
+  const localSeoPages = getPagesList().map((page) => ({
+    url: `${baseUrl}/${page.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...dynamicRoutes, ...localSeoPages];
 }

@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { FounderSection } from "@/components/FounderSection";
-import { TeamSection } from "@/components/TeamSection";
 import { StatsShowcase } from "@/components/StatsShowcase";
 import { Navbar } from "@/components/Navbar";
 import { InteractiveBackground } from "@/components/InteractiveBackground";
@@ -55,12 +54,8 @@ export default function AboutPage() {
           <FounderSection />
         </div>
         
-        <div className="container mx-auto px-4">
-          <StatsShowcase />
-        </div>
-
         <div className="container mx-auto px-4 pb-24">
-          <TeamSection />
+          <StatsShowcase />
         </div>
 
         <ContactSection />
