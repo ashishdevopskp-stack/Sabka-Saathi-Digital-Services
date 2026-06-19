@@ -8,6 +8,9 @@ import { BlogCard } from "@/components/BlogCard";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Insights & Strategy | Sabka Saathi Digital Blog",
   description: "Expert insights on web development, software architecture, ERP systems, and digital marketing strategies for Indian businesses.",
@@ -82,7 +85,13 @@ export default async function BlogListingPage() {
   const allPosts = [...firestorePosts, ...uniqueStaticPosts];
 
   // Sort descending by publication date
-  allPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  allPosts.sort((a, b) => {
+    const timeA = a.date === "Recent" ? Date.now() : new Date(a.date).getTime();
+    const timeB = b.date === "Recent" ? Date.now() : new Date(b.date).getTime();
+    const validA = isNaN(timeA) ? 0 : timeA;
+    const validB = isNaN(timeB) ? 0 : timeB;
+    return validB - validA;
+  });
   
   return (
     <div className="flex min-h-screen flex-col selection:bg-orange-100 selection:text-orange-900">
