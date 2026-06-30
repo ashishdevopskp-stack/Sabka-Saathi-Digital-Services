@@ -1,149 +1,129 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { motion, useMotionTemplate, useMotionValue, useSpring } from "framer-motion";
 
-const blobs = [
-  { top: "8%", left: "6%", delay: 0, size: "18rem" },
-  { top: "58%", left: "78%", delay: 1.1, size: "16rem" },
-  { top: "70%", left: "10%", delay: 0.6, size: "14rem" },
-  { top: "24%", left: "72%", delay: 1.8, size: "12rem" },
+/* ══════════════════════════════════════════════
+   Ambient orbs — soft, slow-drifting radial glows
+   in the same orange→red palette as Hero / PageHero
+══════════════════════════════════════════════ */
+const orbs = [
+  { top: "4%",  left: "8%",  size: "26rem", delay: 0,   duration: 22, colorA: "rgba(255,140,66,0.16)",  colorB: "rgba(232,68,90,0.06)" },
+  { top: "62%", left: "82%", size: "22rem", delay: 3,   duration: 26, colorA: "rgba(232,68,90,0.14)",   colorB: "rgba(255,140,66,0.05)" },
+  { top: "78%", left: "6%",  size: "18rem", delay: 6,   duration: 24, colorA: "rgba(255,107,53,0.12)",  colorB: "transparent" },
+  { top: "20%", left: "70%", size: "16rem", delay: 1.5, duration: 28, colorA: "rgba(255,160,90,0.12)",  colorB: "transparent" },
 ];
-
-const strokes = [
-  { top: "12%", left: "12%", delay: 0 },
-  { top: "32%", left: "85%", delay: 1.2 },
-  { top: "78%", left: "72%", delay: 0.7 },
-  { top: "85%", left: "18%", delay: 1.6 },
-  { top: "45%", left: "5%", delay: 2.2 },
-];
-
-interface DoodleType {
-  top: string;
-  left: string;
-  icon: string;
-  delay: number;
-}
-
-const doodles: DoodleType[] = [
-  { top: "10%", left: "20%", icon: "{ }", delay: 0.5 },
-  { top: "40%", left: "90%", icon: "</>", delay: 1.5 },
-  { top: "75%", left: "5%", icon: "#", delay: 2.5 },
-  { top: "25%", left: "75%", icon: ";", delay: 1.0 },
-  { top: "60%", left: "82%", icon: "!!", delay: 3.0 },
-];
-
-function Doodle({ doodle }: { doodle: DoodleType }) {
-  const [rotation, setRotation] = useState(0);
-  
-  useEffect(() => {
-    // Generate random rotation only on the client inside a requestAnimationFrame
-    // to avoid cascading render lint warning while preventing hydration mismatch.
-    const r = Math.random() * 20 - 10;
-    requestAnimationFrame(() => setRotation(r));
-  }, []);
-
-  return (
-    <div
-      className="absolute text-primary/25 font-mono text-4xl select-none pointer-events-none"
-      style={{
-        top: doodle.top,
-        left: doodle.left,
-        animation: `strokeDrift 10s ease-in-out infinite`,
-        animationDelay: `${doodle.delay}s`,
-        transform: `rotate(${rotation}deg)`,
-      }}
-    >
-      {doodle.icon}
-    </div>
-  );
-}
 
 export function InteractiveBackground() {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+  const hasPointer = useRef(false);
 
-  const smoothX = useSpring(mouseX, { damping: 28, stiffness: 160 });
-  const smoothY = useSpring(mouseY, { damping: 28, stiffness: 160 });
+  const smoothX = useSpring(mouseX, { damping: 30, stiffness: 140 });
+  const smoothY = useSpring(mouseY, { damping: 30, stiffness: 140 });
 
   useEffect(() => {
-    const isMobile = window.matchMedia("(max-width: 768px)").matches || 
-                     ('ontouchstart' in window) || 
-                     (navigator.maxTouchPoints > 0);
-                     
+    const isMobile =
+      window.matchMedia("(max-width: 768px)").matches ||
+      "ontouchstart" in window ||
+      navigator.maxTouchPoints > 0;
+
     if (isMobile) return;
 
     const onMove = (event: MouseEvent) => {
+      if (!hasPointer.current) {
+        hasPointer.current = true;
+        mouseX.jump(event.clientX);
+        mouseY.jump(event.clientY);
+      }
       mouseX.set(event.clientX);
       mouseY.set(event.clientY);
     };
 
     window.addEventListener("mousemove", onMove);
-
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-    };
+    return () => window.removeEventListener("mousemove", onMove);
   }, [mouseX, mouseY]);
 
-  const cursorGlowTransform = useMotionTemplate`translate3d(calc(${smoothX}px - 11rem), calc(${smoothY}px - 11rem), 0)`;
+  const cursorGlowTransform = useMotionTemplate`translate3d(calc(${smoothX}px - 10rem), calc(${smoothY}px - 10rem), 0)`;
 
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(255,210,0,0.2),transparent_30%),radial-gradient(circle_at_85%_20%,rgba(255,149,0,0.15),transparent_28%),linear-gradient(180deg,#fffdf5_0%,#fff9e6_55%,#fffcf0_100%)]" />
-
-      <motion.div
-        aria-hidden
-        className="absolute h-[22rem] w-[22rem] rounded-full bg-[radial-gradient(circle,rgba(255,210,0,0.25)_0%,rgba(255,149,0,0.12)_35%,transparent_70%)] blur-2xl"
-        style={{ transform: cursorGlowTransform }}
+    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#f2f2f4]">
+      <style
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: `
+          @keyframes ibOrbDrift {
+            0%   { transform: translate(0,0) scale(1); }
+            33%  { transform: translate(2.5%, -3%) scale(1.06); }
+            66%  { transform: translate(-2%, 2.5%) scale(0.96); }
+            100% { transform: translate(0,0) scale(1); }
+          }
+          @keyframes ibGrain {
+            0%   { background-position: 0px 0px; }
+            25%  { background-position: -30px 12px; }
+            50%  { background-position: 14px -22px; }
+            75%  { background-position: -18px 28px; }
+            100% { background-position: 0px 0px; }
+          }
+          .ib-orb { position: absolute; border-radius: 9999px; filter: blur(40px); will-change: transform; animation-name: ibOrbDrift; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+          @media (prefers-reduced-motion: reduce) {
+            .ib-orb { animation: none !important; }
+          }
+        `,
+        }}
       />
 
-      {blobs.map((blob) => (
+      {/* Base canvas tone, matching Hero/PageHero exactly */}
+      <div className="absolute inset-0 bg-[#f2f2f4]" />
+
+      {/* Drifting ambient orbs */}
+      {orbs.map((orb, i) => (
         <div
-          key={`${blob.top}-${blob.left}`}
-          className="graffiti-blob"
+          key={i}
+          className="ib-orb"
           style={{
-            top: blob.top,
-            left: blob.left,
-            width: blob.size,
-            height: blob.size,
-            animationDelay: `${blob.delay}s`,
+            top: orb.top,
+            left: orb.left,
+            width: orb.size,
+            height: orb.size,
+            background: `radial-gradient(circle, ${orb.colorA} 0%, ${orb.colorB} 60%, transparent 75%)`,
+            animationDelay: `${orb.delay}s`,
+            animationDuration: `${orb.duration}s`,
           }}
         />
       ))}
 
-      {strokes.map((stroke) => (
-        <svg
-          key={`${stroke.top}-${stroke.left}`}
-          className="graffiti-stroke"
-          style={{ top: stroke.top, left: stroke.left, animationDelay: `${stroke.delay}s` }}
-          width="160"
-          height="100"
-          viewBox="0 0 160 100"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M10 85C25 60 50 25 85 30C115 35 125 80 150 75"
-            stroke="url(#gradient-stroke)"
-            strokeOpacity="0.6"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-          <defs>
-            <linearGradient id="gradient-stroke" x1="10" y1="85" x2="150" y2="75" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#FF9500" />
-              <stop offset="1" stopColor="#FFD200" />
-            </linearGradient>
-          </defs>
-        </svg>
-      ))}
+      {/* Cursor-following glow (desktop only) */}
+      <motion.div
+        aria-hidden
+        className="absolute h-[20rem] w-[20rem] rounded-full blur-2xl"
+        style={{
+          transform: cursorGlowTransform,
+          background:
+            "radial-gradient(circle, rgba(255,107,53,0.14) 0%, rgba(232,68,90,0.06) 38%, transparent 70%)",
+        }}
+      />
 
-      {doodles.map((doodle) => (
-        <Doodle key={`${doodle.top}-${doodle.left}`} doodle={doodle} />
-      ))}
+      {/* Fine grain texture, identical formula to Hero/PageHero */}
+      <div
+        className="absolute inset-0"
+        style={{
+          opacity: 0.02,
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+          backgroundSize: "200px 200px",
+          animation: "ibGrain 0.26s steps(1) infinite",
+        }}
+      />
 
-
-      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.22),rgba(255,255,255,0.02)_28%,rgba(255,255,255,0.3)_100%)]" />
+      {/* Gentle top/bottom vignette to keep content readable over the orbs */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(242,242,244,0.55) 0%, rgba(242,242,244,0) 22%, rgba(242,242,244,0) 78%, rgba(242,242,244,0.6) 100%)",
+        }}
+      />
     </div>
   );
 }

@@ -423,6 +423,102 @@ export const expertiseContent: Record<string, DetailedContent> = {
     ],
     technologies: ["Ahrefs", "SEMrush", "Google Search Console", "Screaming Frog"],
     gradient: "from-teal-500 to-emerald-500"
+  },
+  "cloud-solutions": {
+    slug: "cloud-solutions",
+    title: "Cloud Solutions",
+    subtitle: "Scalable Cloud-Native Infrastructure",
+    icon: "Cloud",
+    description: "Scalable infrastructure and cloud-native services built to grow with your traffic.",
+    longDescription: "We design and manage cloud infrastructure that scales automatically as your business grows, instead of forcing you to predict capacity in advance. From containerized deployments to serverless functions, we choose the right cloud-native pattern for your workload — keeping costs predictable while your application stays fast under real-world traffic spikes.",
+    features: [
+      "Auto-Scaling Infrastructure Setup",
+      "Containerized Deployments (Docker)",
+      "Serverless Functions & Edge Compute",
+      "Cloud Storage & CDN Configuration",
+      "Multi-Region Failover Planning"
+    ],
+    benefits: [
+      "Handles traffic spikes without downtime",
+      "Pay only for what you actually use",
+      "Faster load times for global users",
+      "Disaster-recovery ready from day one"
+    ],
+    technologies: ["AWS", "Vercel", "Docker", "Cloudflare", "DigitalOcean"],
+    deliverable: "Production-Ready Cloud Infrastructure",
+    gradient: "from-emerald-500 to-teal-400"
+  },
+  "hosting": {
+    slug: "hosting",
+    title: "Premium Hosting",
+    subtitle: "Complimentary High-Performance Hosting",
+    icon: "Gem",
+    description: "1 year of high-performance hosting at zero cost with every project we deliver.",
+    longDescription: "Every project we ship includes a full year of premium hosting at no extra cost — so you're not stuck choosing between a slow shared server and an expensive enterprise plan. We configure SSL, caching, and CDN delivery out of the box, and monitor uptime continuously so your site stays fast and online without you having to think about infrastructure.",
+    features: [
+      "1 Year Complimentary Hosting",
+      "Free SSL Certificate & HTTPS Setup",
+      "Global CDN for Faster Load Times",
+      "Automated Daily Backups",
+      "99.9% Uptime Monitoring"
+    ],
+    benefits: [
+      "Zero hosting cost in year one",
+      "No technical setup required on your end",
+      "Consistent fast performance for visitors",
+      "Peace of mind with active monitoring"
+    ],
+    technologies: ["Vercel", "AWS", "Cloudflare", "Let's Encrypt"],
+    deliverable: "Live, Monitored Hosting Environment",
+    gradient: "from-violet-600 to-purple-500"
+  },
+  "maintenance": {
+    slug: "maintenance",
+    title: "Maintenance & Support",
+    subtitle: "Complimentary Ongoing Maintenance",
+    icon: "Settings",
+    description: "1 year of complimentary maintenance covering updates, fixes, and support.",
+    longDescription: "Software needs upkeep the same way a storefront needs cleaning — and we don't disappear after launch. Every project includes a year of complimentary maintenance covering dependency updates, security patches, and bug fixes, so the product you launched with stays exactly as reliable six months later as it was on day one.",
+    features: [
+      "1 Year Complimentary Maintenance",
+      "Regular Dependency & Security Updates",
+      "Bug Fixes & Stability Patches",
+      "Priority Email & WhatsApp Support",
+      "Minor Content & Copy Updates"
+    ],
+    benefits: [
+      "No surprise maintenance bills in year one",
+      "Security patches applied proactively",
+      "Direct line to the team that built it",
+      "Software that stays reliable as it ages"
+    ],
+    technologies: ["Sentry", "GitHub Actions", "Uptime Robot", "Cloudwatch"],
+    deliverable: "Ongoing Support & Update Coverage",
+    gradient: "from-amber-500 to-orange-400"
+  },
+  "delivery": {
+    slug: "delivery",
+    title: "Ultra-Fast Delivery",
+    subtitle: "Rapid, On-Time Development Cycles",
+    icon: "Zap",
+    description: "Rapid development cycles and on-time delivery for every project milestone.",
+    longDescription: "Long timelines aren't a sign of thoroughness — they're usually a sign of an unclear process. We run tight, milestone-based sprints with clear deliverables at each checkpoint, so you always know exactly what's shipping and when. Most standard projects move from kickoff to launch in days, not months, without cutting corners on quality.",
+    features: [
+      "Milestone-Based Sprint Planning",
+      "Daily Progress Visibility",
+      "Parallel Design & Development Tracks",
+      "Rapid Revision Turnaround",
+      "Fixed Launch-Date Commitments"
+    ],
+    benefits: [
+      "Get to market faster than competitors",
+      "Always know what's shipping and when",
+      "Fewer delays from unclear requirements",
+      "Quality maintained despite the speed"
+    ],
+    technologies: ["Next.js", "Linear", "GitHub Actions", "Vercel"],
+    deliverable: "On-Time Milestone Delivery Plan",
+    gradient: "from-sky-500 to-blue-400"
   }
 };
 

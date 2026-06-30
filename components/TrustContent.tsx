@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/LiquidButton";
 import Link from "next/link";
 import Image from "next/image";
 import { collection, getDocs, query, where } from "firebase/firestore";

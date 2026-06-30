@@ -5,7 +5,7 @@ import { CheckCircle2, ShieldCheck, Zap } from "lucide-react";
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/LiquidButton";
 
 interface StatItem {
   val: string;

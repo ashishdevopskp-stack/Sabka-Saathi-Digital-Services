@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Sparkles, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/LiquidButton";
 
 const portfolioProjects = [
   {

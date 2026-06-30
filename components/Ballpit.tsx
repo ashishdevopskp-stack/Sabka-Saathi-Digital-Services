@@ -488,10 +488,12 @@ class Y extends MeshPhysicalMaterial {
   }
 }
 
+// Recolored to the site's exact brand tokens:
+// #ff9500 (primary), #ffd200 (secondary), white highlight, #ffb300 warm mid-tone.
 const XConfigDefaults = {
   count: 120,
-  colors: [0xff7a00, 0xffb347, 0xffffff, 0xffe0b2],
-  ambientColor: 0xffffff,
+  colors: [0xff9500, 0xffd200, 0xffffff, 0xffb300],
+  ambientColor: 0xfff6e0,
   ambientIntensity: 1.5,
   lightIntensity: 350,
   materialParams: {
@@ -688,13 +690,13 @@ class Z extends InstancedMesh {
       for (let idx = 0; idx < this.count; idx++) {
         const sphereColor = colorUtils.getColorAt(idx / this.count);
 
-        // Change oversized white balloons to deep charcoal (0x1E293B) to balance contrast
+        // Change oversized white balloons to deep brand-brown (matches --foreground) to balance contrast
         const size = this.physics.sizeData[idx];
         const isOversized = size > 1.1;
         const isWhiteish = sphereColor.r > 0.85 && sphereColor.g > 0.85 && sphereColor.b > 0.85;
 
         if (isOversized && isWhiteish) {
-          sphereColor.setHex(0x1E293B);
+          sphereColor.setHex(0x2d1b00);
         }
 
         this.setColorAt(idx, sphereColor);

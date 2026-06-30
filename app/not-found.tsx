@@ -5,62 +5,144 @@ import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { InteractiveBackground } from "@/components/InteractiveBackground";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/LiquidButton";
+
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
+
+  .nf-root { font-family: 'DM Sans', sans-serif; background: #f2f2f4; }
+
+  .nf-blob {
+    position: absolute; z-index: 0; pointer-events: none; filter: blur(70px);
+    background: linear-gradient(135deg, rgba(255,140,66,0.22), rgba(232,68,90,0.16));
+    animation: nfMorph 18s ease-in-out infinite;
+  }
+  .nf-blob-a { top: 6%; right: -8%; width: 38vw; height: 38vw; max-width: 520px; max-height: 520px; }
+  .nf-blob-b {
+    bottom: -4%; left: -10%; width: 30vw; height: 30vw; max-width: 420px; max-height: 420px;
+    background: linear-gradient(135deg, rgba(232,68,90,0.14), rgba(255,140,66,0.18));
+    animation-duration: 22s;
+  }
+  @keyframes nfMorph {
+    0%, 100% { border-radius: 42% 58% 65% 35% / 45% 40% 60% 55%; transform: scale(1) rotate(0deg); }
+    50%      { border-radius: 58% 42% 38% 62% / 60% 55% 45% 40%; transform: scale(1.06) rotate(8deg); }
+  }
+  @media (prefers-reduced-motion: reduce) { .nf-blob { animation: none; } }
+
+  .nf-icon-ring {
+    border: 1.5px solid transparent;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,255,255,0.9), rgba(255,255,255,0.55)) padding-box,
+      linear-gradient(135deg, #ff8c42, #e8445a) border-box;
+  }
+
+  .nf-digits {
+    font-family: 'DM Sans', sans-serif; font-weight: 600;
+    letter-spacing: -0.045em; line-height: 0.95;
+    background: linear-gradient(135deg, #1d1d1f 0%, #1d1d1f 55%, #e8445a 130%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  .nf-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    border-radius: 999px; padding: 0.4rem 1.05rem 0.4rem 0.8rem;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(232,68,90,0.16);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    font-weight: 500; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(29,29,31,0.6);
+  }
+  .nf-eyebrow-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #ff6b35; box-shadow: 0 0 8px rgba(255,107,53,0.7);
+  }
+
+  .nf-card {
+    background: rgba(255,255,255,0.62);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.7);
+    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease, background 0.4s ease;
+  }
+  .nf-card-grid:hover .nf-card { background: rgba(255,255,255,0.85); }
+  .nf-card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0,0,0,0.07); }
+  .nf-card svg { color: #e8445a; }
+  .nf-card-label {
+    font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.62rem;
+    letter-spacing: 0.12em; text-transform: uppercase; color: rgba(29,29,31,0.42);
+  }
+`;
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="nf-root flex min-h-screen flex-col">
+      <style dangerouslySetInnerHTML={{ __html: styles }} />
       <InteractiveBackground />
       <Navbar />
-      
-      <main className="flex-1 flex items-center justify-center pt-32 pb-24 relative z-10 px-4">
-        <div className="max-w-xl w-full text-center">
+
+      <main className="flex-1 flex items-center justify-center pt-32 pb-24 relative z-10 px-4 overflow-hidden">
+        <div className="nf-blob nf-blob-a" aria-hidden="true" />
+        <div className="nf-blob nf-blob-b" aria-hidden="true" />
+
+        <div className="max-w-xl w-full text-center relative z-10">
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.92, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="mb-12"
+            className="mb-10"
           >
-            <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-orange-100 text-orange-600 text-6xl shadow-xl shadow-orange-500/10 mb-8 mx-auto">
-              🔍
-            </div>
-            <h1 className="text-7xl md:text-9xl font-black text-slate-900 mb-6 tracking-tighter">
-              404
-            </h1>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-700 mb-6 uppercase tracking-wider">
-              Page Not Found
-            </h2>
-            <p className="text-lg text-slate-500 font-medium mb-10 leading-relaxed max-w-md mx-auto">
-              The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
-            </p>
             
+
+            <div className="nf-eyebrow mb-6">
+              <span className="nf-eyebrow-dot" />
+              Error 404
+            </div>
+
+            <h1 className="nf-digits text-7xl md:text-9xl mb-6">404</h1>
+            <h2 className="text-xl md:text-2xl font-semibold text-[#1d1d1f] mb-5 tracking-tight">
+              Page not found
+            </h2>
+            <p className="text-base text-[rgba(29,29,31,0.52)] mb-10 leading-relaxed max-w-md mx-auto">
+              The page you&rsquo;re looking for might have been removed, renamed,
+              or is temporarily unavailable.
+            </p>
+
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/">
-                <Button size="lg" className="rounded-2xl px-12 py-7 text-lg font-bold shadow-2xl shadow-orange-500/20">
-                  Return Home →
+                <Button size="lg" className="rounded-2xl px-10 py-6 text-base font-semibold shadow-xl shadow-orange-500/20">
+                  Return home
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="ml-1.5 inline-block">
+                    <path d="M3.5 8H12.5M12.5 8L9 4.5M12.5 8L9 11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </Button>
               </Link>
               <Link href="/contact">
-                <Button variant="outline" size="lg" className="rounded-2xl px-12 py-7 text-lg font-bold border-slate-200">
-                  Contact Support
+                <Button size="lg" className="rounded-2xl px-10 py-6 text-base font-semibold border border-slate-200">
+                  Contact support
                 </Button>
               </Link>
             </div>
           </motion.div>
-          
-          <div className="grid grid-cols-2 gap-4 mt-16 max-w-md mx-auto opacity-50 grayscale hover:grayscale-0 transition-all duration-700">
-            <div className="p-4 rounded-2xl bg-white/30 border border-white/50 backdrop-blur-sm">
-              <span className="block text-xl mb-2">🏗️</span>
-              <span className="text-[10px] font-black uppercase text-slate-400">Architectural Error</span>
+
+          <div className="nf-card-grid grid grid-cols-2 gap-4 mt-16 max-w-md mx-auto">
+            <div className="nf-card p-5 rounded-2xl text-left">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mb-3">
+                <path d="M4 21V9L12 3L20 9V21" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                <path d="M9 21V13H15V21" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+              </svg>
+              <span className="nf-card-label block">Path not found</span>
             </div>
-            <div className="p-4 rounded-2xl bg-white/30 border border-white/50 backdrop-blur-sm">
-              <span className="block text-xl mb-2">🛰️</span>
-              <span className="text-[10px] font-black uppercase text-slate-400">Broken Link Found</span>
+            <div className="nf-card p-5 rounded-2xl text-left">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mb-3">
+                <path d="M9.5 14.5L4 20M4 20H8M4 20V16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M14.5 9.5L20 4M20 4H16M20 4V8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="nf-card-label block">Broken link</span>
             </div>
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

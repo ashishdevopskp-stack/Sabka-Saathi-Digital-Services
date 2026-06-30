@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Navbar } from "./Navbar";
 import { InteractiveBackground } from "./InteractiveBackground";
 import { Card } from "./ui/Card";
-import { Button } from "./ui/Button";
+import { Button, ButtonLink } from "./ui/LiquidButton";
 import Link from "next/link";
 import { Footer } from "./Footer";
 import { DetailedContent } from "@/lib/content";
@@ -14,24 +14,207 @@ interface DetailLayoutProps {
   category: string;
 }
 
-export function DetailLayout({ content, category }: DetailLayoutProps) {
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
+
+  .dl-root { font-family: 'DM Sans', sans-serif; }
+
+  .dl-blob {
+    position: absolute; z-index: 0; pointer-events: none; filter: blur(80px);
+    background: linear-gradient(135deg, rgba(255,140,66,0.16), rgba(232,68,90,0.12));
+    animation: dlMorph 20s ease-in-out infinite;
+  }
+  .dl-blob-a { top: 4%; right: -6%; width: 32vw; height: 32vw; max-width: 460px; max-height: 460px; }
+  .dl-blob-b {
+    top: 60%; left: -8%; width: 26vw; height: 26vw; max-width: 380px; max-height: 380px;
+    background: linear-gradient(135deg, rgba(232,68,90,0.10), rgba(255,140,66,0.14));
+    animation-duration: 24s;
+  }
+  @media (prefers-reduced-motion: reduce) { .dl-blob { animation: none; } }
+  @keyframes dlMorph {
+    0%, 100% { border-radius: 42% 58% 65% 35% / 45% 40% 60% 55%; transform: scale(1) rotate(0deg); }
+    50%      { border-radius: 58% 42% 38% 62% / 60% 55% 45% 40%; transform: scale(1.06) rotate(8deg); }
+  }
+
+  .dl-crumb {
+    position: relative; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+    background: rgba(255,255,255,0.62);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0,0,0,0.05);
+    color: rgba(29,29,31,0.4);
+  }
+  .dl-crumb a { color: inherit; transition: color 0.3s ease; }
+  .dl-crumb a:hover { color: #e8445a; }
+  .dl-crumb-current { color: #e8445a; }
+
+  .dl-eyebrow {
+    position: relative; display: inline-flex; align-items: center; gap: 0.55rem;
+    border-radius: 999px; padding: 0.42rem 1.1rem 0.42rem 0.9rem;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    font-weight: 500; font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: rgba(29,29,31,0.62);
+  }
+  .dl-eyebrow::before {
+    content: ''; position: absolute; inset: 0; z-index: -1; border-radius: 999px; padding: 1px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(255,107,53,0.45) 30%, rgba(232,68,90,0.18) 55%, rgba(232,68,90,0.50) 80%, rgba(255,255,255,0.70) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+  .dl-eyebrow-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+    background: #ff6b35; box-shadow: 0 0 8px rgba(255,107,53,0.7);
+    animation: dlDotPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes dlDotPulse {
+    0%,100% { box-shadow: 0 0 6px rgba(255,107,53,.7), 0 0 0 0 rgba(255,107,53,.3); }
+    50%     { box-shadow: 0 0 12px rgba(255,107,53,.9), 0 0 0 4px rgba(255,107,53,0); }
+  }
+
+  .dl-h1 { color: #1d1d1f; letter-spacing: -0.03em; font-weight: 600; }
+  .dl-icon-wrap { display: inline-flex; vertical-align: middle; color: #e8445a; }
+
+  .dl-desc { color: rgba(29,29,31,0.56); font-weight: 400; }
+
+  .dl-deliverable {
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.75);
+    box-shadow: 0 8px 24px rgba(29,29,31,0.06);
+  }
+  .dl-deliverable-label {
+    font-weight: 500; font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase;
+    background: linear-gradient(135deg, #ff8c42, #e8445a);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .dl-deliverable-val { color: #1d1d1f; font-weight: 600; }
+
+  /* ── Feature card ── */
+  .dl-feature-card { position: relative; }
+  .dl-feature-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #ff8c42, #e8445a);
+  }
+  .dl-feature-title { color: #1d1d1f; font-weight: 600; letter-spacing: -0.015em; }
+  .dl-feature-icon {
+    background: linear-gradient(135deg, rgba(255,140,66,0.14), rgba(232,68,90,0.10));
+    color: #e8445a;
+  }
+  .dl-feature-item {
+    transition: background 0.3s ease, border-color 0.3s ease;
+    border: 1px solid transparent;
+  }
+  .dl-feature-item:hover { background: rgba(255,255,255,0.5); border-color: rgba(255,255,255,0.7); }
+  .dl-feature-check {
+    background: linear-gradient(135deg, #ff8c42, #e8445a);
+    box-shadow: 0 2px 8px rgba(232,68,90,0.25);
+  }
+  .dl-feature-text { color: rgba(29,29,31,0.7); font-weight: 500; }
+
+  /* ── Deep dive cards ── */
+  .dl-grid-card { background: linear-gradient(160deg, rgba(255,255,255,0.78), rgba(255,255,255,0.42)); }
+  .dl-grid-icon {
+    border-radius: 1.25rem; display: flex; align-items: center; justify-content: center;
+  }
+  .dl-grid-icon.blue   { background: rgba(99,102,241,0.08); color: #6366f1; border: 1px solid rgba(99,102,241,0.14); }
+  .dl-grid-icon.purple { background: rgba(168,85,247,0.08); color: #a855f7; border: 1px solid rgba(168,85,247,0.14); }
+  .dl-grid-title { color: #1d1d1f; font-weight: 600; letter-spacing: -0.015em; }
+  .dl-benefit { color: rgba(29,29,31,0.66); font-weight: 500; }
+  .dl-benefit-dot { background: #6366f1; }
+
+  .dl-tech-pill {
+    background: rgba(255,255,255,0.85);
+    border: 1px solid rgba(0,0,0,0.06);
+    color: #1d1d1f; font-weight: 600; letter-spacing: 0.06em;
+    transition: transform 0.3s cubic-bezier(0.25,1,0.5,1), border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .dl-tech-pill:hover { transform: translateY(-2px); border-color: rgba(232,68,90,0.3); box-shadow: 0 8px 18px rgba(232,68,90,0.12); }
+
+  .dl-infra-box {
+    background: #16161a; color: rgba(255,255,255,0.7);
+  }
+  .dl-infra-label { color: #fff; font-weight: 600; }
+
+  /* ── Dark CTA panel ── */
+  .dl-cta-panel { background: #15151a; }
+  .dl-cta-blob-a { background: radial-gradient(circle, rgba(255,140,66,0.22) 0%, transparent 70%); }
+  .dl-cta-blob-b { background: radial-gradient(circle, rgba(99,102,241,0.16) 0%, transparent 70%); }
+  .dl-cta-h2 { color: #fff; font-weight: 600; letter-spacing: -0.025em; }
+  .dl-cta-accent {
+    background: linear-gradient(135deg, #ff8c42, #e8445a);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .dl-cta-body { color: rgba(255,255,255,0.6); font-weight: 400; }
+  .dl-cta-panel-right {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  }
+  .dl-cta-panel-title { color: #fff; font-weight: 600; }
+  .dl-cta-panel-body { color: rgba(255,255,255,0.5); }
+`;
+
+function CheckIcon() {
   return (
-    <div className="flex min-h-screen flex-col selection:bg-orange-100 selection:text-orange-900">
+    <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+      <path d="M3 7.5L5.5 10L11 3.5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function SparkleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M12 3L13.8 9.2L20 11L13.8 12.8L12 19L10.2 12.8L4 11L10.2 9.2L12 3Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function TargetIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+function ToolsIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path d="M14.7 6.3a4 4 0 015.6 5.6L13 19.2 4.8 21l1.8-8.2 7.3-7.3a4 4 0 011-1.2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M9.5 9.5L14.5 14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function DetailLayout({ content, category }: DetailLayoutProps) {
+  const gradient = content.gradient || "from-orange-500 to-rose-500";
+
+  return (
+    <div className="dl-root flex min-h-screen flex-col selection:bg-orange-100 selection:text-orange-900">
+      <style dangerouslySetInnerHTML={{ __html: styles }} />
       <InteractiveBackground />
       <Navbar />
-      
-      <main className="flex-1 pt-36 pb-24 relative z-10">
-        <div className="container mx-auto px-4 max-w-7xl">
-          
+
+      <main className="flex-1 pt-36 pb-24 relative z-10 overflow-hidden">
+        <div className="dl-blob dl-blob-a" aria-hidden="true" />
+        <div className="dl-blob dl-blob-b" aria-hidden="true" />
+
+        <div className="container mx-auto px-4 max-w-7xl relative z-10">
+
           {/* Breadcrumbs */}
-          <nav className="mb-12 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-slate-400 backdrop-blur-sm bg-white/30 w-fit px-6 py-3 rounded-full border border-white/50 shadow-sm relative z-20">
-            <Link href="/" className="hover:text-orange-600 transition-colors">Home</Link>
-            <span className="text-slate-300">/</span>
-            <span className="text-slate-500">{category}</span>
-            <span className="text-slate-300">/</span>
-            <span className="text-orange-600">{content.title}</span>
+          <nav className="dl-crumb mb-12 flex items-center gap-3 text-xs w-fit px-6 py-3 rounded-full relative z-20">
+            <Link href="/">Home</Link>
+            <span className="opacity-40">/</span>
+            <span>{category}</span>
+            <span className="opacity-40">/</span>
+            <span className="dl-crumb-current">{content.title}</span>
           </nav>
-          {/* Hero Section */}
+
+          {/* Hero */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center mb-32">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -39,31 +222,31 @@ export function DetailLayout({ content, category }: DetailLayoutProps) {
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="lg:col-span-7"
             >
-              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/50 border border-white/80 shadow-sm mb-8 backdrop-blur-md">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500"></span>
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-700">{content.subtitle}</span>
+              <div className="dl-eyebrow mb-8">
+                <span className="dl-eyebrow-dot" />
+                {content.subtitle}
               </div>
-              
-              <h1 className="text-5xl md:text-7xl font-black text-slate-900 mb-8 leading-[1.05] tracking-tight">
-                {content.title} <span className="inline-block hover:scale-110 hover:rotate-12 transition-transform duration-300">{content.icon}</span>
+
+              <h1 className="dl-h1 text-5xl md:text-7xl mb-8 leading-[1.05]">
+                {content.title}{" "}
+                <span className="dl-icon-wrap hover:scale-110 hover:rotate-12 transition-transform duration-300">
+                  {content.icon}
+                </span>
               </h1>
-              
-              <p className="text-xl text-slate-600 leading-relaxed mb-10 max-w-2xl font-medium">
+
+              <p className="dl-desc text-lg md:text-xl leading-relaxed mb-10 max-w-2xl">
                 {content.longDescription}
               </p>
-              
-              <div className="flex flex-col sm:flex-row items-center gap-6">
-                <Button size="lg" className="w-full sm:w-auto rounded-full px-10 py-6 text-lg font-bold shadow-[0_10px_40px_rgba(249,115,22,0.3)] hover:shadow-[0_15px_50px_rgba(249,115,22,0.4)] transition-all">
-                  Start Your Project
-                </Button>
+
+              <div className="flex flex-col sm:flex-row items-center gap-5">
+                <ButtonLink href="/#contact" variant="primary" size="lg" className="w-full sm:w-auto rounded-2xl">
+                  Start your project
+                </ButtonLink>
                 {content.deliverable && (
-                  <div className="flex items-center gap-4 px-8 py-5 bg-white/60 border border-white/80 rounded-full backdrop-blur-xl shadow-lg shadow-slate-200/50">
+                  <div className="dl-deliverable flex items-center gap-4 px-7 py-4 rounded-2xl w-full sm:w-auto">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-black text-orange-500 uppercase tracking-[0.2em] mb-1">Deliverable</span>
-                      <span className="text-sm font-bold text-slate-800">{content.deliverable}</span>
+                      <span className="dl-deliverable-label mb-1">Deliverable</span>
+                      <span className="dl-deliverable-val text-sm">{content.deliverable}</span>
                     </div>
                   </div>
                 )}
@@ -76,24 +259,28 @@ export function DetailLayout({ content, category }: DetailLayoutProps) {
               transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
               className="lg:col-span-5 relative"
             >
-              <div className={`absolute -inset-10 bg-gradient-to-br ${content.gradient || 'from-orange-500 to-rose-500'} opacity-20 blur-3xl rounded-full`} />
-              <Card className="relative overflow-hidden border-white/80 bg-white/60 backdrop-blur-3xl rounded-[3rem] p-10 shadow-2xl">
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${content.gradient || 'from-orange-500 to-rose-500'}" />
-                <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-4">
-                  <span className="flex items-center justify-center h-10 w-10 rounded-xl bg-orange-100 text-orange-600 text-xl">✨</span>
-                  Key Features
+              <div className={`absolute -inset-10 bg-gradient-to-br ${gradient} opacity-15 blur-3xl rounded-full`} aria-hidden="true" />
+              <Card className="dl-feature-card relative overflow-hidden rounded-[2.5rem] p-9">
+                <div className={`dl-feature-bar`} />
+                <h3 className="dl-feature-title text-xl mb-7 flex items-center gap-3.5">
+                  <span className="dl-feature-icon flex items-center justify-center h-10 w-10 rounded-xl">
+                    <SparkleIcon />
+                  </span>
+                  Key features
                 </h3>
-                <div className="grid grid-cols-1 gap-5">
+                <div className="grid grid-cols-1 gap-2">
                   {content.features.map((feature, i) => (
-                    <motion.div 
+                    <motion.div
                       key={feature}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 + (i * 0.1), duration: 0.5 }}
-                      className="flex items-start gap-4 p-4 rounded-2xl hover:bg-white/50 transition-colors border border-transparent hover:border-white/80 cursor-default group"
+                      transition={{ delay: 0.5 + i * 0.1, duration: 0.5 }}
+                      className="dl-feature-item flex items-start gap-3.5 p-3.5 rounded-xl cursor-default"
                     >
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-white text-sm shadow-md group-hover:scale-110 transition-transform">✓</div>
-                      <p className="text-slate-700 font-bold leading-tight group-hover:text-slate-900 transition-colors pt-1">{feature}</p>
+                      <div className="dl-feature-check flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5">
+                        <CheckIcon />
+                      </div>
+                      <p className="dl-feature-text text-sm leading-snug pt-1">{feature}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -101,7 +288,7 @@ export function DetailLayout({ content, category }: DetailLayoutProps) {
             </motion.div>
           </div>
 
-          {/* Deep Dive Grid */}
+          {/* Deep dive grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-32">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -109,13 +296,15 @@ export function DetailLayout({ content, category }: DetailLayoutProps) {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <Card className="h-full p-10 bg-gradient-to-br from-white/80 to-white/40 border-white/80 backdrop-blur-2xl rounded-[3rem] shadow-xl hover:shadow-2xl transition-shadow">
-                <div className="h-16 w-16 rounded-[1.5rem] bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center text-3xl mb-8 shadow-sm">🎯</div>
-                <h4 className="text-2xl font-black text-slate-900 mb-6">Core Benefits</h4>
-                <ul className="space-y-5">
-                  {content.benefits.map(benefit => (
-                    <li key={benefit} className="text-base text-slate-700 font-bold flex items-start gap-4 group">
-                      <div className="mt-1.5 h-2 w-2 rounded-full bg-blue-500 group-hover:scale-150 transition-transform flex-shrink-0" />
+              <Card hoverable className="dl-grid-card h-full p-9 rounded-[2.5rem]">
+                <div className="dl-grid-icon blue h-14 w-14 mb-7">
+                  <TargetIcon />
+                </div>
+                <h4 className="dl-grid-title text-xl mb-6">Core benefits</h4>
+                <ul className="space-y-4">
+                  {content.benefits.map((benefit) => (
+                    <li key={benefit} className="dl-benefit text-sm flex items-start gap-3.5">
+                      <div className="dl-benefit-dot mt-1.5 h-1.5 w-1.5 rounded-full flex-shrink-0" />
                       <span className="leading-snug">{benefit}</span>
                     </li>
                   ))}
@@ -130,71 +319,81 @@ export function DetailLayout({ content, category }: DetailLayoutProps) {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="lg:col-span-2"
             >
-              <Card className="h-full p-10 bg-gradient-to-br from-white/80 to-white/40 border-white/80 backdrop-blur-2xl rounded-[3rem] shadow-xl hover:shadow-2xl transition-shadow flex flex-col justify-between">
+              <Card hoverable className="dl-grid-card h-full p-9 rounded-[2.5rem] flex flex-col justify-between">
                 <div>
-                  <div className="h-16 w-16 rounded-[1.5rem] bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center text-3xl mb-8 shadow-sm">🛠️</div>
-                  <h4 className="text-2xl font-black text-slate-900 mb-6">Technology Stack & Tools</h4>
-                  <div className="flex flex-wrap gap-3">
-                    {(content.technologies || ["Next.js", "Tailwind", "TypeScript", "Framer Motion", "MongoDB"]).map(tech => (
-                      <span key={tech} className="px-6 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-black text-slate-800 shadow-sm hover:-translate-y-1 hover:shadow-md hover:border-orange-300 transition-all cursor-default uppercase tracking-widest">
+                  <div className="dl-grid-icon purple h-14 w-14 mb-7">
+                    <ToolsIcon />
+                  </div>
+                  <h4 className="dl-grid-title text-xl mb-6">Technology stack &amp; tools</h4>
+                  <div className="flex flex-wrap gap-2.5">
+                    {(content.technologies || ["Next.js", "Tailwind", "TypeScript", "Framer Motion", "MongoDB"]).map((tech) => (
+                      <span key={tech} className="dl-tech-pill px-5 py-2.5 rounded-xl text-xs uppercase cursor-default">
                         {tech}
                       </span>
                     ))}
                   </div>
                 </div>
-                <p className="mt-10 p-6 bg-slate-900 text-slate-300 rounded-[2rem] text-sm leading-relaxed font-medium shadow-inner">
-                  <span className="text-white font-bold block mb-2 text-base">Enterprise-Grade Infrastructure</span>
-                  We utilize robust technologies to ensure your {content.title} is not only functional but also future-proof and highly secure. Our team stays updated with the latest industry standards to provide the most efficient solutions capable of massive scale.
+                <p className="dl-infra-box mt-9 p-6 rounded-[1.5rem] text-sm leading-relaxed">
+                  <span className="dl-infra-label block mb-2 text-base">Enterprise-grade infrastructure</span>
+                  We use robust technologies so your {content.title.toLowerCase()} is functional, future-proof, and
+                  secure — staying current with industry standards to support real scale.
                 </p>
               </Card>
             </motion.div>
           </div>
 
-          {/* Premium Prose CTA Section */}
-          <motion.div 
+          {/* Dark CTA panel */}
+          <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative overflow-hidden bg-slate-950 p-10 md:p-20 rounded-[3rem] border border-white/10 shadow-2xl"
+            className="dl-cta-panel relative overflow-hidden p-10 md:p-20 rounded-[3rem] border border-white/10 shadow-2xl"
           >
-            {/* Dark Mode Background Effects */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-500/20 blur-[120px] rounded-full pointer-events-none translate-x-1/2 -translate-y-1/2" />
-            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/20 blur-[100px] rounded-full pointer-events-none -translate-x-1/2 translate-y-1/2" />
-            
+            <div className="dl-cta-blob-a absolute top-0 right-0 w-[500px] h-[500px] blur-[120px] rounded-full pointer-events-none translate-x-1/2 -translate-y-1/2" />
+            <div className="dl-cta-blob-b absolute bottom-0 left-0 w-[400px] h-[400px] blur-[100px] rounded-full pointer-events-none -translate-x-1/2 translate-y-1/2" />
+
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div>
-                <h2 className="text-4xl font-black text-white mb-8 md:text-5xl tracking-tight leading-[1.1]">
-                  Why Choose Sabka Saathi for <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">{content.title}</span>?
+                <h2 className="dl-cta-h2 text-4xl md:text-5xl mb-8 leading-[1.1]">
+                  Why choose Sabka Saathi for <span className="dl-cta-accent">{content.title}</span>?
                 </h2>
-                <div className="space-y-6 text-slate-300 font-medium text-lg leading-relaxed">
-                   <p>
-                     In the digital age, {content.title.toLowerCase()} is more than a technical requirement—it&apos;s a strategic advantage. At Sabka Saathi, we approach every {content.slug} project with a unique blend of creativity and engineering excellence. As a GST-registered agency, we bring corporate transparency and high-fidelity results.
-                   </p>
-                   <p>
-                     Our process for {content.slug} is rooted in deep industry research and user-centric design principles. Whether building a complex SaaS platform or a localized CRM, we ensure the final product drives actual business revenue.
-                   </p>
+                <div className="space-y-5 dl-cta-body text-base md:text-lg leading-relaxed">
+                  <p>
+                    In the digital age, {content.title.toLowerCase()} is more than a technical requirement — it&apos;s a
+                    strategic advantage. At Sabka Saathi, we approach every {content.slug} project with a blend of
+                    creativity and engineering rigor. As a GST-registered agency, we bring corporate transparency
+                    and high-fidelity results.
+                  </p>
+                  <p>
+                    Our process for {content.slug} is rooted in industry research and user-centric design. Whether
+                    building a complex SaaS platform or a localized CRM, we make sure the final product drives
+                    actual business revenue.
+                  </p>
                 </div>
               </div>
 
-              <div className="bg-white/5 border border-white/10 p-10 rounded-[2.5rem] backdrop-blur-xl">
-                <h5 className="text-2xl font-black text-white mb-4">Ready to Deep Dive?</h5>
-                <p className="text-slate-400 mb-10 text-lg">Let&apos;s discuss how {content.title} can transform your business operations and accelerate your growth trajectory.</p>
-                
-                <Link href="/#contact">
-                  <Button size="lg" className="w-full rounded-2xl py-8 text-xl font-bold bg-white text-slate-900 hover:bg-orange-50 hover:text-orange-600 transition-colors border-none">
-                    Book a Strategy Call →
-                  </Button>
-                </Link>
+              <div className="dl-cta-panel-right p-9 rounded-[2rem]">
+                <h5 className="dl-cta-panel-title text-xl mb-3.5">Ready to deep dive?</h5>
+                <p className="dl-cta-panel-body mb-9 text-base leading-relaxed">
+                  Let&apos;s discuss how {content.title} can transform your business operations and accelerate your
+                  growth.
+                </p>
+
+                <ButtonLink href="/#contact" variant="secondary" size="lg" className="w-full rounded-2xl">
+                  Book a strategy call
+                  <svg width="15" height="15" viewBox="0 0 14 14" fill="none" className="ml-1">
+                    <path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </ButtonLink>
               </div>
             </div>
           </motion.div>
 
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );
 }
-

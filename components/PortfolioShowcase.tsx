@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/LiquidButton";
 
 const phoneProjects = [
   {

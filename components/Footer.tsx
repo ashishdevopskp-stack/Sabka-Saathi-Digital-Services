@@ -1,111 +1,223 @@
 "use client";
 
 import Link from "next/link";
-import { Phone, Mail } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  Phone,
+  Mail,
+  MessageCircle,
+  MapPin,
+  ArrowUpRight,
+  Code2,
+} from "lucide-react";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 22 },
+  show: (i: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] },
+  }),
+};
+
+const PLATFORM_LINKS = [
+  { href: "/", label: "Home" },
+  { href: "/services", label: "Services" },
+  { href: "/industries", label: "Industries" },
+  { href: "/trust", label: "Legal & Trust" },
+  { href: "/about", label: "About Us" },
+  { href: "/faq", label: "FAQ" },
+];
+
+const HUBS = [
+  { href: "/location/bihar", name: "Bihar Hub", cities: "Patna, Muzaffarpur, Gaya, Sheikhpura" },
+  { href: "/location/gujarat", name: "Gujarat Hub", cities: "Surat, Ahmedabad, Rajkot, Bhavnagar" },
+  { href: "/location/maharashtra", name: "Maharashtra Tech Pivot", cities: "Pune, Mumbai, Nagpur" },
+];
 
 export function Footer() {
   return (
-    <footer className="bg-slate-950 py-16 md:py-24 text-white relative z-10 overflow-hidden border-t border-white/5">
-      {/* Large Subtle Outline SVG Watermark Background */}
-      <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden pointer-events-none select-none opacity-[0.02] sm:opacity-[0.025]">
-        <svg viewBox="0 0 1000 300" className="w-full h-full max-h-[85%]">
+    <footer className="relative z-10 overflow-hidden border-t border-white/5 bg-slate-950 py-16 text-white md:py-24">
+      {/* Watermark */}
+      <div className="pointer-events-none absolute inset-0 z-0 flex select-none items-center justify-center overflow-hidden opacity-[0.02] sm:opacity-[0.025]">
+        <svg viewBox="0 0 1000 300" className="h-full max-h-[85%] w-full">
           <text
             x="50%"
             y="50%"
             textAnchor="middle"
             dominantBaseline="middle"
-            className="font-black tracking-[0.2em] text-[110px] sm:text-[130px] fill-none stroke-white stroke-[2]"
+            className="fill-none stroke-white stroke-[2] text-[110px] font-black tracking-[0.2em] sm:text-[130px]"
           >
             SABKA SAATHI
           </text>
         </svg>
       </div>
 
-      <div className="container mx-auto px-4 max-w-7xl relative z-20">
-        <div className="grid grid-cols-2 md:grid-cols-12 gap-x-6 gap-y-10 lg:gap-16">
-          
-          {/* Logo Column - full span on mobile, 4 cols on desktop */}
-          <div className="col-span-2 md:col-span-4 text-left">
-            <h3 className="text-2xl font-black mb-4 tracking-tight uppercase text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500">
+      <div className="container relative z-20 mx-auto max-w-7xl px-4">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-12 lg:gap-16">
+
+          {/* Logo column */}
+          <motion.div
+            className="col-span-2 text-left md:col-span-4"
+            
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            custom={0}
+          >
+            <h3 className="mb-4 bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-2xl font-black uppercase tracking-tight text-transparent">
               SABKA SAATHI
             </h3>
-            <p className="text-slate-400 max-w-sm mb-6 text-sm font-medium leading-relaxed">
+            <p className="mb-6 max-w-sm text-sm font-medium leading-relaxed text-slate-400">
               Premium software development agency specializing in Next.js, CRM automation, and high-fidelity digital transformation.
             </p>
             <div className="flex gap-3">
-              <a 
-                href="tel:+919431673018" 
-                aria-label="Call Sabka Saathi" 
-                className="h-11 w-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-orange-500 hover:border-orange-500 hover:text-white transition-all shadow-lg active:scale-95 text-slate-400"
-              >
-                <Phone className="w-4 h-4" />
-              </a>
-              <a 
-                href="mailto:helpsabkasaathi@gmail.com" 
-                aria-label="Email Sabka Saathi" 
-                className="h-11 w-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-orange-500 hover:border-orange-500 hover:text-white transition-all shadow-lg active:scale-95 text-slate-400"
-              >
-                <Mail className="w-4 h-4" />
-              </a>
+              {[
+                { href: "tel:+919431673018", label: "Call Sabka Saathi", Icon: Phone },
+                { href: "mailto:helpsabkasaathi@gmail.com", label: "Email Sabka Saathi", Icon: Mail },
+                { href: "https://wa.me/919431673018", label: "WhatsApp Sabka Saathi", Icon: MessageCircle, external: true },
+              ].map(({ href, label, Icon, external }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target={external ? "_blank" : undefined}
+                  rel={external ? "noopener noreferrer" : undefined}
+                  aria-label={label}
+                  className="group flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:border-orange-500 hover:bg-orange-500 hover:text-white hover:shadow-orange-500/20 active:scale-95"
+                >
+                  <Icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
+                </a>
+              ))}
             </div>
-          </div>
-          
-          {/* Platform Links - 1 col on mobile, 2 cols on desktop */}
-          <div className="col-span-1 md:col-span-2 text-left">
-            <h4 className="font-black mb-6 uppercase tracking-[0.2em] text-orange-500 text-[10px]">Platform</h4>
-            <ul className="space-y-3.5 text-slate-350 font-bold text-xs">
-              <li><Link href="/" className="hover:text-white hover:translate-x-1.5 transition-all inline-block">Home</Link></li>
-              <li><Link href="/services" className="hover:text-white hover:translate-x-1.5 transition-all inline-block">Services</Link></li>
-              <li><Link href="/industries" className="hover:text-white hover:translate-x-1.5 transition-all inline-block">Industries</Link></li>
-              <li><Link href="/trust" className="hover:text-white hover:translate-x-1.5 transition-all inline-block">Legal & Trust</Link></li>
-              <li><Link href="/about" className="hover:text-white hover:translate-x-1.5 transition-all inline-block">About Us</Link></li>
-              <li><Link href="/faq" className="hover:text-white hover:translate-x-1.5 transition-all inline-block">FAQ</Link></li>
-            </ul>
-          </div>
+          </motion.div>
 
-          {/* Contact Links - 1 col on mobile, 3 cols on desktop */}
-          <div className="col-span-1 md:col-span-3 text-left">
-            <h4 className="font-black mb-6 uppercase tracking-[0.2em] text-orange-500 text-[10px]">Contact</h4>
-            <ul className="space-y-3.5 text-slate-350 font-bold text-xs">
-              <li><Link href="/contact" className="hover:text-white hover:translate-x-1.5 transition-all inline-block">Get a Quote</Link></li>
-              <li><a href="https://wa.me/919431673018" target="_blank" rel="noopener noreferrer" className="hover:text-white hover:translate-x-1.5 transition-all inline-block">WhatsApp Support</a></li>
-              <li className="text-slate-500 font-medium select-all">9431673018</li>
-              <li className="text-slate-500 font-medium lowercase select-all text-ellipsis overflow-hidden">helpsabkasaathi@gmail.com</li>
+          {/* Platform */}
+          <motion.div
+            className="col-span-1 text-left md:col-span-2"
+           
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            custom={1}
+          >
+            <h4 className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">Platform</h4>
+            <ul className="space-y-3.5 text-xs font-bold text-slate-350">
+              {PLATFORM_LINKS.map((l) => (
+                <li key={l.href}>
+                  <Link
+                    href={l.href}
+                    className="inline-flex items-center gap-1 transition-all duration-300 hover:translate-x-1.5 hover:text-white"
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
-          </div>
-          
-          {/* Regional Hubs - full width on mobile, 3 cols on desktop */}
-          <div className="col-span-2 md:col-span-3 text-left">
-            <h4 className="font-black mb-6 uppercase tracking-[0.2em] text-orange-500 text-[10px]">Regional Hubs</h4>
-            <ul className="space-y-4.5 text-slate-350 font-bold text-xs">
-              <li className="flex flex-col gap-0.5">
-                <Link href="/location/bihar" className="hover:text-white transition-colors">Bihar Hub</Link>
-                <span className="text-[10px] font-medium text-slate-500">Patna, Muzaffarpur, Gaya, Sheikhpura</span>
+          </motion.div>
+
+          {/* Contact */}
+          <motion.div
+            className="col-span-1 text-left md:col-span-3"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            custom={2}
+          >
+            <h4 className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">Contact</h4>
+            <ul className="space-y-3.5 text-xs font-bold text-slate-350">
+              <li>
+                <Link href="/contact" className="inline-flex items-center gap-1 transition-all duration-300 hover:translate-x-1.5 hover:text-white">
+                  Get a Quote
+                </Link>
               </li>
-              <li className="flex flex-col gap-0.5">
-                <Link href="/location/gujarat" className="hover:text-white transition-colors">Gujarat Hub</Link>
-                <span className="text-[10px] font-medium text-slate-500">Surat, Ahmedabad, Rajkot, Bhavnagar</span>
+              <li>
+                <a
+                  href="https://wa.me/919431673018"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 transition-all duration-300 hover:translate-x-1.5 hover:text-white"
+                >
+                  <MessageCircle className="h-3.5 w-3.5 text-orange-500/70" />
+                  WhatsApp Support
+                </a>
               </li>
-              <li className="flex flex-col gap-0.5">
-                <Link href="/location/maharashtra" className="hover:text-white transition-colors">Maharashtra Tech Pivot</Link>
-                <span className="text-[10px] font-medium text-slate-500">Pune, Mumbai, Nagpur</span>
+              <li className="flex items-center gap-1.5 select-all font-medium text-slate-500">
+                <Phone className="h-3.5 w-3.5 text-orange-500/70" />
+                9431673018
+              </li>
+              <li className="flex items-center gap-1.5 overflow-hidden text-ellipsis select-all font-medium lowercase text-slate-500">
+                <Mail className="h-3.5 w-3.5 shrink-0 text-orange-500/70" />
+                helpsabkasaathi@gmail.com
               </li>
             </ul>
-          </div>
+          </motion.div>
+
+          {/* Regional hubs */}
+          <motion.div
+            className="col-span-2 text-left md:col-span-3"
+        
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            custom={3}
+          >
+            <h4 className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">Regional Hubs</h4>
+            <ul className="space-y-4 text-xs font-bold text-slate-350">
+              {HUBS.map((hub) => (
+                <li key={hub.href} className="flex flex-col gap-0.5">
+                  <Link
+                    href={hub.href}
+                    className="group inline-flex items-center gap-1.5 transition-colors hover:text-white"
+                  >
+                    <MapPin className="h-3.5 w-3.5 shrink-0 text-orange-500/70 transition-transform duration-300 group-hover:scale-110" />
+                    {hub.name}
+                  </Link>
+                  <span className="pl-5 text-[10px] font-medium text-slate-500">{hub.cities}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-16 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-500 text-[9px] font-black uppercase tracking-[0.2em]">
+        {/* Bottom bar */}
+        <motion.div
+          className="mt-16 flex flex-col items-center justify-between gap-5 border-t border-white/10 pt-8 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 sm:flex-row"
+
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-40px" }}
+          custom={4}
+        >
           <p>© 2026 SABKA SAATHI. ALL RIGHTS RESERVED.</p>
-          <div className="flex gap-6 items-center">
-            <p className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-slate-400">GSTIN: 10LAHPK8872L1Z3</p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <p className="rounded-lg border border-white/5 bg-white/5 px-3 py-1.5 text-slate-400">
+              GSTIN: 10LAHPK8872L1Z3
+            </p>
+
+            {/* Developer credit */}
+            <a
+              href="https://anikedwebdev.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-gradient-to-r from-orange-500/10 to-rose-500/10 px-3 py-1.5 text-slate-300 normal-case tracking-normal transition-all duration-300 hover:border-orange-500/40 hover:text-white"
+            >
+              <Code2 className="h-3 w-3 text-orange-500" />
+              <span className="lowercase">
+                Built by{" "}
+                <span className="bg-gradient-to-r from-orange-400 to-rose-400 bg-clip-text font-bold text-transparent">
+                  anikedwebdev.in
+                </span>
+              </span>
+              <ArrowUpRight className="h-3 w-3 text-slate-500 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-orange-400" />
+            </a>
           </div>
-        </div>
+        </motion.div>
       </div>
-      
-      {/* Background Decorative Blobs */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-500/5 blur-[120px] rounded-full pointer-events-none translate-x-1/2 -translate-y-1/2" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/5 blur-[100px] rounded-full pointer-events-none -translate-x-1/2 translate-y-1/2" />
+
+      {/* Decorative ambient blobs */}
+      <div className="pointer-events-none absolute right-0 top-0 h-[500px] w-[500px] -translate-y-1/2 translate-x-1/2 rounded-full bg-orange-500/5 blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-0 left-0 h-[400px] w-[400px] -translate-x-1/2 translate-y-1/2 rounded-full bg-blue-500/5 blur-[100px]" />
     </footer>
   );
 }

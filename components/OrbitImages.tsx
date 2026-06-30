@@ -2,6 +2,7 @@
 
 // Component created by Dominik Koch
 // https://x.com/dominikkoch
+// Restyled to match site theme: orange/rose gradient hairline borders, warm glass tiles
 
 import { useMemo, useEffect, useRef, useState, ReactNode } from 'react';
 import Image from 'next/image';
@@ -149,6 +150,35 @@ function OrbitItem({ item, index, totalItems, path, itemSize, rotation, progress
   );
 }
 
+const orbitStyles = `
+  .orbit-tile {
+    position: relative; width: 100%; height: 100%;
+    border-radius: 18px; overflow: hidden;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+      0 6px 20px rgba(0,0,0,0.08),
+      inset 0 1px 0 rgba(255,255,255,0.6);
+    transition: transform 0.35s cubic-bezier(0.25,1,0.5,1), box-shadow 0.35s ease;
+  }
+  .orbit-tile::before {
+    content: ''; position: absolute; inset: 0; border-radius: 18px; padding: 1.2px;
+    background: linear-gradient(140deg,
+      rgba(255,255,255,0.85) 0%,
+      rgba(255,160,90,0.55) 28%,
+      rgba(232,68,90,0.18) 55%,
+      rgba(232,68,90,0.55) 80%,
+      rgba(255,255,255,0.70) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    pointer-events: none;
+  }
+  .orbit-tile:hover {
+    transform: scale(1.08);
+    box-shadow: 0 10px 28px rgba(232,68,90,0.18), inset 0 1px 0 rgba(255,255,255,0.7);
+  }
+`;
+
 export default function OrbitImages({
   images = [],
   altPrefix = 'Orbiting image',
@@ -169,7 +199,7 @@ export default function OrbitImages({
   height = 100,
   className = '',
   showPath = false,
-  pathColor = 'rgba(0,0,0,0.1)',
+  pathColor = 'rgba(232,68,90,0.18)',
   pathWidth = 2,
   easing = 'linear',
   paused = false,
@@ -239,16 +269,16 @@ export default function OrbitImages({
 
   const items = images.map((src, index) => (
     <div key={src} className="w-full h-full p-2">
-       <div className="w-full h-full rounded-2xl bg-white/40 border border-white/60 shadow-lg backdrop-blur-sm flex items-center justify-center overflow-hidden">
-          <Image
-            src={src}
-            alt={`${altPrefix} ${index + 1}`}
-            width={itemSize}
-            height={itemSize}
-            draggable={false}
-            className="w-full h-full object-cover"
-          />
-       </div>
+      <div className="orbit-tile flex items-center justify-center">
+        <Image
+          src={src}
+          alt={`${altPrefix} ${index + 1}`}
+          width={itemSize}
+          height={itemSize}
+          draggable={false}
+          className="w-full h-full object-cover relative z-10"
+        />
+      </div>
     </div>
   ));
 
@@ -263,6 +293,8 @@ export default function OrbitImages({
       }}
       aria-hidden="true"
     >
+      <style dangerouslySetInnerHTML={{ __html: orbitStyles }} />
+
       <div
         className={responsive ? 'absolute left-1/2 top-1/2' : 'relative w-full h-full'}
         style={{
@@ -286,7 +318,19 @@ export default function OrbitImages({
               viewBox={`0 0 ${baseWidth} ${baseWidth}`}
               className="absolute inset-0 pointer-events-none"
             >
-              <path d={path} fill="none" stroke={pathColor} strokeWidth={pathWidth / scale} />
+              <defs>
+                <linearGradient id="orbitPathGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#ff8c42" stopOpacity="0.35" />
+                  <stop offset="50%" stopColor="#e8445a" stopOpacity="0.20" />
+                  <stop offset="100%" stopColor="#ff8c42" stopOpacity="0.35" />
+                </linearGradient>
+              </defs>
+              <path
+                d={path}
+                fill="none"
+                stroke={showPath ? 'url(#orbitPathGrad)' : pathColor}
+                strokeWidth={pathWidth / scale}
+              />
             </svg>
           )}
 

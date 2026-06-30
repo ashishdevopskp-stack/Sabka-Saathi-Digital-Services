@@ -4,17 +4,132 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { cn } from "@/lib/cn";
-import { 
-  ShoppingBag, 
-  Heart, 
-  GraduationCap, 
-  Briefcase, 
-  Home as HomeIcon, 
-  Factory, 
-  Camera, 
-  Utensils, 
-  Globe 
+import {
+  ShoppingBag,
+  Heart,
+  GraduationCap,
+  Briefcase,
+  Home as HomeIcon,
+  Factory,
+  Camera,
+  Utensils,
+  Globe,
 } from "lucide-react";
+
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
+
+  .ind-section { font-family: 'DM Sans', sans-serif; }
+
+  /* ambient liquid blobs, same recipe as hero */
+  .ind-blob {
+    position: absolute; border-radius: 50%; pointer-events: none;
+    filter: blur(110px);
+    animation: indDrift 16s ease-in-out infinite;
+  }
+  @keyframes indDrift {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50%      { transform: translate(3%,-4%) scale(1.08); }
+  }
+
+  /* glass badge — identical construction to hr-badge */
+  .ind-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.55rem;
+    border-radius: 999px; padding: 0.42rem 1.2rem;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .ind-badge::before {
+    content: ''; position: absolute; inset: -1px; border-radius: 999px; padding: 1.4px;
+    background: linear-gradient(135deg,
+      rgba(255,255,255,0.80) 0%, rgba(255,107,53,0.55) 28%,
+      rgba(232,68,90,0.20) 52%, rgba(232,68,90,0.60) 76%, rgba(255,255,255,0.72) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    pointer-events: none;
+  }
+  .ind-badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #ff6b35; box-shadow: 0 0 8px rgba(255,107,53,0.7);
+    animation: dotPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes dotPulse {
+    0%,100% { box-shadow: 0 0 8px rgba(255,107,53,.7), 0 0 0 0 rgba(255,107,53,.3); }
+    50%     { box-shadow: 0 0 14px rgba(255,107,53,.9), 0 0 0 5px rgba(255,107,53,0); }
+  }
+
+  /* glass filter pills */
+  .ind-pill {
+    position: relative; font-family: 'DM Sans', sans-serif; font-weight: 500;
+    border-radius: 999px; padding: 0.55rem 1.3rem; font-size: 0.72rem;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    transition: transform 0.3s cubic-bezier(0.25,1,0.5,1), box-shadow 0.3s ease, color 0.3s ease;
+    cursor: pointer; border: 1px solid transparent;
+  }
+  .ind-pill.inactive {
+    color: rgba(29,29,31,0.55);
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  }
+  .ind-pill.inactive:hover {
+    color: #e8445a; transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(255,107,53,0.14);
+  }
+  .ind-pill.active {
+    color: #fff;
+    background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 38%, #e8445a 72%, #c0392b 100%);
+    box-shadow: 0 4px 18px rgba(232,68,90,0.30), inset 0 1px 0 rgba(255,255,255,0.25);
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  /* liquid glass card */
+  .ind-card {
+    position: relative; overflow: hidden;
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 4px 22px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.6);
+    transition: transform 0.4s cubic-bezier(0.25,1,0.5,1), box-shadow 0.4s ease, border-color 0.4s ease;
+  }
+  .ind-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,107,53,0.30);
+    box-shadow: 0 14px 34px rgba(232,68,90,0.12), inset 0 1px 0 rgba(255,255,255,0.7);
+  }
+  .ind-icon-wrap {
+    background: linear-gradient(135deg, rgba(255,140,66,0.16), rgba(232,68,90,0.16));
+    color: #e8445a;
+  }
+
+  .ind-accent {
+    background: linear-gradient(135deg, #ff8c42 0%, #e8445a 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .ind-cta {
+    position: relative; overflow: hidden;
+    font-family: 'DM Sans', sans-serif; font-weight: 500;
+    color: #fff; border-radius: 14px; padding: 0.9rem 2.2rem;
+    background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 38%, #e8445a 72%, #c0392b 100%);
+    box-shadow: 0 2px 12px rgba(232,68,90,0.28), inset 0 1px 0 rgba(255,255,255,0.22);
+    transition: transform 0.38s cubic-bezier(0.25,1,0.5,1), box-shadow 0.38s ease;
+  }
+  .ind-cta:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 26px rgba(232,68,90,0.32), inset 0 1px 0 rgba(255,255,255,0.26);
+  }
+
+  .ind-quote {
+    position: relative; overflow: hidden;
+    background: rgba(255,255,255,0.62);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,0.7);
+    box-shadow: 0 8px 30px rgba(232,68,90,0.08), inset 0 1px 0 rgba(255,255,255,0.7);
+  }
+`;
 
 const categoryIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   "Business & Retail": ShoppingBag,
@@ -24,7 +139,7 @@ const categoryIconMap: Record<string, React.ComponentType<{ className?: string }
   "Home & Local": HomeIcon,
   "Industrial": Factory,
   "Creative & Media": Camera,
-  "Food & Hospitality": Utensils
+  "Food & Hospitality": Utensils,
 };
 
 const categories = [
@@ -99,47 +214,62 @@ const industries = [
 export function IndustriesSection() {
   const [activeCategory, setActiveCategory] = useState("All");
 
-  const filteredIndustries = activeCategory === "All" 
-    ? industries 
-    : industries.filter(item => item.category === activeCategory);
+  const filteredIndustries =
+    activeCategory === "All"
+      ? industries
+      : industries.filter((item) => item.category === activeCategory);
 
   return (
-    <section className="py-24 relative overflow-hidden bg-slate-50/50 scroll-mt-48" id="industries">
-      <div className="absolute top-0 right-0 w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
-      
-      <div className="container mx-auto px-4">
+    <section
+      className="ind-section py-24 relative overflow-hidden bg-[#f2f2f4] scroll-mt-48"
+      id="industries"
+    >
+      <style dangerouslySetInnerHTML={{ __html: styles }} />
+
+      {/* Ambient liquid blobs, matching hero */}
+      <div
+        className="ind-blob"
+        style={{ width: 420, height: 420, top: "-8%", left: "-6%", background: "radial-gradient(circle, rgba(255,140,66,0.18), transparent 70%)" }}
+      />
+      <div
+        className="ind-blob"
+        style={{ width: 380, height: 380, bottom: "-10%", right: "-8%", background: "radial-gradient(circle, rgba(232,68,90,0.14), transparent 70%)", animationDelay: "2s" }}
+      />
+
+      <div className="absolute top-0 right-0 w-full h-px bg-gradient-to-r from-transparent via-black/[0.06] to-transparent" />
+
+      <div className="container mx-auto px-4 relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-600 text-[10px] font-black uppercase tracking-widest mb-4">
-              Our Footprint
+            <div className="ind-badge mb-5">
+              <span className="ind-badge-dot" />
+              <span className="relative z-10 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-700">
+                Our Footprint
+              </span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight ring-offset-orange-500">
-              Industries We <span className="text-orange-500 italic text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500 underline decoration-orange-200 decoration-8 underline-offset-4">Serve</span>
+            <h2 className="text-4xl md:text-5xl font-medium text-[#1d1d1f] mb-6 tracking-tight">
+              Industries We <span className="ind-accent font-semibold italic">Serve</span>
             </h2>
-            <p className="text-lg text-slate-600 font-medium">
-              We provide customized digital solutions for businesses across a wide range of industries. 
+            <p className="text-lg text-slate-500 font-normal leading-relaxed">
+              We provide customized digital solutions for businesses across a wide range of industries.
               From startups to established enterprises — we help you grow with the right technology.
             </p>
           </motion.div>
         </div>
 
-        {/* Category Tabs */}
-        <div className="flex flex-wrap justify-center gap-2 mb-12">
+        {/* Category Pills */}
+        <div className="flex flex-wrap justify-center gap-2.5 mb-12">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={cn(
-                "px-5 py-2 rounded-full text-xs font-bold transition-all duration-300 border uppercase tracking-wider",
-                activeCategory === cat
-                  ? "bg-slate-900 text-white border-slate-900 shadow-lg scale-105"
-                  : "bg-white text-slate-500 border-slate-200 hover:border-orange-500 hover:text-orange-500 shadow-sm"
-              )}
+              className={cn("ind-pill", activeCategory === cat ? "active" : "inactive")}
             >
               {cat}
             </button>
@@ -148,7 +278,7 @@ export function IndustriesSection() {
 
         {/* Industries Grid */}
         <div className="relative min-h-[400px]">
-          <motion.div 
+          <motion.div
             layout
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
           >
@@ -159,24 +289,24 @@ export function IndustriesSection() {
                   <motion.div
                     key={item.id}
                     layout
-                    initial={{ opacity: 0, scale: 0.9 }}
+                    initial={{ opacity: 0, scale: 0.92 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.2 }}
+                    exit={{ opacity: 0, scale: 0.92 }}
+                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    <Card className="p-5 h-full bg-white border border-slate-100/80 hover:border-orange-200 transition-all hover:shadow-lg hover:shadow-orange-500/5 group rounded-3xl">
+                    <Card className="ind-card p-5 h-full rounded-3xl border-0">
                       <div className="flex items-start gap-4">
-                        <div className="text-orange-600 bg-orange-50/70 w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 flex-shrink-0">
+                        <div className="ind-icon-wrap w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 flex-shrink-0">
                           <IconComponent className="w-5 h-5" />
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-bold text-slate-900 mb-1 group-hover:text-orange-600 transition-colors text-sm md:text-base">
+                          <h4 className="font-semibold text-[#1d1d1f] mb-1 text-sm md:text-base">
                             {item.title}
                           </h4>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mb-2">
+                          <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
                             {item.category}
                           </p>
-                          <p className="text-xs md:text-sm text-slate-500 leading-relaxed font-medium">
+                          <p className="text-xs md:text-sm text-slate-500 leading-relaxed font-normal">
                             {item.desc}
                           </p>
                         </div>
@@ -194,26 +324,27 @@ export function IndustriesSection() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-20 p-8 rounded-[3rem] bg-orange-50 border border-orange-100 flex flex-col md:flex-row items-center justify-between gap-8"
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="ind-quote mt-20 p-8 rounded-[3rem] flex flex-col md:flex-row items-center justify-between gap-8"
         >
           <div className="flex flex-col gap-2 text-center md:text-left">
-            <h3 className="text-xl md:text-2xl font-black text-slate-900 italic">
+            <h3 className="text-xl md:text-2xl font-medium text-[#1d1d1f] italic">
               &quot;Every business is unique — and we create solutions that fit your goals.&quot;
             </h3>
-            <p className="font-bold text-orange-600 flex items-center gap-2 justify-center md:justify-start">
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+            <p className="font-semibold text-[#e8445a] flex items-center gap-2 justify-center md:justify-start">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#ff6b35] animate-pulse" />
               Serving Local Shops, Startups & Large Enterprises
             </p>
           </div>
           <div className="flex flex-col gap-3 min-w-[200px]">
-            <a href="#contact" className="px-8 py-4 bg-orange-500 text-white rounded-2xl font-black text-center shadow-lg shadow-orange-500/30 hover:bg-orange-600 transition-all active:scale-95">
+            <a href="#contact" className="ind-cta text-center">
               Launch Online →
             </a>
           </div>
         </motion.div>
       </div>
-      
-      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+
+      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-black/[0.06] to-transparent" />
     </section>
   );
 }

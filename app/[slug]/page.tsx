@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { InteractiveBackground } from "@/components/InteractiveBackground";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/LiquidButton";
 import { Card } from "@/components/ui/Card";
 import Link from "next/link";
 import { 

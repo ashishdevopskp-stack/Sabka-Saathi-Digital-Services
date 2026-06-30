@@ -2,45 +2,114 @@
 
 import { motion } from "framer-motion";
 
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
+
+  .sh-section { font-family: 'DM Sans', sans-serif; }
+
+  .sh-panel {
+    position: relative; overflow: hidden;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 24px 60px rgba(29,29,31,0.07);
+  }
+  .sh-panel::before {
+    content: ''; position: absolute; inset: -1px; z-index: 0; border-radius: inherit; padding: 1px;
+    background: linear-gradient(140deg,
+      rgba(255,255,255,0.85) 0%, rgba(255,160,90,0.34) 24%,
+      rgba(240,80,80,0.10) 50%, rgba(232,68,90,0.30) 78%, rgba(255,255,255,0.7) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .sh-blob {
+    position: absolute; z-index: 0; pointer-events: none; filter: blur(70px);
+    background: linear-gradient(135deg, rgba(255,140,66,0.22), rgba(232,68,90,0.16));
+    animation: shMorph 17s ease-in-out infinite;
+  }
+  .sh-blob-a { top: -16%; left: 10%; width: 50%; height: 70%; }
+  .sh-blob-b {
+    bottom: -20%; right: 6%; width: 36%; height: 60%;
+    background: linear-gradient(135deg, rgba(232,68,90,0.14), rgba(255,140,66,0.18));
+    animation-duration: 21s;
+  }
+  @keyframes shMorph {
+    0%, 100% { border-radius: 42% 58% 65% 35% / 45% 40% 60% 55%; transform: scale(1) rotate(0deg); }
+    50%      { border-radius: 58% 42% 38% 62% / 60% 55% 45% 40%; transform: scale(1.08) rotate(8deg); }
+  }
+  @media (prefers-reduced-motion: reduce) { .sh-blob { animation: none; } }
+
+  .sh-eyebrow {
+    position: relative;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    color: rgba(29,29,31,0.6);
+  }
+  .sh-eyebrow::before {
+    content: ''; position: absolute; inset: 0; z-index: -1; border-radius: 999px; padding: 1px;
+    background: linear-gradient(135deg,
+      rgba(255,255,255,0.80) 0%, rgba(255,107,53,0.45) 30%,
+      rgba(232,68,90,0.18) 55%, rgba(232,68,90,0.50) 80%, rgba(255,255,255,0.70) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+  .sh-eyebrow-dot {
+    background: #ff6b35; box-shadow: 0 0 8px rgba(255,107,53,0.7);
+    animation: shDotPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes shDotPulse {
+    0%,100% { box-shadow: 0 0 6px rgba(255,107,53,.7), 0 0 0 0 rgba(255,107,53,.3); }
+    50%     { box-shadow: 0 0 12px rgba(255,107,53,.9), 0 0 0 4px rgba(255,107,53,0); }
+  }
+
+  .sh-title { color: #1d1d1f; letter-spacing: -0.03em; }
+  .sh-title em {
+    font-style: normal;
+    background: linear-gradient(135deg, #ff8c42 0%, #e8445a 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  .sh-desc { color: rgba(29,29,31,0.52); }
+`;
+
 export function ServicesHero() {
   return (
-    <section className="relative overflow-hidden pt-8 pb-4 md:pt-12 max-w-5xl mx-auto px-4 z-10">
-      <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/45 px-6 py-12 md:py-16 text-center shadow-[0_20px_50px_rgba(39,83,166,0.04)] backdrop-blur-xl">
-        {/* Subtle background mesh dot patterns */}
-        <div 
-          className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-          style={{
-            backgroundImage: "radial-gradient(#ff9500 1px, transparent 1px)",
-            backgroundSize: "24px 24px"
-          }} 
-        />
-        {/* Soft background glow blobs */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-orange-400/5 blur-[100px] rounded-full pointer-events-none -z-10" />
+    <section className="sh-section relative overflow-hidden pt-8 pb-4 md:pt-12 max-w-5xl mx-auto px-4 z-10">
+      <style dangerouslySetInnerHTML={{ __html: styles }} />
+
+      <div className="sh-panel relative rounded-[2rem] px-6 py-12 md:py-16 text-center">
+        <div className="sh-blob sh-blob-a" aria-hidden="true" />
+        <div className="sh-blob sh-blob-b" aria-hidden="true" />
 
         <div className="relative z-10 flex flex-col items-center gap-5">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 text-[10px] font-black uppercase tracking-widest"
+            className="sh-eyebrow inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-medium uppercase tracking-[0.18em]"
           >
+            <span className="sh-eyebrow-dot w-1.5 h-1.5 rounded-full flex-shrink-0" />
             Capabilities
           </motion.div>
-          
+
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.7 }}
-            className="text-3xl sm:text-5xl md:text-7.5xl font-black text-slate-955 tracking-tight leading-tight"
+            className="sh-title text-3xl sm:text-5xl md:text-7xl font-semibold tracking-tight leading-tight"
           >
-            Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500 italic">Expertise</span>
+            Our <em>Expertise</em>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.7 }}
-            className="text-xs sm:text-sm md:text-lg leading-relaxed text-slate-600 font-medium max-w-xl mx-auto px-2"
+            className="sh-desc text-xs sm:text-sm md:text-lg leading-relaxed font-normal max-w-xl mx-auto px-2"
           >
             High-performance digital products built with modern stacks to drive real-world business outcomes.
           </motion.p>

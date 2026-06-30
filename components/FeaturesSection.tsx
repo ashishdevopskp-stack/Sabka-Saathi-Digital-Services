@@ -1,195 +1,335 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Card } from "@/components/ui/Card";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Scale, MapPin, Globe, Building2 } from "lucide-react";
+import {
+  Scale,
+  MapPin,
+  Globe,
+  Building2,
+  Smartphone,
+  Cloud,
+  Gem,
+  Settings,
+  Zap,
+  ArrowUpRight,
+} from "lucide-react";
+
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
+
+  .ft-wrap { position: relative; overflow: hidden; background: #f2f2f4; padding: clamp(4rem, 9vw, 8rem) clamp(1.25rem, 4vw, 3rem); }
+
+  .ft-grain {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.02;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+  .ft-glow-a { position: absolute; top: -8%; left: -10%; z-index: 0; pointer-events: none; width: 38vw; height: 38vw; max-width: 520px; max-height: 520px; border-radius: 50%; background: radial-gradient(circle, rgba(255,107,53,0.09) 0%, transparent 70%); filter: blur(8px); }
+  .ft-glow-b { position: absolute; bottom: -10%; right: -8%; z-index: 0; pointer-events: none; width: 34vw; height: 34vw; max-width: 480px; max-height: 480px; border-radius: 50%; background: radial-gradient(circle, rgba(232,68,90,0.08) 0%, transparent 70%); filter: blur(8px); }
+
+  .ft-inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; }
+
+  /* ── Header ───────────────────────────────────────────── */
+  .ft-head { text-align: center; margin-bottom: clamp(2.8rem, 5.5vw, 4.4rem); display: flex; flex-direction: column; align-items: center; }
+
+  .ft-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.6rem;
+    border-radius: 999px; padding: 0.44rem 1.25rem 0.44rem 0.9rem;
+    background: rgba(255,255,255,0.76); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    color: rgba(0,0,0,0.56); font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 400;
+    margin-bottom: 1.5rem; box-shadow: 0 2px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    opacity: 0; transform: translateY(14px) scale(0.94);
+    transition: opacity 0.72s cubic-bezier(0.16,1,0.3,1), transform 0.72s cubic-bezier(0.16,1,0.3,1);
+  }
+  .ft-badge.show { opacity: 1; transform: translateY(0) scale(1); }
+  .ft-badge::before {
+    content: ''; position: absolute; inset: -1px; border-radius: 999px; padding: 1.5px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(255,107,53,0.55) 28%, rgba(232,68,90,0.20) 52%, rgba(232,68,90,0.60) 76%, rgba(255,255,255,0.72) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+  }
+  .ft-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ff6b35; box-shadow: 0 0 8px rgba(255,107,53,0.70); flex-shrink: 0; animation: ftDotPulse 2.4s ease-in-out infinite; }
+  @keyframes ftDotPulse { 0%,100% { box-shadow: 0 0 8px rgba(255,107,53,.7), 0 0 0 0 rgba(255,107,53,.3); } 50% { box-shadow: 0 0 14px rgba(255,107,53,.9), 0 0 0 5px rgba(255,107,53,0); } }
+
+  .ft-title-wrap { perspective: 800px; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.18em 0.26em; max-width: 760px; margin-bottom: 1rem; }
+  .ft-title-word {
+    font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: clamp(2rem, 4.6vw, 3.4rem);
+    color: #1d1d1f; letter-spacing: -0.02em; line-height: 1.1; display: inline-block;
+    opacity: 0; transform: translateY(36px) rotateX(-18deg); transform-origin: 50% 100%;
+    transition: opacity 0.78s cubic-bezier(0.16,1,0.3,1), transform 0.78s cubic-bezier(0.16,1,0.3,1);
+  }
+  .ft-title-word.show { opacity: 1; transform: translateY(0) rotateX(0deg); }
+  .ft-title-word.accent { background: linear-gradient(135deg, #ff8c42 0%, #e8445a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-style: italic; }
+
+  .ft-sub { max-width: 560px; font-family: 'DM Sans', sans-serif; font-weight: 400; font-size: clamp(0.88rem, 1.2vw, 1rem); color: rgba(29,29,31,0.50); line-height: 1.7; opacity: 0; transform: translateY(16px); transition: opacity 0.8s ease 0.1s, transform 0.8s ease 0.1s; }
+  .ft-sub.show { opacity: 1; transform: translateY(0); }
+
+  /* ── Glass / liquid card primitives ──────────────────────── */
+  .ft-card {
+    position: relative; border-radius: 28px;
+    background: rgba(255,255,255,0.62);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.5);
+    transition: transform 0.5s cubic-bezier(0.16,1,0.3,1), box-shadow 0.5s ease, background 0.5s ease;
+  }
+  .ft-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.82); box-shadow: 0 16px 40px rgba(255,107,53,0.08), 0 4px 12px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.7); }
+
+  .ft-reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.75s cubic-bezier(0.16,1,0.3,1), transform 0.75s cubic-bezier(0.16,1,0.3,1); }
+  .ft-reveal.show { opacity: 1; transform: translateY(0); }
+
+  /* ── Bento grid ───────────────────────────────────────────── */
+  .ft-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: clamp(1rem, 2vw, 1.6rem); margin-bottom: clamp(5rem, 9vw, 7.5rem); }
+  .ft-span-4 { grid-column: span 6; } .ft-span-2 { grid-column: span 6; }
+  @media (min-width: 1024px) { .ft-span-4 { grid-column: span 4; } .ft-span-2 { grid-column: span 2; } .ft-span-3 { grid-column: span 3; } }
+  .ft-span-3 { grid-column: span 6; }
+
+  .ft-card-pad { padding: clamp(1.5rem, 2.6vw, 2.1rem); height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+
+  .ft-icon-pill { width: 36px; height: 36px; border-radius: 12px; background: linear-gradient(135deg, rgba(255,107,53,0.12) 0%, rgba(232,68,90,0.10) 100%); color: #e8445a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ft-card-title { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 1.08rem; color: #1d1d1f; letter-spacing: -0.01em; }
+
+  /* ── iOS-style liquid pill buttons (location chips) ──────────── */
+  .ft-pill-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+  @media (min-width: 640px) { .ft-pill-grid { grid-template-columns: repeat(4, 1fr); } }
+
+  .ft-pill {
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column; justify-content: center; gap: 0.1rem;
+    padding: 0.7rem 0.85rem; border-radius: 16px;
+    font-family: 'DM Sans', sans-serif; text-decoration: none;
+    background: rgba(255,255,255,0.55); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.7);
+    transition: transform 0.4s cubic-bezier(0.25,1,0.5,1), box-shadow 0.4s ease, background 0.4s ease;
+  }
+  .ft-pill:hover { transform: translateY(-2px) scale(1.02); background: rgba(255,255,255,0.85); box-shadow: 0 8px 18px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8); }
+  .ft-pill:active { transform: scale(0.97); }
+  .ft-pill-name { font-size: 0.72rem; font-weight: 700; color: #1d1d1f; line-height: 1.25; }
+  .ft-pill-sub { font-size: 0.56rem; font-weight: 600; color: rgba(0,0,0,0.34); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .ft-pill.main {
+    background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 38%, #e8445a 72%, #c0392b 100%);
+    border-color: transparent; box-shadow: 0 4px 16px rgba(232,68,90,0.30), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .ft-pill.main .ft-pill-name { color: #fff; }
+  .ft-pill.main .ft-pill-sub { color: rgba(255,255,255,0.78); }
+  .ft-pill.main:hover { box-shadow: 0 10px 26px rgba(232,68,90,0.36), inset 0 1px 0 rgba(255,255,255,0.3); }
+
+  .ft-pill.disabled { opacity: 0.42; cursor: not-allowed; pointer-events: none; }
+  .ft-pill.disabled .ft-pill-name { color: rgba(0,0,0,0.42); }
+
+  .ft-pill-ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.4); transform: scale(0); pointer-events: none; animation: ftPillRipple 0.5s ease-out forwards; }
+  .ft-pill.main .ft-pill-ripple { background: rgba(255,255,255,0.3); }
+  @keyframes ftPillRipple { to { transform: scale(4); opacity: 0; } }
+
+  /* ── Registration & address mini-stats ───────────────────────── */
+  .ft-statlabel { font-family: 'DM Sans', sans-serif; font-size: 0.62rem; font-weight: 600; color: rgba(0,0,0,0.36); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.2rem; }
+  .ft-statval { font-family: 'DM Sans', sans-serif; font-size: 0.84rem; font-weight: 700; color: #1d1d1f; }
+  .ft-gst { font-family: 'DM Sans', monospace; font-weight: 700; font-size: 1.05rem; letter-spacing: -0.02em; background: linear-gradient(135deg, #ff6b35 0%, #e8445a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  .ft-livedot { width: 6px; height: 6px; border-radius: 50%; background: #2ecc71; box-shadow: 0 0 6px rgba(46,204,113,0.7); animation: ftLive 2s ease-in-out infinite; }
+  @keyframes ftLive { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* ── Divider header for expertise block ───────────────────── */
+  .ft-divider-wrap { text-align: center; padding: 2.4rem 0; margin-bottom: clamp(2.4rem, 4vw, 3.2rem); position: relative; }
+  .ft-divider-line { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,107,53,0.4), rgba(232,68,90,0.4), transparent); transition: width 1.2s cubic-bezier(0.16,1,0.3,1); }
+  .ft-divider-wrap.show .ft-divider-line { width: 280px; }
+  .ft-divider-line.bottom { position: absolute; left: 50%; bottom: 0; top: auto; transform: translateX(-50%); }
+
+  /* ── Expertise grid cards ─────────────────────────────────── */
+  .ft-exp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(0.85rem, 1.6vw, 1.2rem); }
+  @media (min-width: 768px) { .ft-exp-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1100px) { .ft-exp-grid { grid-template-columns: repeat(6, 1fr); } }
+
+  .ft-exp-card {
+    position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;
+    border-radius: 22px; padding: clamp(1.2rem, 2vw, 1.5rem);
+    background: rgba(255,255,255,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.55);
+    box-shadow: 0 3px 14px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6);
+    text-decoration: none; height: 100%;
+    transition: transform 0.5s cubic-bezier(0.16,1,0.3,1), box-shadow 0.5s ease, background 0.5s ease;
+  }
+  .ft-exp-card:hover {
+    transform: translateY(-5px) scale(1.012);
+    background: rgba(255,255,255,0.9);
+    box-shadow: 0 18px 38px rgba(255,107,53,0.12), 0 4px 14px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.75);
+  }
+
+  .ft-exp-icon {
+    width: 46px; height: 46px; border-radius: 16px;
+    background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 38%, #e8445a 100%);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 20px rgba(232,68,90,0.20), inset 0 1px 0 rgba(255,255,255,0.25);
+    transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
+  }
+  .ft-exp-card:hover .ft-exp-icon { transform: scale(1.08) rotate(8deg); }
+
+  .ft-exp-title { font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 0.92rem; color: #1d1d1f; letter-spacing: -0.01em; line-height: 1.3; margin-top: 1rem; }
+  .ft-exp-desc { font-family: 'DM Sans', sans-serif; font-weight: 400; font-size: 0.74rem; color: rgba(29,29,31,0.52); line-height: 1.55; margin-top: 0.5rem; }
+
+  .ft-exp-link { display: flex; align-items: center; gap: 0.35rem; margin-top: 1.1rem; }
+  .ft-exp-link-line { height: 2px; border-radius: 2px; width: 18px; background: linear-gradient(90deg, #ff8c42, #e8445a); transition: width 0.45s cubic-bezier(0.16,1,0.3,1); }
+  .ft-exp-card:hover .ft-exp-link-line { width: 32px; }
+  .ft-exp-link-text { font-family: 'DM Sans', sans-serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(0,0,0,0.34); transition: color 0.4s ease; }
+  .ft-exp-card:hover .ft-exp-link-text { color: #e8445a; }
+  .ft-exp-arrow { margin-left: auto; color: rgba(0,0,0,0.22); transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), color 0.4s ease; }
+  .ft-exp-card:hover .ft-exp-arrow { transform: translate(2px,-2px); color: #e8445a; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+`;
+
+/* ══════════════════════════════════════════════
+   Reveal hook — IntersectionObserver, fires once
+══════════════════════════════════════════════ */
+function useReveal<T extends HTMLElement>(threshold = 0.15) {
+  const ref = useRef<T>(null);
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setShow(true); obs.disconnect(); } },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return { ref, show };
+}
+
+function pillRipple(e: React.MouseEvent<HTMLElement>) {
+  const el = e.currentTarget;
+  const r = el.getBoundingClientRect();
+  const ripple = document.createElement("span");
+  ripple.className = "ft-pill-ripple";
+  const size = Math.max(r.width, r.height);
+  ripple.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - r.left - size / 2}px;top:${e.clientY - r.top - size / 2}px`;
+  el.appendChild(ripple);
+  ripple.addEventListener("animationend", () => ripple.remove());
+}
+
+const TITLE_WORDS = ["About", "Our", "Company"];
+const ACCENT_INDEX = 2;
 
 const features = [
-  {
-    icon: "🌐",
-    title: "Web Development",
-    description: "Modern, responsive web applications built with React & Next.js. We focus on scalability and world-class UX.",
-    gradient: "from-blue-600 to-indigo-500",
-    span: "lg:col-span-2",
-    glow: "blue",
-    slug: "web-development"
-  },
-  {
-    icon: "📱",
-    title: "Mobile App Development",
-    description: "Native and cross-platform mobile apps for iOS and Android.",
-    gradient: "from-rose-500 to-orange-500",
-    span: "lg:col-span-2",
-    glow: "rose",
-    slug: "mobile-app"
-  },
-  {
-    icon: "☁️",
-    title: "Cloud Solutions",
-    description: "Scalable infrastructure and cloud-native services.",
-    gradient: "from-emerald-500 to-teal-400",
-    span: "lg:col-span-2",
-    glow: "emerald",
-    slug: "cloud-solutions"
-  },
-  {
-    icon: "💎",
-    title: "Premium Hosting",
-    description: "1 year of high-performance hosting zero cost.",
-    gradient: "from-violet-600 to-purple-500",
-    span: "lg:col-span-2",
-    glow: "violet",
-    slug: "hosting"
-  },
-  {
-    icon: "⚙️",
-    title: "Maintenance",
-    description: "1 year of complimentary maintenance.",
-    gradient: "from-amber-500 to-orange-400",
-    span: "lg:col-span-2",
-    glow: "amber",
-    slug: "maintenance"
-  },
-  {
-    icon: "⚡",
-    title: "Ultra-Fast Delivery",
-    description: "Experience rapid development cycles and on-time delivery for every project milestone.",
-    gradient: "from-sky-500 to-blue-400",
-    span: "lg:col-span-2",
-    glow: "sky",
-    slug: "delivery"
-  },
+  { icon: Globe, title: "Web Development", description: "Modern, responsive web applications built with React & Next.js, focused on scalability and world-class UX.", slug: "web-development" },
+  { icon: Smartphone, title: "Mobile Apps", description: "Native and cross-platform mobile apps for iOS and Android.", slug: "mobile-app" },
+  { icon: Cloud, title: "Cloud Solutions", description: "Scalable infrastructure and cloud-native services.", slug: "cloud-solutions" },
+  { icon: Gem, title: "Premium Hosting", description: "1 year of high-performance hosting at zero cost.", slug: "hosting" },
+  { icon: Settings, title: "Maintenance", description: "1 year of complimentary maintenance.", slug: "maintenance" },
+  { icon: Zap, title: "Ultra-Fast Delivery", description: "Rapid development cycles and on-time delivery for every project milestone.", slug: "delivery" },
+];
+
+const branches = [
+  { name: "Bihar", slug: "bihar", isMain: true },
+  { name: "Gujarat", slug: "gujarat" },
+  { name: "Maharashtra", slug: "maharashtra" },
+  { name: "Uttar Pradesh" },
+  { name: "Haryana" },
+  { name: "Uttarakhand" },
+  { name: "Madhya Pradesh" },
+  { name: "Delhi" },
+  { name: "Goa" },
+  { name: "Jharkhand" },
+  { name: "Chattisgarh" },
+  { name: "Rajasthan" },
+  { name: "West Bengal" },
 ];
 
 export function FeaturesSection() {
-  const branches = [
-    { name: "Bihar", slug: "bihar", cities: "Patna, Gaya, Biharsharif, Lakhisarai, Sheikhpura, Nawada, Warsaliganj, Nalanda, Munger, Jamui", isMain: true },
-    { name: "Gujarat", slug: "gujarat", cities: "Gandhinagar, Surat, Ahmedabad" },
-    { name: "Uttar Pradesh" },
-    { name: "Haryana", cities: "Gurugram etc" },
-    { name: "Uttarakhand" },
-    { name: "Madhya Pradesh" },
-    { name: "Maharashtra", slug: "maharashtra" },
-    { name: "Delhi" },
-    { name: "Goa" },
-    { name: "Jharkhand", cities: "Tata, Jamshedpur etc" },
-    { name: "Chattisgarh" },
-    { name: "Rajasthan", cities: "Jaipur etc" },
-    { name: "West Bengal", cities: "Kolkata etc" },
-  ];
+  const head = useReveal<HTMLDivElement>();
+  const branchCard = useReveal<HTMLDivElement>();
+  const gstCard = useReveal<HTMLDivElement>(0.2);
+  const principalCard = useReveal<HTMLDivElement>(0.2);
+  const regionalCard = useReveal<HTMLDivElement>(0.2);
+  const divider = useReveal<HTMLDivElement>(0.3);
 
   return (
-    <section id="features" className="py-16 md:py-24 bg-slate-50/50 relative overflow-hidden">
-      {/* Ambient Lighting Orbs */}
-      <div className="absolute top-0 -left-1/4 w-1/2 h-1/2 bg-orange-500/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 -right-1/4 w-1/2 h-1/2 bg-rose-500/5 blur-[120px] rounded-full pointer-events-none" />
-      
-      <div className="container mx-auto max-w-7xl px-4 relative z-10">
-        {/* About Company Heading */}
-        <div className="mx-auto max-w-3xl text-center mb-16 md:mb-20">
-          <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/10 px-4 py-1.5 border border-orange-500/20 mb-6 backdrop-blur-sm">
-             <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
-             <span className="text-[10px] font-bold text-orange-600 uppercase tracking-widest">Corporate Identity</span>
+    <section id="features" className="ft-wrap">
+      <style dangerouslySetInnerHTML={{ __html: styles }} />
+      <div className="ft-grain" aria-hidden="true" />
+      <div className="ft-glow-a" aria-hidden="true" />
+      <div className="ft-glow-b" aria-hidden="true" />
+
+      <div className="ft-inner">
+        {/* Header */}
+        <div className="ft-head" ref={head.ref}>
+          <div className={`ft-badge${head.show ? " show" : ""}`}>
+            <span className="ft-badge-dot" />
+            <span>Corporate Identity</span>
           </div>
-          <h2 className="text-4xl font-bold text-slate-900 md:text-5xl flex flex-col gap-2 tracking-tight">
-            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500 italic">Our Company</span>
-          </h2>
-          <p className="mt-4 text-slate-600 font-medium text-sm md:text-base leading-relaxed">
-            A GST registered agency committed to delivering premium digital solutions 
-            across India with verified legal and administrative transparency.
+          <div className="ft-title-wrap" role="heading" aria-level={2}>
+            {TITLE_WORDS.map((word, i) => (
+              <span key={i} className={`ft-title-word${head.show ? " show" : ""}${i === ACCENT_INDEX ? " accent" : ""}`} style={{ transitionDelay: `${i * 0.07}s` }}>
+                {word}
+              </span>
+            ))}
+          </div>
+          <p className={`ft-sub${head.show ? " show" : ""}`}>
+            A GST registered agency committed to delivering premium digital solutions across India with verified legal and administrative transparency.
           </p>
         </div>
 
-        {/* Main Info Grid - Bento grid layout balancing widths & heights */}
-        <div className="grid grid-cols-1 lg:grid-cols-6 gap-6 lg:gap-8 items-stretch">
-          
-          {/* Row 1, Card 1: Branch Network (Bordered Glass, spans 4 columns) */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="lg:col-span-4 bg-white/70 border border-slate-200/50 rounded-[2rem] p-6 md:p-8 backdrop-blur-xl shadow-lg shadow-slate-100/50 hover:shadow-orange-500/5 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
-          >
-            <div>
-              <div className="mb-6 flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600">
-                  <Globe className="w-4.5 h-4.5" />
-                </div>
-                <h3 className="text-xl font-black text-slate-900 tracking-tight">Our Strategic Locations</h3>
+        {/* Main info grid */}
+        <div className="ft-grid">
+
+          {/* Branch network */}
+          <div className={`ft-span-4 ft-reveal${branchCard.show ? " show" : ""}`} ref={branchCard.ref}>
+            <div className="ft-card ft-card-pad">
+              <div style={{ marginBottom: "1.4rem", display: "flex", alignItems: "center", gap: "0.65rem" }}>
+                <span className="ft-icon-pill"><Globe size={17} strokeWidth={2.2} /></span>
+                <span className="ft-card-title">Our Strategic Locations</span>
               </div>
-  
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {branches.map((branch) => (
+              <div className="ft-pill-grid">
+                {branches.map((branch) =>
                   branch.slug ? (
-                    <Link
-                      key={branch.name}
-                      href={`/location/${branch.slug}`}
-                      className={`flex flex-col justify-center p-3 rounded-xl border transition-all duration-300 ${
-                        branch.isMain 
-                          ? "bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/25 hover:bg-orange-600" 
-                          : "bg-slate-50 text-slate-700 border-slate-200/60 hover:border-orange-500/50 hover:bg-white hover:shadow-md"
-                      }`}
-                    >
-                      <span className={`${branch.isMain ? "text-xs font-black" : "text-[10px] font-bold"} leading-tight`}>{branch.name}</span>
-                      {branch.isMain && (
-                        <span className="mt-0.5 text-[7px] text-orange-100 uppercase font-black tracking-wider">Main Hub</span>
-                      )}
+                    <Link key={branch.name} href={`/location/${branch.slug}`} onClick={pillRipple} className={`ft-pill${branch.isMain ? " main" : ""}`}>
+                      <span className="ft-pill-name">{branch.name}</span>
+                      {branch.isMain && <span className="ft-pill-sub">Main Hub</span>}
                     </Link>
                   ) : (
-                    <div
-                      key={branch.name}
-                      className="flex flex-col justify-center p-3 rounded-xl border bg-slate-50/40 text-slate-400 border-slate-100 cursor-not-allowed opacity-50"
-                    >
-                      <span className="text-[10px] font-bold leading-tight">{branch.name}</span>
+                    <div key={branch.name} className="ft-pill disabled">
+                      <span className="ft-pill-name">{branch.name}</span>
                     </div>
                   )
-                ))}
+                )}
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Row 1, Card 2: Official Registration Card (spans 2 columns) */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="lg:col-span-2"
-          >
-            <Card className="rounded-[2rem] p-6 md:p-8 shadow-lg shadow-slate-100/50 border-slate-200/50 bg-white/70 backdrop-blur-2xl relative overflow-hidden group hover:shadow-orange-500/5 hover:-translate-y-1 transition-all duration-300 h-full flex flex-col justify-between">
-              <div className="absolute right-6 top-6 h-10 w-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center transition-all group-hover:scale-110 group-hover:rotate-12">
-                <Scale className="w-5 h-5" />
-              </div>
+          {/* GST registration */}
+          <div className={`ft-span-2 ft-reveal${gstCard.show ? " show" : ""}`} ref={gstCard.ref}>
+            <div className="ft-card ft-card-pad">
               <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-emerald-600">Verified Legal Info</p>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <span className="ft-livedot" />
+                    <span className="ft-statlabel" style={{ marginBottom: 0, color: "#2ecc71" }}>Verified Legal Info</span>
+                  </div>
+                  <span className="ft-icon-pill"><Scale size={16} strokeWidth={2.2} /></span>
                 </div>
-                <h4 className="text-lg font-black text-slate-900 leading-tight">Official Registration</h4>
+                <span className="ft-card-title">Official Registration</span>
               </div>
-              <div className="mt-6">
-                 <p className="text-[9px] font-black text-slate-450 uppercase tracking-widest mb-1">GST Identification Number</p>
-                 <p className="text-base font-mono font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500 tracking-tighter">10LAHPK8872L1Z3</p>
+              <div style={{ marginTop: "1.6rem" }}>
+                <p className="ft-statlabel">GST Identification Number</p>
+                <p className="ft-gst">10LAHPK8872L1Z3</p>
               </div>
-            </Card>
-          </motion.div>
+            </div>
+          </div>
 
-          {/* Row 2, Card 1: Principal Place of Business (spans 3 columns) */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="lg:col-span-3"
-          >
-            <Card className="rounded-[2rem] p-6 md:p-8 shadow-lg shadow-slate-100/50 border-slate-200/50 bg-white/70 backdrop-blur-2xl group hover:shadow-orange-500/5 hover:-translate-y-1 transition-all duration-300 h-full flex flex-col justify-between">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600 group-hover:rotate-12 transition-transform">
-                  <Building2 className="w-4.5 h-4.5" />
-                </div>
-                <h4 className="text-lg font-black text-slate-900 leading-tight">Principal Place of Business</h4>
+          {/* Principal place */}
+          <div className={`ft-span-3 ft-reveal${principalCard.show ? " show" : ""}`} ref={principalCard.ref}>
+            <div className="ft-card ft-card-pad">
+              <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", marginBottom: "1.4rem" }}>
+                <span className="ft-icon-pill"><Building2 size={17} strokeWidth={2.2} /></span>
+                <span className="ft-card-title">Principal Place of Business</span>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                 {[
                   { label: "Building No.", val: "0241" },
                   { label: "Street", val: "Bypass Road" },
@@ -197,105 +337,87 @@ export function FeaturesSection() {
                   { label: "District", val: "Sheikhpura" },
                   { label: "State", val: "Bihar" },
                 ].map((item) => (
-                  <div key={item.label} className={item.span ? "col-span-2" : ""}>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-0.5">{item.label}</p>
-                    <p className="text-xs font-bold text-slate-700">{item.val}</p>
+                  <div key={item.label} style={item.span ? { gridColumn: "span 2" } : undefined}>
+                    <p className="ft-statlabel">{item.label}</p>
+                    <p className="ft-statval">{item.val}</p>
                   </div>
                 ))}
               </div>
-            </Card>
-          </motion.div>
+            </div>
+          </div>
 
-          {/* Row 2, Card 2: Regional Office: Gujarat (spans 3 columns) */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="lg:col-span-3"
-          >
-            <Card className="rounded-[2rem] p-6 md:p-8 shadow-lg shadow-slate-100/50 border-slate-200/50 bg-white/70 backdrop-blur-2xl group hover:shadow-orange-500/5 hover:-translate-y-1 transition-all duration-300 h-full flex flex-col justify-between">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 group-hover:rotate-12 transition-transform">
-                  <MapPin className="w-4.5 h-4.5" />
-                </div>
-                <h4 className="text-lg font-black text-slate-900 leading-tight">Regional Office</h4>
+          {/* Regional office */}
+          <div className={`ft-span-3 ft-reveal${regionalCard.show ? " show" : ""}`} ref={regionalCard.ref}>
+            <div className="ft-card ft-card-pad">
+              <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", marginBottom: "1.4rem" }}>
+                <span className="ft-icon-pill"><MapPin size={17} strokeWidth={2.2} /></span>
+                <span className="ft-card-title">Regional Office</span>
               </div>
-              
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-0.5">Locality</p>
-                  <p className="text-xs font-bold text-slate-700">Akshardham</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="ft-statlabel">Locality</p>
+                <p className="ft-statval" style={{ marginBottom: "1rem" }}>Akshardham</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                   <div>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-0.5">City</p>
-                    <p className="text-xs font-bold text-slate-700">Bhavnagar</p>
+                    <p className="ft-statlabel">City</p>
+                    <p className="ft-statval">Bhavnagar</p>
                   </div>
                   <div>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-0.5">State</p>
-                    <p className="text-xs font-bold text-slate-700">Gujarat</p>
+                    <p className="ft-statlabel">State</p>
+                    <p className="ft-statval">Gujarat</p>
                   </div>
                 </div>
               </div>
-            </Card>
-          </motion.div>
-
+            </div>
+          </div>
         </div>
 
-        {/* Bento Grid Expertise Section */}
-        <div className="mt-32 lg:mt-48 scroll-mt-32" id="expertise">
-          <div className="mx-auto max-w-4xl text-center mb-12 border-y border-orange-500/20 py-10 backdrop-blur-sm">
-            <h2 className="text-3xl font-bold text-slate-900 md:text-5xl leading-tight tracking-tight">
-              Design <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-rose-500 to-orange-500 italic">Redefined.</span>
-            </h2>
-          </div>
+        {/* Expertise divider */}
+        <div className={`ft-divider-wrap${divider.show ? " show" : ""}`} ref={divider.ref}>
+          <span className="ft-divider-line top" />
+          <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: "clamp(1.8rem, 4vw, 3rem)", color: "#1d1d1f", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+            Design{" "}
+            <span style={{ background: "linear-gradient(135deg, #ff8c42 0%, #e8445a 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", fontStyle: "italic" }}>
+              Redefined.
+            </span>
+          </h2>
+          <span className="ft-divider-line bottom" />
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 lg:gap-4 items-stretch">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1, duration: 0.6 }}
-                className="h-full"
-              >
-                <Link
-                  href={`/expertise/${feature.slug}`}
-                  className="group relative overflow-hidden bg-white/70 border border-white/60 backdrop-blur-xl rounded-[1.5rem] transition-all duration-500 hover:bg-white hover:shadow-xl hover:shadow-orange-500/5 h-full flex flex-col"
-                >
-                  {/* Neon Ambient Glow */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500`} />
-                  
-                  <div className="flex-1 w-full p-6 lg:p-5 flex flex-col justify-between relative z-10 h-full">
-                    <div className="flex flex-col">
-                      <div className={`inline-flex h-12 w-12 items-center justify-center rounded-[1.2rem] bg-gradient-to-br ${feature.gradient} text-xl text-white shadow-[0_10px_30px_rgba(249,115,22,0.15)] group-hover:scale-110 group-hover:rotate-12 transition-all duration-500`}>
-                        {feature.icon}
-                      </div>
-                      
-                      <h3 className="mt-5 text-lg lg:text-[0.9rem] font-black text-slate-900 leading-[1.3]">
-                        {feature.title}
-                      </h3>
-                    </div>
-
-                    <div className="mt-auto pt-5">
-                       <p className="text-xs lg:text-[0.65rem] text-slate-500 leading-relaxed font-semibold">
-                          {feature.description}
-                       </p>
-
-                        <div className="mt-6 flex items-center gap-3 group-hover:gap-4 transition-all duration-500">
-                          <div className={`h-[2px] rounded-full bg-gradient-to-r ${feature.gradient} w-10 lg:w-4 group-hover:w-20 lg:group-hover:w-12 transition-all duration-500`} />
-                          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-orange-600 transition-colors">Learn More</span>
-                       </div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+        {/* Expertise grid */}
+        <div className="ft-exp-grid">
+          {features.map((feature, index) => (
+            <ExpertiseCard key={feature.slug} feature={feature} index={index} />
+          ))}
         </div>
       </div>
     </section>
+  );
+}
+
+function ExpertiseCard({
+  feature,
+  index,
+}: {
+  feature: { icon: typeof Globe; title: string; description: string; slug: string };
+  index: number;
+}) {
+  const { ref, show } = useReveal<HTMLDivElement>(0.12);
+  const Icon = feature.icon;
+
+  return (
+    <div ref={ref} className={`ft-reveal${show ? " show" : ""}`} style={{ transitionDelay: `${Math.min(index, 6) * 0.06}s` }}>
+      <Link href={`/expertise/${feature.slug}`} className="ft-exp-card">
+        <div>
+          <span className="ft-exp-icon"><Icon size={20} strokeWidth={2.2} /></span>
+          <h3 className="ft-exp-title">{feature.title}</h3>
+          <p className="ft-exp-desc">{feature.description}</p>
+        </div>
+        <div className="ft-exp-link">
+          <span className="ft-exp-link-line" />
+          <span className="ft-exp-link-text">Learn More</span>
+          <ArrowUpRight size={13} strokeWidth={2.4} className="ft-exp-arrow" />
+        </div>
+      </Link>
+    </div>
   );
 }

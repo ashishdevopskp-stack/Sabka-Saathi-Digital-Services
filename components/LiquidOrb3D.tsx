@@ -22,16 +22,15 @@ function Orb() {
   const fresnelShader = {
     uniforms: {
       uTime: { value: 0 },
-      uInnerColor: { value: new THREE.Color("#FF7F00") }, // Deep Orange core
-      uOuterColor: { value: new THREE.Color("#FFD700") }, // Bright Yellow border
+      uInnerColor: { value: new THREE.Color("#ff6b35") }, // brand orange core
+      uOuterColor: { value: new THREE.Color("#e8445a") }, // brand rose/red border
       uRefractionIntensity: { value: 1.0 },
     },
     vertexShader: `
       varying vec3 vNormal;
       varying vec3 vPosition;
       uniform float uTime;
-      
-      // Simple noise function for liquid movement
+
       vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
       vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
       vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
@@ -79,11 +78,10 @@ function Orb() {
       void main() {
         vNormal = normalize(normalMatrix * normal);
         vPosition = position;
-        
-        // Liquid distortion logic
+
         float noise = snoise(position * 2.0 + uTime * 0.5);
         vec3 newPosition = position + normal * noise * 0.15;
-        
+
         gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
       }
     `,
@@ -92,22 +90,21 @@ function Orb() {
       varying vec3 vPosition;
       uniform vec3 uInnerColor;
       uniform vec3 uOuterColor;
-      
+
       void main() {
         // Fresnel effect for the border
         float fresnel = pow(1.0 - dot(vNormal, vec3(0, 0, 1)), 2.5);
-        
-        // Vertical gradient logic
-        float verticalGradient = (vPosition.y + 1.0) * 0.5; // normalized 0 to 1
-        
-        // Mix colors: Inner core with vertical gradient + Fresnel border
-        vec3 coreColor = mix(uInnerColor, vec3(1.0, 0.9, 0.5), verticalGradient); // Orange to Warm Yellow
+
+        // Vertical gradient: core orange -> warm peach near the top, brand recipe
+        float verticalGradient = (vPosition.y + 1.0) * 0.5;
+        vec3 peach = vec3(1.0, 0.65, 0.45); // #ff8c42-ish highlight
+
+        vec3 coreColor = mix(uInnerColor, peach, verticalGradient);
         vec3 color = mix(coreColor, uOuterColor, fresnel);
-        
-        // Add dynamic liquid highlights
-        float highlight = pow(fresnel, 5.0) * 0.7;
-        color += vec3(highlight);
-        
+
+        float highlight = pow(fresnel, 5.0) * 0.6;
+        color += vec3(highlight * 1.0, highlight * 0.55, highlight * 0.45);
+
         gl_FragColor = vec4(color, 0.92);
       }
     `,
@@ -124,36 +121,33 @@ function Orb() {
 /**
  * LiquidOrb3D Component
  * -------------------
- * This component renders a custom Fresnel-shaded 3D sphere using React Three Fiber.
- * 
- * Key Features:
- * 1. MeshDistortMaterial: Used to create the "liquid" warping effect.
- * 2. Fresnel Logic: Injected into the shader manually or via high-fidelity material settings 
- *    to create the glass-like edge-glow effect.
- * 3. Responsive Scaling: Perspective camera and mesh size adapt to viewport transitions.
+ * Fresnel-shaded liquid sphere, recolored to the site's brand gradient
+ * (#ff8c42 orange -> #e8445a rose) instead of the original orange/yellow.
  */
 export function LiquidOrb3D() {
   return (
     <div className="relative h-[600px] w-[600px] md:h-[850px] md:w-[850px]">
-      {/* Background Glow */}
-      <div className="absolute inset-0 bg-yellow-400/10 blur-[80px] rounded-full animate-pulse" />
-      
+      {/* Background glow, matching hero badge/button glow color */}
+      <div className="absolute inset-0 rounded-full blur-[80px] animate-pulse"
+        style={{ background: "radial-gradient(circle, rgba(232,68,90,0.16), rgba(255,140,66,0.10) 55%, transparent 75%)" }}
+      />
+
       <Canvas className="relative z-10" gl={{ alpha: true }}>
         <PerspectiveCamera makeDefault position={[0, 0, 4]} />
         <Suspense fallback={null}>
           <Float
-            speed={2} 
-            rotationIntensity={0.5} 
-            floatIntensity={0.5} 
+            speed={2}
+            rotationIntensity={0.5}
+            floatIntensity={0.5}
           >
             <Orb />
           </Float>
-          
-          {/* Multi-color Lighting Setup for Warm Gradient Effect */}
+
+          {/* Lighting tuned to the brand palette */}
           <ambientLight intensity={0.4} />
-          <pointLight position={[10, 10, 10]} intensity={2.5} color="#FF9500" /> {/* Primary Orange */}
-          <pointLight position={[-10, 5, 8]} intensity={2} color="#FFD200" />   {/* Yellow Accent */}
-          <pointLight position={[0, -10, 5]} intensity={3} color="#FFB84D" />   {/* Soft Amber Base */}
+          <pointLight position={[10, 10, 10]} intensity={2.5} color="#ff6b35" />  {/* core orange */}
+          <pointLight position={[-10, 5, 8]} intensity={2} color="#e8445a" />     {/* rose accent */}
+          <pointLight position={[0, -10, 5]} intensity={3} color="#ff8c42" />     {/* soft peach base */}
           <spotLight position={[5, 5, 20]} angle={0.3} penumbra={1} intensity={2} color="#ffffff" />
         </Suspense>
       </Canvas>

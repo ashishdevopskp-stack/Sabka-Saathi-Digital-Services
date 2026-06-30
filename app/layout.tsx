@@ -57,6 +57,7 @@ const jsonLd = {
 
 import { FloatingContact } from "@/components/FloatingContact";
 import { Preloader } from "@/components/Preloader";
+import { Navbar } from "@/components/Navbar";
 
 export default function RootLayout({
   children,
@@ -85,6 +86,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <Navbar />
         {children}
         <FloatingContact />
         <Script

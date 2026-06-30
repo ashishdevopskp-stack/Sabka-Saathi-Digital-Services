@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { InteractiveBackground } from "@/components/InteractiveBackground";
 import { Footer } from "@/components/Footer";
 import { ContactSection } from "@/components/ContactSection";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/LiquidButton";
 import Link from "next/link";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";

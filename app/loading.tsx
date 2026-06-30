@@ -2,61 +2,60 @@
 
 import { motion } from "framer-motion";
 
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap');
+
+  .ld-root { font-family: 'DM Sans', sans-serif; background: #fbfbfc; }
+
+  .ld-word {
+    color: #1d1d1f; letter-spacing: -0.02em;
+  }
+  .ld-word em {
+    font-style: normal;
+    background: linear-gradient(135deg, #ff8c42 0%, #e8445a 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  /* Apple-style indeterminate spinner: 12 fading ticks */
+  .ld-spinner { width: 28px; height: 28px; position: relative; }
+  .ld-tick {
+    position: absolute; top: 0; left: 50%; width: 2px; height: 8px;
+    margin-left: -1px; border-radius: 1px;
+    background: rgba(29,29,31,0.5);
+    transform-origin: 1px 14px;
+    animation: ldFade 1.1s linear infinite;
+  }
+  @keyframes ldFade { 0% { opacity: 1; } 100% { opacity: 0.12; } }
+`;
+
+const TICKS = Array.from({ length: 12 });
+
 export default function Loading() {
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white">
-      <div className="relative">
-        {/* Main Logo Loader */}
-        <motion.div
-          animate={{
-            scale: [1, 1.1, 1],
-            rotate: [0, 5, -5, 0],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="w-24 h-24 relative z-10 flex items-center justify-center"
-        >
-          <div className="text-4xl">🚀</div>
-        </motion.div>
+    <div className="ld-root fixed inset-0 z-[100] flex flex-col items-center justify-center">
+      <style dangerouslySetInnerHTML={{ __html: styles }} />
 
-        {/* Outer Ring */}
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 -m-4 border-2 border-dashed border-orange-500/30 rounded-full"
-        />
-
-        {/* Pulsing Light */}
-        <div className="absolute inset-0 blur-3xl bg-orange-500/10 rounded-full scale-150 animate-pulse" />
+      <div className="ld-spinner mb-7" aria-hidden="true">
+        {TICKS.map((_, i) => (
+          <span
+            key={i}
+            className="ld-tick"
+            style={{
+              transform: `rotate(${i * 30}deg)`,
+              animationDelay: `${-(1.1 - (i * 1.1) / 12)}s`,
+            }}
+          />
+        ))}
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="mt-12 text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="ld-word text-[15px] font-medium"
       >
-        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 block mb-2">
-          Initializing Engine
-        </span>
-        <div className="flex items-center gap-1.5 justify-center">
-          <span className="text-base font-black text-slate-900">Sabka</span>
-          <span className="text-base font-black text-orange-500 italic">Saathi</span>
-        </div>
+        Sabka <em>Saathi</em>
       </motion.div>
-      
-      {/* Bottom Progress Bar Mimic */}
-      <div className="fixed bottom-0 left-0 w-full h-1 bg-slate-50">
-        <motion.div
-          initial={{ width: "0%" }}
-          animate={{ width: "100%" }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          className="h-full bg-gradient-to-r from-orange-400 to-rose-500"
-        />
-      </div>
     </div>
   );
 }

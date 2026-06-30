@@ -3,8 +3,133 @@
 import React, { useEffect, useState, useRef } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { ExternalLink, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { ExternalLink } from "lucide-react";
+
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
+
+  .pj-root { font-family: 'DM Sans', sans-serif; position: relative; }
+
+  .pj-blob {
+    position: absolute; z-index: 0; pointer-events: none; filter: blur(80px);
+    background: linear-gradient(135deg, rgba(255,140,66,0.14), rgba(232,68,90,0.1));
+    animation: pjMorph 22s ease-in-out infinite;
+  }
+  .pj-blob-a { top: -6%; left: 4%; width: 30vw; height: 30vw; max-width: 420px; max-height: 420px; }
+  .pj-blob-b {
+    bottom: -10%; right: 2%; width: 26vw; height: 26vw; max-width: 360px; max-height: 360px;
+    background: linear-gradient(135deg, rgba(232,68,90,0.08), rgba(255,140,66,0.12));
+    animation-duration: 26s;
+  }
+  @keyframes pjMorph {
+    0%, 100% { border-radius: 42% 58% 65% 35% / 45% 40% 60% 55%; transform: scale(1) rotate(0deg); }
+    50%      { border-radius: 58% 42% 38% 62% / 60% 55% 45% 40%; transform: scale(1.06) rotate(8deg); }
+  }
+  @media (prefers-reduced-motion: reduce) { .pj-blob { animation: none; } }
+
+  .pj-eyebrow {
+    position: relative; display: inline-flex; align-items: center; gap: 0.5rem;
+    border-radius: 999px; padding: 0.4rem 1.05rem 0.4rem 0.8rem;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    font-weight: 500; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(29,29,31,0.6);
+  }
+  .pj-eyebrow::before {
+    content: ''; position: absolute; inset: 0; z-index: -1; border-radius: 999px; padding: 1px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(255,107,53,0.45) 30%, rgba(232,68,90,0.18) 55%, rgba(232,68,90,0.50) 80%, rgba(255,255,255,0.70) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+  .pj-eyebrow-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+    background: #ff6b35; box-shadow: 0 0 8px rgba(255,107,53,0.7);
+    animation: pjDotPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pjDotPulse {
+    0%,100% { box-shadow: 0 0 6px rgba(255,107,53,.7), 0 0 0 0 rgba(255,107,53,.3); }
+    50%     { box-shadow: 0 0 12px rgba(255,107,53,.9), 0 0 0 4px rgba(255,107,53,0); }
+  }
+
+  .pj-title { color: #1d1d1f; letter-spacing: -0.025em; font-weight: 600; }
+  .pj-sub { color: rgba(29,29,31,0.5); font-weight: 400; }
+
+  /* ── Project card ───────────────────────────────────────── */
+  .pj-card {
+    position: relative; overflow: hidden; isolation: isolate;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.7);
+    box-shadow: 0 14px 36px rgba(29,29,31,0.07);
+    border-radius: 22px;
+    transition: transform 0.45s cubic-bezier(0.16,1,0.3,1), box-shadow 0.45s ease, border-color 0.4s ease;
+  }
+  .pj-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 24px 54px rgba(232,68,90,0.16), 0 6px 16px rgba(0,0,0,0.07);
+  }
+  .pj-card-fill {
+    position: absolute; inset: 0; z-index: 0;
+    background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 40%, #e8445a 75%, #c0392b 100%);
+    transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
+  }
+  .pj-card:hover .pj-card-fill { transform: translateY(0); }
+
+  .pj-card-inner { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+
+  .pj-cat {
+    display: inline-block; width: fit-content;
+    font-weight: 500; font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+    border-radius: 999px; padding: 0.3rem 0.75rem;
+    background: rgba(255,140,66,0.10); color: #e8445a;
+    border: 1px solid rgba(232,68,90,0.14);
+    transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+  }
+  .pj-card:hover .pj-cat { background: rgba(255,255,255,0.18); color: #fff; border-color: rgba(255,255,255,0.25); }
+
+  .pj-name { color: #1d1d1f; font-weight: 600; letter-spacing: -0.015em; transition: color 0.4s ease; }
+  .pj-card:hover .pj-name { color: #fff; }
+
+  .pj-desc { color: rgba(29,29,31,0.5); font-weight: 400; transition: color 0.4s ease; }
+  .pj-card:hover .pj-desc { color: rgba(255,255,255,0.85); }
+
+  .pj-tech {
+    font-weight: 500; font-size: 0.62rem;
+    background: rgba(0,0,0,0.03); color: rgba(29,29,31,0.55);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 7px; padding: 0.2rem 0.5rem;
+    transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+  }
+  .pj-card:hover .pj-tech { background: rgba(255,255,255,0.14); color: #fff; border-color: rgba(255,255,255,0.2); }
+  .pj-tech-more { color: rgba(29,29,31,0.32); transition: color 0.4s ease; }
+  .pj-card:hover .pj-tech-more { color: rgba(255,255,255,0.7); }
+
+  .pj-cta {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+    font-weight: 600; font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #fff; padding: 0.75rem 0; border-radius: 12px;
+    background: linear-gradient(135deg, #ff8c42, #e8445a);
+    transition: background 0.35s ease, color 0.35s ease, transform 0.35s cubic-bezier(0.25,1,0.5,1);
+  }
+  .pj-cta svg { transition: transform 0.35s cubic-bezier(0.25,1,0.5,1); }
+  .pj-cta:hover svg { transform: translate(2px, -2px); }
+  .pj-card:hover .pj-cta { background: #fff; color: #e8445a; }
+  .pj-card:hover .pj-cta:hover { background: rgba(255,255,255,0.92); }
+
+  /* ── Loading ── */
+  .pj-loading-spinner { width: 26px; height: 26px; position: relative; }
+  .pj-tick {
+    position: absolute; top: 0; left: 50%; width: 2px; height: 7px;
+    margin-left: -1px; border-radius: 1px;
+    background: #e8445a;
+    transform-origin: 1px 13px;
+    animation: pjFade 1.1s linear infinite;
+  }
+  @keyframes pjFade { 0% { opacity: 1; } 100% { opacity: 0.12; } }
+  .pj-loading-label { color: rgba(29,29,31,0.4); font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; }
+`;
 
 interface Project {
   id: string;
@@ -23,51 +148,42 @@ interface ProjectCardProps {
 
 function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <div className="w-[285px] sm:w-[320px] shrink-0 project-card-waterfill group rounded-[24px] bg-white/40 backdrop-blur-md border border-white/60 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-400 flex flex-col justify-between h-full">
-      <div className="z-10 relative flex flex-col h-full justify-between flex-1">
+    <div className="pj-card w-[285px] sm:w-[320px] shrink-0 p-6 h-full">
+      <div className="pj-card-fill" aria-hidden="true" />
+      <div className="pj-card-inner">
         <div>
-          {/* Category Badge */}
-          <div className="bg-orange-50 text-orange-600 border border-orange-100/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider group-hover:bg-white/20 group-hover:text-white group-hover:border-white/10 transition-colors duration-400 w-fit inline-block mb-4">
-            {project.category}
-          </div>
+          <div className="pj-cat mb-4">{project.category}</div>
 
-          {/* Project Name */}
-          <h3 className="text-base sm:text-lg font-black text-slate-800 tracking-tight leading-snug group-hover:text-white transition-colors duration-400 mb-2 truncate">
+          <h3 className="pj-name text-base sm:text-lg leading-snug mb-2 truncate">
             {project.name}
           </h3>
 
-          {/* Short Description (Capped at 2 lines) */}
-          <p className="text-xs text-slate-500 font-semibold leading-relaxed group-hover:text-orange-50 transition-colors duration-400 line-clamp-2 mb-4">
+          <p className="pj-desc text-xs leading-relaxed line-clamp-2 mb-4">
             {project.description}
           </p>
         </div>
 
         <div>
-          {/* Tech Badges */}
           <div className="flex flex-wrap gap-1.5 mb-5 max-h-[32px] overflow-hidden">
             {project.technologies.slice(0, 4).map((tech, idx) => (
-              <span
-                key={idx}
-                className="bg-white/50 border border-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[9px] font-bold group-hover:bg-white/10 group-hover:border-white/10 group-hover:text-white transition-colors duration-400"
-              >
+              <span key={idx} className="pj-tech">
                 {tech}
               </span>
             ))}
             {project.technologies.length > 4 && (
-              <span className="text-[9px] font-bold text-slate-405 group-hover:text-orange-100 px-1.5 py-0.5 transition-colors duration-400">
+              <span className="pj-tech-more text-[9px] font-medium px-1.5 py-0.5">
                 +{project.technologies.length - 4}
               </span>
             )}
           </div>
 
-          {/* View Project Button */}
           <a
             href={project.projectUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full py-3 rounded-xl bg-orange-500 text-white hover:bg-orange-600 group-hover:bg-white group-hover:text-orange-600 group-hover:hover:bg-orange-50 group-hover:hover:text-orange-700 hover:shadow-md hover:shadow-orange-500/10 flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest transition-all duration-400"
+            className="pj-cta"
           >
-            View Project
+            View project
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
         </div>
@@ -88,11 +204,8 @@ function MarqueeRow({ items, direction = "left" }: { items: Project[]; direction
         setMaxScroll(Math.max(0, scrollW - clientW));
       }
     };
-    
-    // Initial measure
+
     updateScrollBounds();
-    
-    // Remeasure on window resize
     window.addEventListener("resize", updateScrollBounds);
     return () => window.removeEventListener("resize", updateScrollBounds);
   }, [items]);
@@ -139,7 +252,6 @@ export function ProjectsShowcase() {
             order: typeof data.order === "number" ? data.order : 0,
           });
         });
-        // Sort client-side by custom order
         fetched.sort((a, b) => a.order - b.order);
         setProjects(fetched);
       } catch (err) {
@@ -154,9 +266,18 @@ export function ProjectsShowcase() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500 mb-2" />
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Loading Projects Showcase...</p>
+      <div className="pj-root flex flex-col items-center justify-center py-16 gap-3">
+        <style dangerouslySetInnerHTML={{ __html: styles }} />
+        <div className="pj-loading-spinner" aria-hidden="true">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <span
+              key={i}
+              className="pj-tick"
+              style={{ transform: `rotate(${i * 30}deg)`, animationDelay: `${-(1.1 - (i * 1.1) / 12)}s` }}
+            />
+          ))}
+        </div>
+        <p className="pj-loading-label text-[10px]">Loading projects</p>
       </div>
     );
   }
@@ -170,22 +291,27 @@ export function ProjectsShowcase() {
   const row2 = projects.slice(7);
 
   return (
-    <div className="w-full overflow-hidden py-6">
-      {/* Title Section */}
-      <div className="container mx-auto px-4 mb-12 text-center max-w-[1400px]">
-        <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 bg-orange-50 border border-orange-100/50 px-3 py-1.5 rounded-full">
+    <div className="pj-root w-full overflow-hidden py-6">
+      <style dangerouslySetInnerHTML={{ __html: styles }} />
+      <div className="pj-blob pj-blob-a" aria-hidden="true" />
+      <div className="pj-blob pj-blob-b" aria-hidden="true" />
+
+      {/* Title */}
+      <div className="container mx-auto px-4 mb-12 text-center max-w-[1400px] relative z-10">
+        <span className="pj-eyebrow">
+          <span className="pj-eyebrow-dot" />
           Portfolio
         </span>
-        <h2 className="text-3xl md:text-4xl font-black text-slate-900 mt-4 tracking-tight">
-          Our Recent Projects
+        <h2 className="pj-title text-3xl md:text-4xl mt-4">
+          Our recent projects
         </h2>
-        <p className="text-slate-500 text-xs md:text-sm font-semibold mt-2 max-w-lg mx-auto">
+        <p className="pj-sub text-xs md:text-sm mt-2 max-w-lg mx-auto">
           Explore real projects delivered for businesses, startups, and local brands.
         </p>
       </div>
 
-      {/* Desktop Layout */}
-      <div className="hidden md:block max-w-[1400px] mx-auto px-4">
+      {/* Desktop */}
+      <div className="hidden md:block max-w-[1400px] mx-auto px-4 relative z-10">
         {isMarqueeEnabled ? (
           <div className="flex flex-col gap-6 relative w-full overflow-hidden">
             <MarqueeRow items={row1} direction="right" />
@@ -200,8 +326,8 @@ export function ProjectsShowcase() {
         )}
       </div>
 
-      {/* Mobile & Tablet Swipe Layout */}
-      <div className="flex md:hidden w-full overflow-x-auto snap-x snap-mandatory gap-6 px-4 py-4 scrollbar-none">
+      {/* Mobile */}
+      <div className="flex md:hidden w-full overflow-x-auto snap-x snap-mandatory gap-6 px-4 py-4 scrollbar-none relative z-10">
         {projects.map((project) => (
           <div key={project.id} className="snap-start shrink-0">
             <ProjectCard project={project} />
