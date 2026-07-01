@@ -140,4 +140,8 @@ export function BiharServicesSEO() {
   );
 }
 
-export default BiharServicesSEO;
+/* Required by Next.js: app/seo/page.tsx must have exactly one default export
+   that is a React component. This wraps the named component above. */
+export default function SeoPage() {
+  return <BiharServicesSEO />;
+}

@@ -1,25 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/LiquidButton";
 import Link from "next/link";
 import Image from "next/image";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Globe, Loader2 } from "lucide-react";
+import { Globe, Loader2, Phone, MapPin, ShieldCheck, AlertTriangle } from "lucide-react";
 
+/* ══════════════════════════════════════════════
+   ICONS (outline, matches Hero's inline-svg style)
+══════════════════════════════════════════════ */
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={props.className}
-  >
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+    strokeLinecap="round" strokeLinejoin="round" className={props.className}>
     <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
     <rect width="4" height="12" x="2" y="9" />
     <circle cx="4" cy="4" r="2" />
@@ -27,20 +21,273 @@ const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={props.className}
-  >
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+    strokeLinecap="round" strokeLinejoin="round" className={props.className}>
     <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
     <path d="M9 18c-4.51 2-5-2-7-2" />
   </svg>
 );
 
+/* ══════════════════════════════════════════════
+   STYLES — liquid-glass system, ported 1:1 from Hero
+══════════════════════════════════════════════ */
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
+
+  .tc-root { background: #f2f2f4; position: relative; font-family: 'DM Sans', sans-serif; }
+
+  .tc-noise {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.022; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  .tc-shell { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: clamp(3rem,7vw,6rem) clamp(1.25rem,4vw,2.5rem); }
+
+  /* ── Ambient blobs ── */
+  .tc-blob { position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; }
+  .tc-blob.a { width: 420px; height: 420px; top: -80px; right: -120px; background: rgba(255,107,53,0.10); }
+  .tc-blob.b { width: 360px; height: 360px; bottom: 10%; left: -140px; background: rgba(232,68,90,0.08); }
+
+  /* ── Badge (pill, gradient-ring) ── */
+  .tc-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.6rem;
+    border-radius: 999px; padding: 0.44rem 1.2rem 0.44rem 0.9rem;
+    background: rgba(255,255,255,0.76);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    color: rgba(0,0,0,0.58); font-size: 0.72rem; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .tc-badge::before {
+    content: ''; position: absolute; inset: -1px; border-radius: 999px; padding: 1.5px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(255,107,53,0.55) 28%,
+      rgba(232,68,90,0.20) 52%, rgba(232,68,90,0.60) 76%, rgba(255,255,255,0.72) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+  }
+  .tc-badge-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #ff6b35;
+    box-shadow: 0 0 8px rgba(255,107,53,0.70); flex-shrink: 0;
+    animation: tcDotPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes tcDotPulse {
+    0%,100% { box-shadow: 0 0 8px rgba(255,107,53,.7), 0 0 0 0 rgba(255,107,53,.3); }
+    50%     { box-shadow: 0 0 14px rgba(255,107,53,.9), 0 0 0 5px rgba(255,107,53,0); }
+  }
+
+  /* ── Section header ── */
+  .tc-header { text-align: center; max-width: 720px; margin: 0 auto clamp(3rem,6vw,4.5rem); display: flex; flex-direction: column; align-items: center; gap: 1.4rem; }
+  .tc-h1 {
+    font-weight: 500; letter-spacing: -0.025em; line-height: 1.08;
+    font-size: clamp(2.4rem, 5.6vw, 4.2rem); color: #1d1d1f;
+  }
+  .tc-accent {
+    background: linear-gradient(135deg, #ff8c42 0%, #e8445a 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .tc-lede { font-size: clamp(0.95rem, 1.3vw, 1.1rem); line-height: 1.7; color: rgba(29,29,31,0.52); font-weight: 400; }
+
+  .tc-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: rgba(0,0,0,0.36); margin-bottom: 0.7rem;
+  }
+  .tc-eyebrow-dot { width: 5px; height: 5px; border-radius: 50%; background: #ff6b35; }
+
+  /* ── Glass card (core signature element) ── */
+  .tc-card {
+    position: relative; border-radius: 32px; background: rgba(255,255,255,0.68);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 4px 28px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6);
+    overflow: hidden;
+  }
+  .tc-card::before {
+    content: ''; position: absolute; inset: -1px; border-radius: 33px; padding: 1px; z-index: 0;
+    background: linear-gradient(150deg, rgba(255,255,255,0.85) 0%, rgba(255,140,70,0.28) 30%,
+      rgba(240,80,80,0.08) 55%, rgba(232,68,90,0.22) 80%, rgba(255,255,255,0.6) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+  }
+  .tc-card-pad { position: relative; z-index: 1; padding: clamp(1.75rem,3.4vw,3rem); }
+
+  /* ── Grid ── */
+  .tc-grid-main { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1.6rem; margin-bottom: 1.6rem; }
+  .tc-grid-two { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; margin-bottom: 1.6rem; }
+  @media (max-width: 860px) { .tc-grid-main, .tc-grid-two { grid-template-columns: 1fr; } }
+
+  .tc-card-title {
+    font-size: clamp(1.4rem,2vw,1.7rem); font-weight: 500; color: #1d1d1f;
+    letter-spacing: -0.01em; margin-bottom: 1.6rem; display: flex; align-items: center; gap: 0.8rem;
+  }
+  .tc-icon-chip {
+    width: 42px; height: 42px; border-radius: 13px; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, rgba(255,140,66,0.16), rgba(232,68,90,0.14));
+    color: #e8445a; flex-shrink: 0;
+  }
+
+  /* ── Founder card ── */
+  .tc-quote {
+    font-size: clamp(1.15rem,1.7vw,1.4rem); font-weight: 500; font-style: italic;
+    color: #1d1d1f; line-height: 1.5; margin-bottom: 1.3rem; letter-spacing: -0.01em;
+  }
+  .tc-body { font-size: 0.98rem; line-height: 1.75; color: rgba(29,29,31,0.58); font-weight: 400; margin-bottom: 0.9rem; }
+  .tc-body strong { color: #1d1d1f; font-weight: 600; }
+
+  .tc-founder-row { display: grid; grid-template-columns: 1fr 200px; gap: 2.2rem; align-items: start; }
+  @media (max-width: 700px) { .tc-founder-row { grid-template-columns: 1fr; } }
+  .tc-founder-photo { position: relative; aspect-ratio: 3/4; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 34px rgba(0,0,0,0.14); border: 3px solid rgba(255,255,255,0.9); }
+  .tc-founder-name { text-align: center; margin-top: 0.8rem; font-weight: 700; font-size: 0.9rem; color: #1d1d1f; }
+  .tc-founder-role { text-align: center; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #ff6b35; }
+
+  .tc-cta-strip {
+    margin-top: 1.8rem; padding: 1.3rem 1.5rem; border-radius: 20px;
+    background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.7);
+    display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; flex-wrap: wrap;
+  }
+  .tc-cta-strip span { font-weight: 600; color: rgba(29,29,31,0.75); font-size: 0.92rem; }
+
+  /* ── Buttons (ported from Hero) ── */
+  .tc-btn {
+    position: relative; overflow: hidden; font-weight: 500; font-size: 0.86rem;
+    padding: 0.78rem 1.7rem; border-radius: 13px; text-decoration: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; white-space: nowrap;
+    transition: transform 0.34s cubic-bezier(0.25,1,0.5,1), box-shadow 0.34s ease;
+    border: none;
+  }
+  .tc-btn:active { transform: scale(0.96); }
+  .tc-btn.primary {
+    color: #fff;
+    background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 38%, #e8445a 72%, #c0392b 100%);
+    box-shadow: 0 2px 12px rgba(232,68,90,0.28), inset 0 1px 0 rgba(255,255,255,0.22);
+  }
+  .tc-btn.primary:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 26px rgba(232,68,90,0.32); }
+  .tc-btn.light {
+    color: #1d1d1f; background: #ffffff;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.08);
+  }
+  .tc-btn.light:hover { transform: translateY(-2px) scale(1.02); background: #fff7f2; }
+
+  /* ── Company details list ── */
+  .tc-dl { display: flex; flex-direction: column; }
+  .tc-dl-row { display: flex; justify-content: space-between; gap: 1rem; padding: 0.85rem 0; border-bottom: 1px solid rgba(0,0,0,0.07); }
+  .tc-dl-row:last-child { border-bottom: none; }
+  .tc-dl-key { font-size: 0.82rem; color: rgba(0,0,0,0.42); font-weight: 400; flex-shrink: 0; }
+  .tc-dl-val { font-size: 0.88rem; font-weight: 600; color: #1d1d1f; text-align: right; }
+  .tc-dl-val a { color: #e8445a; text-decoration: none; }
+  .tc-dl-val a:hover { text-decoration: underline; }
+
+  .tc-verify-row { display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem 0.9rem; border-radius: 13px; background: rgba(255,255,255,0.55); margin-top: 0.6rem; }
+  .tc-verify-check { width: 20px; height: 20px; border-radius: 50%; background: rgba(46,196,120,0.16); color: #1e9e5a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.7rem; font-weight: 700; }
+  .tc-verify-row span { font-size: 0.82rem; font-weight: 600; color: rgba(29,29,31,0.72); }
+
+  /* ── Stat blocks ── */
+  .tc-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; margin-bottom: 1.6rem; }
+  .tc-stat-block { border-radius: 18px; padding: 1.2rem 1.3rem; background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.7); }
+  .tc-stat-block.wide { grid-column: 1 / -1; }
+  .tc-stat-num { font-size: 1.7rem; font-weight: 600; color: #1d1d1f; letter-spacing: -0.02em; line-height: 1; margin-bottom: 0.3rem; }
+  .tc-stat-num.sm { font-size: 1.25rem; }
+  .tc-stat-label { font-size: 0.76rem; font-weight: 500; color: rgba(0,0,0,0.42); }
+
+  /* ── Commitment list ── */
+  .tc-commit-list { display: flex; flex-direction: column; gap: 0.9rem; }
+  .tc-commit-item { display: flex; align-items: flex-start; gap: 0.7rem; }
+  .tc-mark { flex-shrink: 0; font-weight: 700; font-size: 1.05rem; line-height: 1.5; margin-top: -0.05rem; }
+  .tc-mark.no { color: #e8445a; }
+  .tc-mark.yes { color: #1e9e5a; }
+  .tc-commit-item p { font-size: 0.92rem; line-height: 1.6; color: rgba(29,29,31,0.62); font-weight: 400; }
+
+  /* ── Developers ── */
+  .tc-dev-head { text-align: center; margin-bottom: 2.2rem; display: flex; flex-direction: column; align-items: center; gap: 0.9rem; }
+  .tc-dev-title { font-size: clamp(1.6rem,3.2vw,2.4rem); font-weight: 500; letter-spacing: -0.02em; color: #1d1d1f; }
+  .tc-dev-sub { font-size: 0.88rem; color: rgba(29,29,31,0.5); max-width: 480px; line-height: 1.6; }
+
+  .tc-dev-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; }
+  @media (max-width: 980px) { .tc-dev-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .tc-dev-grid { grid-template-columns: 1fr; } }
+
+  .tc-dev-card {
+    position: relative; border-radius: 24px; overflow: hidden; background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(14px); box-shadow: 0 3px 18px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.6);
+    display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease;
+  }
+  .tc-dev-card::before {
+    content: ''; position: absolute; inset: -1px; border-radius: 25px; padding: 1px; z-index: 0;
+    background: linear-gradient(150deg, rgba(255,255,255,0.85) 0%, rgba(255,140,70,0.22) 35%, rgba(255,255,255,0.5) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+  }
+  .tc-dev-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(232,68,90,0.12); }
+  .tc-dev-photo { position: relative; width: 100%; height: 190px; background: rgba(0,0,0,0.03); z-index: 1; }
+  .tc-dev-photo-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(0,0,0,0.25); }
+  .tc-dev-body { position: relative; z-index: 1; padding: 1rem 1.1rem 1.15rem; display: flex; flex-direction: column; flex: 1; }
+  .tc-dev-name { font-size: 0.96rem; font-weight: 700; color: #1d1d1f; margin-bottom: 0.15rem; }
+  .tc-dev-role { font-size: 0.63rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #ff6b35; margin-bottom: 0.55rem; }
+  .tc-dev-desc { font-size: 0.78rem; line-height: 1.55; color: rgba(29,29,31,0.55); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 0.7rem; }
+  .tc-dev-skills { display: flex; flex-wrap: wrap; gap: 0.32rem; margin-bottom: 0.75rem; margin-top: auto; }
+  .tc-chip { font-size: 0.6rem; font-weight: 600; padding: 0.22rem 0.5rem; border-radius: 7px; background: rgba(255,107,53,0.08); color: rgba(29,29,31,0.55); border: 1px solid rgba(255,107,53,0.12); }
+  .tc-dev-socials { display: flex; gap: 0.5rem; padding-top: 0.65rem; border-top: 1px solid rgba(0,0,0,0.06); }
+  .tc-social-btn {
+    width: 30px; height: 30px; border-radius: 9px; background: rgba(0,0,0,0.04); color: rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center; transition: all 0.25s ease;
+  }
+  .tc-social-btn:hover { background: #ff6b35; color: #fff; }
+
+  .tc-empty-card { text-align: center; padding: 3.5rem 1.5rem; }
+  .tc-empty-card p { font-size: 0.86rem; font-weight: 600; color: rgba(29,29,31,0.4); }
+  .tc-loading { display: flex; align-items: center; justify-content: center; padding: 3.5rem 0; color: #ff6b35; }
+
+  /* ── Notice banner ── */
+  .tc-notice {
+    display: flex; align-items: center; gap: 1.1rem; padding: 1.4rem 1.7rem; border-radius: 22px;
+    background: rgba(255,140,66,0.09); border: 1px solid rgba(255,107,53,0.18); margin-bottom: 1.6rem;
+  }
+  .tc-notice-icon { width: 44px; height: 44px; border-radius: 13px; background: rgba(255,107,53,0.16); color: #e8445a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .tc-notice h4 { font-size: 1rem; font-weight: 700; color: #1d1d1f; margin-bottom: 0.25rem; }
+  .tc-notice p { font-size: 0.85rem; font-weight: 400; color: rgba(29,29,31,0.6); line-height: 1.5; }
+
+  /* ── Legal list ── */
+  .tc-legal-eyebrow { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(0,0,0,0.35); margin-bottom: 1.1rem; }
+  .tc-legal-list { display: flex; flex-direction: column; gap: 0.85rem; }
+  .tc-legal-item { display: flex; align-items: flex-start; gap: 0.65rem; }
+  .tc-legal-dot { width: 5px; height: 5px; border-radius: 50%; background: #ff6b35; margin-top: 0.5rem; flex-shrink: 0; }
+  .tc-legal-item p { font-size: 0.88rem; line-height: 1.6; color: rgba(29,29,31,0.6); font-weight: 400; }
+
+  /* ── Dark CTA card ── */
+  .tc-dark {
+    position: relative; border-radius: 40px; background: #1d1d1f; color: #fff; overflow: hidden;
+    padding: clamp(2.2rem,5vw,3.6rem);
+  }
+  .tc-dark-blob-a { position: absolute; width: 460px; height: 460px; border-radius: 50%; top: -140px; right: -140px; background: rgba(255,107,53,0.16); filter: blur(90px); pointer-events: none; }
+  .tc-dark-blob-b { position: absolute; width: 360px; height: 360px; border-radius: 50%; bottom: -120px; left: -120px; background: rgba(80,120,255,0.14); filter: blur(80px); pointer-events: none; }
+  .tc-dark-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 2.5rem; align-items: center; }
+  @media (max-width: 860px) { .tc-dark-grid { grid-template-columns: 1fr; } }
+  .tc-dark-title { font-size: clamp(1.9rem,3.6vw,2.9rem); font-weight: 500; letter-spacing: -0.02em; margin-bottom: 1.1rem; }
+  .tc-dark-lede { font-size: clamp(0.95rem,1.3vw,1.05rem); color: rgba(255,255,255,0.56); line-height: 1.7; margin-bottom: 1.8rem; font-weight: 400; }
+  .tc-dark-phone {
+    display: inline-flex; align-items: center; gap: 0.9rem; padding: 0.9rem 1.3rem; border-radius: 18px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(6px); margin-bottom: 1.4rem;
+  }
+  .tc-dark-phone-icon { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg,#ff8c42,#e8445a); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .tc-dark-phone .label { font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 0.15rem; }
+  .tc-dark-phone a { font-size: 1.35rem; font-weight: 700; color: #fff; text-decoration: none; }
+  .tc-dark-checks { display: flex; flex-direction: column; gap: 0.6rem; }
+  .tc-dark-checks li { list-style: none; display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; color: rgba(255,255,255,0.72); font-weight: 400; }
+  .tc-dark-checks .c { color: #4ade80; }
+
+  .tc-loc-card { border-radius: 26px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(8px); padding: 2.1rem 1.8rem; text-align: center; max-width: 380px; margin-left: auto; margin-right: auto; }
+  .tc-loc-icon { width: 52px; height: 52px; border-radius: 16px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.1rem; color: #ff9c6b; }
+  .tc-loc-card h4 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.7rem; }
+  .tc-loc-card p { font-size: 0.86rem; color: rgba(255,255,255,0.5); line-height: 1.6; margin-bottom: 1.5rem; }
+
+  @media (max-width: 600px) {
+    .tc-founder-row { grid-template-columns: 1fr; }
+    .tc-founder-photo { max-width: 220px; margin: 0 auto; }
+  }
+`;
+
+/* ══════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════ */
 interface Developer {
   id: string;
   name: string;
@@ -61,10 +308,7 @@ export function TrustContent() {
   useEffect(() => {
     const fetchActiveDevelopers = async () => {
       try {
-        const q = query(
-          collection(db, "developers"),
-          where("status", "==", "active")
-        );
+        const q = query(collection(db, "developers"), where("status", "==", "active"));
         const snapshot = await getDocs(q);
         const activeDevs: Developer[] = [];
         snapshot.forEach((docSnap) => {
@@ -82,7 +326,6 @@ export function TrustContent() {
             order: typeof data.order === "number" ? data.order : 0,
           });
         });
-        // Sort in memory by order ascending to prevent index errors
         activeDevs.sort((a, b) => a.order - b.order);
         setDevelopers(activeDevs);
       } catch (err) {
@@ -91,483 +334,234 @@ export function TrustContent() {
         setLoading(false);
       }
     };
-
     fetchActiveDevelopers();
   }, []);
 
   return (
-    <>
-      {/* Header Section */}
-      <div className="text-center max-w-3xl mx-auto mb-20">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-100 text-orange-700 font-bold text-xs uppercase tracking-widest shadow-sm mb-6">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500"></span>
-            </span>
-            Verified & Trusted
-          </div>
-          <h1 className="text-5xl md:text-7xl font-black text-slate-900 mb-6 tracking-tight leading-tight">
-            Trust & <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500">Transparency</span>
-          </h1>
-          <p className="text-xl text-slate-600 font-medium leading-relaxed">
-            We believe in honest communication, clear processes, and building long-term trust with every client. No false promises, just real work.
-          </p>
-        </motion.div>
-      </div>
+    <div className="tc-root">
+      <style dangerouslySetInnerHTML={{ __html: styles }} />
+      <div className="tc-noise" aria-hidden="true" />
+      <div className="tc-blob a" aria-hidden="true" />
+      <div className="tc-blob b" aria-hidden="true" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
-        
-        {/* About Founder & Vision */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="lg:col-span-8"
-        >
-          <Card className="h-full p-8 md:p-12 bg-white/70 backdrop-blur-2xl border-white/60 rounded-[3rem] shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 blur-3xl rounded-full -mr-32 -mt-32" />
-            <h2 className="text-3xl font-black text-slate-900 mb-8 flex items-center gap-4">
-              <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 text-2xl">💼</span>
-              About Founder
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
-              <div className="md:col-span-8 prose prose-lg prose-slate text-slate-600 font-medium">
-                <p className="text-xl md:text-2xl text-slate-800 leading-snug font-bold mb-6 italic">
-                  &quot;Sabka Saathi Digital Services was started with a simple vision — to make digital growth accessible for every business, especially those in small towns and local markets.&quot;
-                </p>
-                <p>
-                  <strong>Ashish Kumar</strong>&nbsp;recognized that many businesses &amp; Startups have the potential to grow but lack the right digital support. This platform was built to bridge that gap and provide simple, effective, and practical digital solutions.
-                </p>
-                <p>
-                  The goal is clear — to empower thousands of businesses to build a strong online presence and unlock new growth opportunities.
-                </p>
-              </div>
-              <div className="md:col-span-4 relative group">
-                <div className="absolute -inset-4 bg-orange-500/10 blur-2xl rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
-                  <Image
-                    src="/team/ashish-kumar.jpeg"
-                    alt="Ashish Kumar - Founder"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="mt-4 text-center">
-                   <p className="text-sm font-black text-slate-900">Ashish Kumar</p>
-                   <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest leading-tight">Founder & CEO</p>
-                </div>
-              </div>
-            </div>
-            <div className="mt-10 p-6 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
-              <span className="font-bold text-slate-700">Want to take your business online?</span>
-              <Link href="/#contact">
-                <Button className="rounded-xl px-8 shadow-lg shadow-orange-500/20 active:scale-95">Connect with us today</Button>
-              </Link>
-            </div>
-          </Card>
-        </motion.div>
+      <div className="tc-shell">
 
-        {/* Company Details Bento Box */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="lg:col-span-4"
-        >
-          <Card className="h-full p-8 bg-white border-slate-200 rounded-[3rem] shadow-xl relative overflow-hidden flex flex-col group">
-            <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-orange-500/5 to-transparent pointer-events-none" />
-            <h3 className="text-2xl font-black text-slate-900 mb-2 flex items-center gap-3">
-              🏢 Company Details
-            </h3>
-            <p className="text-slate-500 text-sm font-medium mb-8">We operate with complete transparency and a professional approach.</p>
-            
-            <ul className="space-y-5 text-sm font-medium mb-auto relative z-10">
-              <li className="flex justify-between border-b border-slate-100 pb-3">
-                <span className="text-slate-500">Business Name</span>
-                <span className="font-bold text-slate-900 text-right">Sabka Saathi Digital Services</span>
-              </li>
-              <li className="flex justify-between border-b border-slate-100 pb-3">
-                <span className="text-slate-500">Founder</span>
-                <span className="font-bold text-slate-900">Ashish Kumar</span>
-              </li>
-              <li className="flex justify-between border-b border-slate-100 pb-3">
-                <span className="text-slate-500">Type</span>
-                <span className="font-bold text-slate-900">Proprietorship</span>
-              </li>
-              <li className="flex justify-between border-b border-slate-100 pb-3">
-                <span className="text-slate-500">Location</span>
-                <span className="font-bold text-slate-900">India</span>
-              </li>
-              <li className="flex justify-between border-b border-slate-100 pb-3">
-                <span className="text-slate-500">Contact</span>
-                <a href="tel:9431673018" className="font-bold text-orange-600 hover:text-orange-500 transition-colors">9431673018</a>
-              </li>
-              <li className="flex justify-between pb-3">
-                <span className="text-slate-500">Email</span>
-                <a href="mailto:helpsabkasaathi@gmail.com" className="font-bold text-orange-600 hover:text-orange-500 break-all text-right max-w-[140px] transition-colors">helpsabkasaathi@gmail.com</a>
-              </li>
-            </ul>
-
-            <div className="mt-8 space-y-3 relative z-10">
-              <div className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-xl border border-slate-100 group-hover:border-emerald-200 transition-colors">
-                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">✓</div>
-                <span className="font-bold text-sm text-slate-700">Verified Business Presence</span>
-              </div>
-              <div className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-xl border border-slate-100 group-hover:border-emerald-200 transition-colors">
-                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">✓</div>
-                <span className="font-bold text-sm text-slate-700">Professional Service Provider</span>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
-      </div>
-
-
-
-      {/* Social Proof & Service Commitment */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <Card className="h-full p-8 md:p-10 bg-white border-slate-100 rounded-[2.5rem] shadow-lg shadow-slate-200/50 hover:shadow-xl transition-shadow relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-2xl rounded-full -mr-10 -mt-10" />
-            <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
-              <span className="p-2 rounded-xl bg-blue-100 text-blue-600">📊</span>
-              Social Proof & Results
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
-                <div className="text-3xl font-black text-slate-900 mb-1">100+</div>
-                <div className="text-sm font-bold text-slate-500">Businesses Served</div>
-              </div>
-              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
-                <div className="text-3xl font-black text-slate-900 mb-1">50+</div>
-                <div className="text-sm font-bold text-slate-500">Digital Projects</div>
-              </div>
-              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 sm:col-span-2">
-                <div className="text-xl font-black text-slate-900 mb-1">Pan-India</div>
-                <div className="text-sm font-bold text-slate-500">Growing Client Network</div>
-              </div>
-            </div>
-            <p className="text-slate-600 font-medium">We focus on consistent results and long-term client relationships to ensure growth.</p>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <Card className="h-full p-8 md:p-10 bg-white border-slate-100 rounded-[2.5rem] shadow-lg shadow-slate-200/50 hover:shadow-xl transition-shadow relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 blur-2xl rounded-full -mr-10 -mt-10" />
-            <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
-              <span className="p-2 rounded-xl bg-rose-100 text-rose-600">🚫</span>
-              Service Commitment
-            </h3>
-            <p className="text-lg font-bold text-slate-800 mb-6 italic">&quot;We believe in real work, not false promises.&quot;</p>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <span className="text-rose-500 text-xl font-bold mt-1">×</span>
-                <span className="font-medium text-slate-600 leading-snug">We do not make unrealistic guarantees.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-emerald-500 font-bold mt-1">✓</span>
-                <span className="font-medium text-slate-600 leading-snug">Results may vary depending on business type, market conditions, and implementation.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-emerald-500 font-bold mt-1">✓</span>
-                <span className="font-medium text-slate-600 leading-snug">Our focus is on strategy, consistency, and long-term growth.</span>
-              </li>
-            </ul>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Meet Our Developers Section */}
-      <div className="mb-8 sm:mb-10">
-        <div className="flex flex-col items-center mb-5 sm:mb-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-100 text-orange-700 font-bold text-xs uppercase tracking-widest mb-4 shadow-sm"
-          >
-            Our Technical Workforce
+        {/* ── Header ── */}
+        <div className="tc-header">
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
+            <span className="tc-badge"><span className="tc-badge-dot" />Verified &amp; Trusted</span>
           </motion.div>
-          <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-3 uppercase">
-            Meet Our Developers
-          </h2>
-          <p className="text-slate-550 font-semibold max-w-2xl text-xs sm:text-sm leading-relaxed text-slate-500">
-            The people behind our digital products, websites, apps, and business solutions.
-          </p>
+          <motion.h1 className="tc-h1" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.75, delay: 0.08 }}>
+            Trust &amp; <span className="tc-accent">Transparency</span>
+          </motion.h1>
+          <motion.p className="tc-lede" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.75, delay: 0.14 }}>
+            We believe in honest communication, clear processes, and building long-term trust with every client. No false promises, just real work.
+          </motion.p>
         </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-          </div>
-        ) : developers.length === 0 ? (
-          <div className="text-center py-16 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm">
-            <p className="text-sm font-bold text-slate-500">
-              Our team profiles will be updated soon.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
-            {developers.map((dev, index) => (
-              <motion.div
-                key={dev.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-                className="h-full"
-              >
-                <div className="group relative overflow-hidden bg-white border border-slate-200/60 rounded-[1.5rem] shadow-sm shadow-slate-100/40 hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300 hover:-translate-y-1.5 flex flex-col h-full">
-                  {/* Smooth bottom-to-top gradient wave hover overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-orange-500/[0.06] via-orange-500/[0.01] to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none z-0" />
-                  
-                  {/* Image at the top (full-width, cropped, rounded-t-3xl) */}
-                  <div className="relative w-full h-[170px] sm:h-[190px] md:h-[230px] overflow-hidden rounded-t-[1.4rem] shrink-0 bg-slate-50 border-b border-slate-100/50 z-10">
-                    {dev.imageUrl ? (
-                      <Image
-                        src={dev.imageUrl}
-                        alt={dev.name}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 50vw, 25vw"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-slate-350 font-bold text-xs uppercase tracking-wider">No Image</div>
-                    )}
+        {/* ── Founder + Company details ── */}
+        <div className="tc-grid-main">
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
+            <div className="tc-card">
+              <div className="tc-card-pad">
+                <div className="tc-card-title"><span className="tc-icon-chip">💼</span>About Founder</div>
+                <div className="tc-founder-row">
+                  <div>
+                    <p className="tc-quote">&quot;Sabka Saathi Digital Services was started with a simple vision — to make digital growth accessible for every business, especially those in small towns and local markets.&quot;</p>
+                    <p className="tc-body"><strong>Ashish Kumar</strong> recognized that many businesses &amp; startups have the potential to grow but lack the right digital support. This platform was built to bridge that gap and provide simple, effective, and practical digital solutions.</p>
+                    <p className="tc-body">The goal is clear — to empower thousands of businesses to build a strong online presence and unlock new growth opportunities.</p>
                   </div>
-
-                  {/* Content block with tight margins and compact internal padding */}
-                  <div className="p-3.5 sm:p-4 flex flex-col flex-1 min-w-0 justify-between relative z-10">
-                    <div className="mb-3">
-                      {/* Name & Role */}
-                      <h3 className="text-sm sm:text-base font-black text-slate-900 mb-0.5 group-hover:text-orange-600 transition-colors duration-300 truncate">
-                        {dev.name}
-                      </h3>
-                      <p className="text-[9px] sm:text-[10px] font-bold text-orange-500 uppercase tracking-widest leading-none mb-2 truncate">
-                        {dev.role}
-                      </p>
-                      
-                      {/* Description - clamped strictly to 3 lines */}
-                      <p className="text-xs text-slate-500 font-medium leading-relaxed line-clamp-3 group-hover:text-slate-700 transition-colors duration-300">
-                        {dev.description}
-                      </p>
+                  <div>
+                    <div className="tc-founder-photo">
+                      <Image src="/team/ashish-kumar.jpeg" alt="Ashish Kumar - Founder" fill className="object-cover" />
                     </div>
-
-                    <div>
-                      {/* Skills/Tags */}
-                      {dev.skills && dev.skills.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          {dev.skills.slice(0, 3).map((skill, i) => (
-                            <span
-                              key={i}
-                              className="px-1.5 py-0.5 bg-slate-50 border border-slate-200/50 text-[9px] font-bold text-slate-500 rounded group-hover:bg-orange-50/50 group-hover:text-orange-700 group-hover:border-orange-100/40 transition-colors duration-300"
-                            >
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Social Links */}
-                      {(dev.linkedinUrl || dev.githubUrl || dev.portfolioUrl) && (
-                        <div className="flex gap-2 pt-2.5 border-t border-slate-100 group-hover:border-orange-100/40 transition-colors duration-300">
-                          {dev.linkedinUrl && (
-                            <a
-                              href={dev.linkedinUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-7.5 h-7.5 rounded-lg bg-slate-50 hover:bg-orange-500 hover:text-white border border-slate-200/60 text-slate-400 flex items-center justify-center transition-all duration-300"
-                            >
-                              <LinkedinIcon className="w-3.5 h-3.5" />
-                            </a>
-                          )}
-                          {dev.githubUrl && (
-                            <a
-                              href={dev.githubUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-7.5 h-7.5 rounded-lg bg-slate-50 hover:bg-orange-500 hover:text-white border border-slate-200/60 text-slate-400 flex items-center justify-center transition-all duration-300"
-                            >
-                              <GithubIcon className="w-3.5 h-3.5" />
-                            </a>
-                          )}
-                          {dev.portfolioUrl && (
-                            <a
-                              href={dev.portfolioUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-7.5 h-7.5 rounded-lg bg-slate-50 hover:bg-orange-500 hover:text-white border border-slate-200/60 text-slate-400 flex items-center justify-center transition-all duration-300"
-                            >
-                              <Globe className="w-3.5 h-3.5" />
-                            </a>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <div className="tc-founder-name">Ashish Kumar</div>
+                    <div className="tc-founder-role">Founder &amp; CEO</div>
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="mb-16"
-      >
-          <div className="bg-orange-500/10 border border-orange-500/20 p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="text-4xl">⚠️</div>
-              <div>
-                <h4 className="text-xl font-bold text-slate-900 mb-1">Important Notice</h4>
-                <p className="text-slate-700 font-medium text-sm md:text-base">
-                  Beware of fake agencies. Sabka Saathi Digital Services is a verified and trusted service provider focused on delivering genuine digital solutions.
-                </p>
+                <div className="tc-cta-strip">
+                  <span>Want to take your business online?</span>
+                  <Link href="/#contact"><span className="tc-btn primary">Connect with us today</span></Link>
+                </div>
               </div>
             </div>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.1 }}>
+            <div className="tc-card" style={{ height: "100%" }}>
+              <div className="tc-card-pad">
+                <div className="tc-card-title"><span className="tc-icon-chip">🏢</span>Company Details</div>
+                <div className="tc-dl">
+                  <div className="tc-dl-row"><span className="tc-dl-key">Business Name</span><span className="tc-dl-val">Sabka Saathi Digital Services</span></div>
+                  <div className="tc-dl-row"><span className="tc-dl-key">Founder</span><span className="tc-dl-val">Ashish Kumar</span></div>
+                  <div className="tc-dl-row"><span className="tc-dl-key">Type</span><span className="tc-dl-val">Proprietorship</span></div>
+                  <div className="tc-dl-row"><span className="tc-dl-key">Location</span><span className="tc-dl-val">India</span></div>
+                  <div className="tc-dl-row"><span className="tc-dl-key">Contact</span><span className="tc-dl-val"><a href="tel:9431673018">9431673018</a></span></div>
+                  <div className="tc-dl-row"><span className="tc-dl-key">Email</span><span className="tc-dl-val"><a href="mailto:helpsabkasaathi@gmail.com">helpsabkasaathi@gmail.com</a></span></div>
+                </div>
+                <div className="tc-verify-row"><span className="tc-verify-check">✓</span><span>Verified Business Presence</span></div>
+                <div className="tc-verify-row"><span className="tc-verify-check">✓</span><span>Professional Service Provider</span></div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ── Social Proof + Commitment ── */}
+        <div className="tc-grid-two">
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+            <div className="tc-card" style={{ height: "100%" }}>
+              <div className="tc-card-pad">
+                <div className="tc-card-title"><span className="tc-icon-chip">📊</span>Social Proof &amp; Results</div>
+                <div className="tc-stat-grid">
+                  <div className="tc-stat-block"><div className="tc-stat-num">100+</div><div className="tc-stat-label">Businesses Served</div></div>
+                  <div className="tc-stat-block"><div className="tc-stat-num">50+</div><div className="tc-stat-label">Digital Projects</div></div>
+                  <div className="tc-stat-block wide"><div className="tc-stat-num sm">Pan-India</div><div className="tc-stat-label">Growing Client Network</div></div>
+                </div>
+                <p className="tc-body" style={{ marginBottom: 0 }}>We focus on consistent results and long-term client relationships to ensure growth.</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }}>
+            <div className="tc-card" style={{ height: "100%" }}>
+              <div className="tc-card-pad">
+                <div className="tc-card-title"><span className="tc-icon-chip">🚫</span>Service Commitment</div>
+                <p className="tc-quote" style={{ fontSize: "1.02rem" }}>&quot;We believe in real work, not false promises.&quot;</p>
+                <div className="tc-commit-list">
+                  <div className="tc-commit-item"><span className="tc-mark no">×</span><p>We do not make unrealistic guarantees.</p></div>
+                  <div className="tc-commit-item"><span className="tc-mark yes">✓</span><p>Results may vary depending on business type, market conditions, and implementation.</p></div>
+                  <div className="tc-commit-item"><span className="tc-mark yes">✓</span><p>Our focus is on strategy, consistency, and long-term growth.</p></div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ── Developers ── */}
+        <div style={{ marginBottom: "1.6rem" }}>
+          <div className="tc-dev-head">
+            <motion.span className="tc-badge" initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}>
+              Our Technical Workforce
+            </motion.span>
+            <h2 className="tc-dev-title">Meet Our Developers</h2>
+            <p className="tc-dev-sub">The people behind our digital products, websites, apps, and business solutions.</p>
           </div>
-      </motion.div>
 
-      {/* Legal Policies Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
-          <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <Card className="h-full p-8 md:p-10 bg-white/60 backdrop-blur-xl border-white/80 rounded-[2.5rem] shadow-xl">
-            <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
-              <span className="p-2 rounded-xl bg-slate-100 text-slate-600">📜</span>
-              Privacy Policy
-            </h3>
-            <p className="text-sm font-bold text-slate-500 mb-6 uppercase tracking-widest">We respect your privacy</p>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-2 flex-shrink-0" />
-                <span className="text-slate-600 font-medium">Personal details like name, phone number, and email are used only for communication and service purposes.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-2 flex-shrink-0" />
-                <span className="text-slate-600 font-medium">We do not sell, rent, or share your data with third parties.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-2 flex-shrink-0" />
-                <span className="text-slate-600 font-medium">All information shared with us is handled securely.</span>
-              </li>
-            </ul>
-          </Card>
-        </motion.div>
+          {loading ? (
+            <div className="tc-loading"><Loader2 className="w-7 h-7 animate-spin" /></div>
+          ) : developers.length === 0 ? (
+            <div className="tc-card tc-empty-card"><p>Our team profiles will be updated soon.</p></div>
+          ) : (
+            <div className="tc-dev-grid">
+              {developers.map((dev, index) => (
+                <motion.div key={dev.id} initial={{ opacity: 0, y: 26 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: index * 0.05 }}>
+                  <div className="tc-dev-card">
+                    <div className="tc-dev-photo">
+                      {dev.imageUrl ? (
+                        <Image src={dev.imageUrl} alt={dev.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, (max-width: 980px) 50vw, 25vw" loading="lazy" />
+                      ) : (
+                        <div className="tc-dev-photo-empty">No Image</div>
+                      )}
+                    </div>
+                    <div className="tc-dev-body">
+                      <div className="tc-dev-name">{dev.name}</div>
+                      <div className="tc-dev-role">{dev.role}</div>
+                      <p className="tc-dev-desc">{dev.description}</p>
+                      {dev.skills?.length > 0 && (
+                        <div className="tc-dev-skills">
+                          {dev.skills.slice(0, 3).map((skill, i) => <span key={i} className="tc-chip">{skill}</span>)}
+                        </div>
+                      )}
+                      {(dev.linkedinUrl || dev.githubUrl || dev.portfolioUrl) && (
+                        <div className="tc-dev-socials">
+                          {dev.linkedinUrl && <a href={dev.linkedinUrl} target="_blank" rel="noopener noreferrer" className="tc-social-btn"><LinkedinIcon className="w-3.5 h-3.5" /></a>}
+                          {dev.githubUrl && <a href={dev.githubUrl} target="_blank" rel="noopener noreferrer" className="tc-social-btn"><GithubIcon className="w-3.5 h-3.5" /></a>}
+                          {dev.portfolioUrl && <a href={dev.portfolioUrl} target="_blank" rel="noopener noreferrer" className="tc-social-btn"><Globe className="w-3.5 h-3.5" /></a>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <Card className="h-full p-8 md:p-10 bg-white/60 backdrop-blur-xl border-white/80 rounded-[2.5rem] shadow-xl">
-            <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
-              <span className="p-2 rounded-xl bg-slate-100 text-slate-600">📄</span>
-              Terms & Conditions
-            </h3>
-            <p className="text-sm font-bold text-slate-500 mb-6 uppercase tracking-widest">Clearly defined scope</p>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-2 flex-shrink-0" />
-                <span className="text-slate-600 font-medium">All services are provided based on a clearly defined scope of work.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-2 flex-shrink-0" />
-                <span className="text-slate-600 font-medium">Project timelines may vary depending on requirements and communication.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-2 flex-shrink-0" />
-                <span className="text-slate-600 font-medium">Any additional requests beyond the agreed scope will be handled separately.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-2 flex-shrink-0" />
-                <span className="text-slate-600 font-medium">We ensure professional standards in every project we deliver.</span>
-              </li>
-            </ul>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Contact & Presence Bottom CTA */}
-      <motion.div 
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="bg-slate-900 text-white rounded-[3rem] p-10 md:p-16 relative overflow-hidden shadow-2xl shadow-slate-900/50"
-      >
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-500/10 blur-[100px] rounded-full pointer-events-none translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/10 blur-[80px] rounded-full pointer-events-none -translate-x-1/2 translate-y-1/2" />
-          
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        {/* ── Notice ── */}
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <div className="tc-notice">
+            <div className="tc-notice-icon"><AlertTriangle className="w-5 h-5" /></div>
             <div>
-              <h2 className="text-3xl md:text-5xl font-black mb-6 tracking-tight">Support & Presence</h2>
-              <p className="text-slate-400 text-lg md:text-xl font-medium mb-8">
-                We operate across India and serve clients remotely with smooth communication and delivery. Have questions or want to start your project?
-              </p>
-              
-              <div className="flex flex-col gap-6">
-                <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 w-fit backdrop-blur-sm">
-                  <div className="w-12 h-12 rounded-xl bg-orange-500 text-white flex items-center justify-center text-2xl shadow-lg">📞</div>
+              <h4>Important Notice</h4>
+              <p>Beware of fake agencies. Sabka Saathi Digital Services is a verified and trusted service provider focused on delivering genuine digital solutions.</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ── Legal ── */}
+        <div className="tc-grid-two">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+            <div className="tc-card">
+              <div className="tc-card-pad">
+                <div className="tc-card-title"><span className="tc-icon-chip">📜</span>Privacy Policy</div>
+                <div className="tc-legal-eyebrow">We respect your privacy</div>
+                <div className="tc-legal-list">
+                  <div className="tc-legal-item"><span className="tc-legal-dot" /><p>Personal details like name, phone number, and email are used only for communication and service purposes.</p></div>
+                  <div className="tc-legal-item"><span className="tc-legal-dot" /><p>We do not sell, rent, or share your data with third parties.</p></div>
+                  <div className="tc-legal-item"><span className="tc-legal-dot" /><p>All information shared with us is handled securely.</p></div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }}>
+            <div className="tc-card">
+              <div className="tc-card-pad">
+                <div className="tc-card-title"><span className="tc-icon-chip">📄</span>Terms &amp; Conditions</div>
+                <div className="tc-legal-eyebrow">Clearly defined scope</div>
+                <div className="tc-legal-list">
+                  <div className="tc-legal-item"><span className="tc-legal-dot" /><p>All services are provided based on a clearly defined scope of work.</p></div>
+                  <div className="tc-legal-item"><span className="tc-legal-dot" /><p>Project timelines may vary depending on requirements and communication.</p></div>
+                  <div className="tc-legal-item"><span className="tc-legal-dot" /><p>Any additional requests beyond the agreed scope will be handled separately.</p></div>
+                  <div className="tc-legal-item"><span className="tc-legal-dot" /><p>We ensure professional standards in every project we deliver.</p></div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ── Bottom CTA ── */}
+        <motion.div initial={{ opacity: 0, y: 26 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.75 }}>
+          <div className="tc-dark">
+            <div className="tc-dark-blob-a" aria-hidden="true" />
+            <div className="tc-dark-blob-b" aria-hidden="true" />
+            <div className="tc-dark-grid">
+              <div>
+                <h2 className="tc-dark-title">Support &amp; Presence</h2>
+                <p className="tc-dark-lede">We operate across India and serve clients remotely with smooth communication and delivery. Have questions or want to start your project?</p>
+                <div className="tc-dark-phone">
+                  <div className="tc-dark-phone-icon"><Phone className="w-5 h-5 text-white" /></div>
                   <div>
-                    <span className="block text-xs uppercase tracking-widest text-slate-400 font-bold mb-1">Call / WhatsApp</span>
-                    <a href="tel:9431673018" className="text-2xl font-black text-white hover:text-orange-400 transition-colors">9431673018</a>
+                    <div className="label">Call / WhatsApp</div>
+                    <a href="tel:9431673018">9431673018</a>
                   </div>
                 </div>
-                
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-3 text-slate-300 font-medium">
-                    <span className="text-emerald-400">✓</span> Quick Response
-                  </li>
-                  <li className="flex items-center gap-3 text-slate-300 font-medium">
-                    <span className="text-emerald-400">✓</span> Professional Guidance
-                  </li>
+                <ul className="tc-dark-checks">
+                  <li><span className="c">✓</span> Quick Response</li>
+                  <li><span className="c">✓</span> Professional Guidance</li>
                 </ul>
               </div>
-            </div>
-
-            <div className="flex justify-center lg:justify-end">
-              <div className="bg-white/10 border border-white/10 p-8 rounded-[2.5rem] backdrop-blur-md w-full max-w-md text-center">
-                <div className="text-5xl mb-6">📍</div>
-                <h4 className="text-2xl font-bold text-white mb-4">Location</h4>
-                <p className="text-slate-300 font-medium mb-8">
-                  Location details available upon request for detailed project discussions.
-                </p>
-                <Link href="/#contact">
-                  <Button size="lg" className="w-full rounded-2xl py-8 text-lg font-bold bg-white text-slate-900 hover:bg-orange-50 transition-colors border-none">
-                    Talk to an Expert →
-                  </Button>
-                </Link>
+              <div className="tc-loc-card">
+                <div className="tc-loc-icon"><MapPin className="w-6 h-6" /></div>
+                <h4>Location</h4>
+                <p>Location details available upon request for detailed project discussions.</p>
+                <Link href="/#contact"><span className="tc-btn light" style={{ width: "100%", padding: "0.95rem 1.5rem" }}>Talk to an Expert →</span></Link>
               </div>
             </div>
           </div>
-      </motion.div>
-    </>
+        </motion.div>
+
+      </div>
+    </div>
   );
 }

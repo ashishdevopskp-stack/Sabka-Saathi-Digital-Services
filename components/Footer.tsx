@@ -27,6 +27,7 @@ const PLATFORM_LINKS = [
   { href: "/trust", label: "Legal & Trust" },
   { href: "/about", label: "About Us" },
   { href: "/faq", label: "FAQ" },
+  { href: "/seo", label: "SEO" },
 ];
 
 const HUBS = [

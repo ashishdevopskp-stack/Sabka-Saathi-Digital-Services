@@ -12,6 +12,7 @@ import { DetailLayout } from "@/components/DetailLayout";
 import { FAQSection } from "@/components/FAQSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { Footer } from "@/components/Footer";
+import { BiharServicesSEO } from "@/components/BiharServicesSEO";
 
 
 export const metadata: Metadata = {
@@ -69,7 +70,7 @@ export default function Home() {
       {/* <TrustContent /> */}
       <TestimonialsSection />
       <FAQSection />
-
+    
       
       <ContactSection />
       <Footer />
