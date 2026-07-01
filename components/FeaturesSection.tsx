@@ -346,29 +346,7 @@ export function FeaturesSection() {
             </div>
           </div>
 
-          {/* Regional office */}
-          <div className={`ft-span-3 ft-reveal${regionalCard.show ? " show" : ""}`} ref={regionalCard.ref}>
-            <div className="ft-card ft-card-pad">
-              <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", marginBottom: "1.4rem" }}>
-                <span className="ft-icon-pill"><MapPin size={17} strokeWidth={2.2} /></span>
-                <span className="ft-card-title">Regional Office</span>
-              </div>
-              <div>
-                <p className="ft-statlabel">Locality</p>
-                <p className="ft-statval" style={{ marginBottom: "1rem" }}>Akshardham</p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                  <div>
-                    <p className="ft-statlabel">City</p>
-                    <p className="ft-statval">Bhavnagar</p>
-                  </div>
-                  <div>
-                    <p className="ft-statlabel">State</p>
-                    <p className="ft-statval">Gujarat</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+         
         </div>
 
         {/* Expertise divider */}
