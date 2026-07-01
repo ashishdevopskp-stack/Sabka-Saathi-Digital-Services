@@ -214,7 +214,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                     ))}
                   </div>
                 </div>
-                <Button variant="outline" className="rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer">
+                <Button className="rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer">
                   Share Post
                 </Button>
              </div>
