@@ -128,7 +128,7 @@ export default async function LocalSEOPage({ params }: Props) {
                   </Button>
                 </Link>
                 <Link href="#about" className="scroll-smooth">
-                  <Button variant="outline" size="lg" className="rounded-2xl border-slate-200">
+                  <Button variant="secondary" size="lg" className="rounded-2xl border-slate-200">
                     Explore Details
                   </Button>
                 </Link>

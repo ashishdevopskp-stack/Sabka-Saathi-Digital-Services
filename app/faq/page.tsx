@@ -123,6 +123,7 @@ export default function FaqPage() {
   return (
     <>
       <PageHero
+        type="faq"
         badge="Got Questions?"
         title="Frequently Asked"
         titleHighlight="Questions"
