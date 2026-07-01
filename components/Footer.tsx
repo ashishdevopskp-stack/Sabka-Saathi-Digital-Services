@@ -32,7 +32,6 @@ const PLATFORM_LINKS = [
 
 const HUBS = [
   { href: "/location/bihar", name: "Bihar Hub", cities: "Patna, Muzaffarpur, Gaya, Sheikhpura" },
-  { href: "/location/gujarat", name: "Gujarat Hub", cities: "Surat, Ahmedabad, Rajkot, Bhavnagar" },
   { href: "/location/maharashtra", name: "Maharashtra Tech Pivot", cities: "Pune, Mumbai, Nagpur" },
 ];
 
@@ -204,12 +203,7 @@ export function Footer() {
               className="group inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-gradient-to-r from-orange-500/10 to-rose-500/10 px-3 py-1.5 text-slate-300 normal-case tracking-normal transition-all duration-300 hover:border-orange-500/40 hover:text-white"
             >
               <Code2 className="h-3 w-3 text-orange-500" />
-              <span className="lowercase">
-                Built by{" "}
-                <span className="bg-gradient-to-r from-orange-400 to-rose-400 bg-clip-text font-bold text-transparent">
-                  anikedwebdev.in
-                </span>
-              </span>
+             
               <ArrowUpRight className="h-3 w-3 text-slate-500 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-orange-400" />
             </a>
           </div>

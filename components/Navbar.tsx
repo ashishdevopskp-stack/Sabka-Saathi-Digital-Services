@@ -3,19 +3,68 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/LiquidButton";
-import { Menu, X } from "lucide-react";
+import {
+  Menu, X, ChevronDown,
+  Home, Info, LayoutGrid, Building2, ShieldCheck,
+  Newspaper, Mail, HelpCircle, Search as SearchIcon,
+  Globe, Smartphone, Cpu, Calculator, Briefcase, Megaphone, Cloud,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const links = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Services", href: "/services" },
-  { label: "Industries", href: "/industries" },
-  { label: "Trust", href: "/trust" },
-  { label: "Blog", href: "/blog" },
-  { label: "Contact", href: "/contact" },
+/* ── Custom SVG icons (no trademarked logos, no emoji) ─────────── */
+const AndroidIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M12 2v2M5 11h14M6 11c0-3.3 2.7-6 6-6s6 2.7 6 6M6 11v6c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-6M9 19v3M15 19v3M4 12v3M20 12v3" />
+  </svg>
+);
+
+const IosIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="6" y="2" width="12" height="20" rx="3" />
+    <line x1="10" y1="19" x2="14" y2="19" />
+  </svg>
+);
+
+/* ── Site structure: pages + subpages ───────────────────────────
+   Services carries subpages sourced from your expertiseContent
+   slugs in lib/content.ts — update this list if that file changes. */
+interface SubLink {
+  label: string;
+  href: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+}
+interface NavLink {
+  label: string;
+  href: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  children?: SubLink[];
+}
+
+const serviceLinks: SubLink[] = [
+  { label: "Website Development", href: "/expertise/web-development", icon: Globe },
+  { label: "Mobile App Development", href: "/expertise/mobile-app", icon: Smartphone },
+  { label: "iOS App Development", href: "/expertise/ios-app", icon: IosIcon },
+  { label: "Android App Development", href: "/expertise/android-app", icon: AndroidIcon },
+  { label: "Custom Software", href: "/expertise/custom-software", icon: Cpu },
+  { label: "Billing & Management", href: "/expertise/billing-system", icon: Calculator },
+  { label: "ERP & CRM Solutions", href: "/expertise/erp-crm", icon: Briefcase },
+  { label: "Digital Marketing", href: "/expertise/digital-marketing", icon: Megaphone },
+  { label: "SEO Services", href: "/expertise/seo-services", icon: SearchIcon },
+  { label: "Cloud Solutions", href: "/expertise/cloud-solutions", icon: Cloud },
+];
+
+const links: NavLink[] = [
+  { label: "Home", href: "/", icon: Home },
+  { label: "About", href: "/about", icon: Info },
+  { label: "Services", href: "/services", icon: LayoutGrid, children: serviceLinks },
+  { label: "Industries", href: "/industries", icon: Building2 },
+  { label: "Trust", href: "/trust", icon: ShieldCheck },
+  { label: "Blog", href: "/blog", icon: Newspaper },
+  { label: "Contact", href: "/contact", icon: Mail },
+  { label: "FAQ", href: "/faq", icon: HelpCircle },
+  { label: "SEO", href: "/seo", icon: SearchIcon },
 ];
 
 interface BeforeInstallPromptEvent extends Event {
@@ -95,6 +144,22 @@ const navStyles = `
     filter: blur(10px); pointer-events: none;
   }
 
+  /* ── Desktop mega-dropdown ───────────────────────────────── */
+  .nav-dropdown {
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.8);
+    box-shadow:
+      0 20px 50px rgba(29,29,31,0.12),
+      0 4px 12px rgba(232,68,90,0.08);
+  }
+  .nav-dropdown-item:hover .nav-dropdown-icon {
+    background: linear-gradient(135deg, #ff8c42 0%, #e8445a 100%);
+    color: #fff;
+    border-color: transparent;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .nav-word { animation: none; }
   }
@@ -102,8 +167,11 @@ const navStyles = `
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const pathname = usePathname();
+  const closeTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -117,6 +185,8 @@ export function Navbar() {
   // Close mobile drawer automatically on route change
   useEffect(() => {
     setOpen(false);
+    setMobileServicesOpen(false);
+    setServicesOpen(false);
   }, [pathname]);
 
   // Lock body scroll while the drawer is open
@@ -142,6 +212,17 @@ export function Navbar() {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname?.startsWith(href);
 
+  const isParentActive = (link: NavLink) =>
+    isActive(link.href) || (link.children?.some((c) => pathname?.startsWith(c.href)) ?? false);
+
+  const openDropdown = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setServicesOpen(true);
+  };
+  const closeDropdownDelayed = () => {
+    closeTimer.current = setTimeout(() => setServicesOpen(false), 160);
+  };
+
   return (
     <header className="fixed top-4 left-0 right-0 z-50 px-4">
       <style dangerouslySetInnerHTML={{ __html: navStyles }} />
@@ -163,28 +244,96 @@ export function Navbar() {
 
         <div className="hidden items-center gap-1 md:flex">
           {links.map((link) => {
-            const active = isActive(link.href);
+            const active = isParentActive(link);
+            const Icon = link.icon;
+            const hasChildren = !!link.children?.length;
+
             return (
-              <Link
+              <div
                 key={link.href}
-                href={link.href}
-                className="relative px-3.5 py-2 text-sm font-medium"
+                className="relative"
+                onMouseEnter={hasChildren ? openDropdown : undefined}
+                onMouseLeave={hasChildren ? closeDropdownDelayed : undefined}
               >
-                {active && (
-                  <motion.span
-                    layoutId="nav-liquid-blob"
-                    className="nav-blob"
-                    transition={{ type: "spring", stiffness: 360, damping: 30 }}
-                  />
-                )}
-                <span
-                  className={`nav-link transition-colors duration-300 ${
-                    active ? "text-white" : "text-[#1d1d1f]/70 hover:text-[#e8445a]"
-                  }`}
+                <Link
+                  href={link.href}
+                  className="relative flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium"
                 >
-                  {link.label}
-                </span>
-              </Link>
+                  {active && (
+                    <motion.span
+                      layoutId="nav-liquid-blob"
+                      className="nav-blob"
+                      transition={{ type: "spring", stiffness: 360, damping: 30 }}
+                    />
+                  )}
+                  <span
+                    className={`nav-link flex items-center gap-1.5 transition-colors duration-300 ${
+                      active ? "text-white" : "text-[#1d1d1f]/70 hover:text-[#e8445a]"
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
+                    {link.label}
+                    {hasChildren && (
+                      <ChevronDown
+                        className={`h-3 w-3 shrink-0 transition-transform duration-300 ${
+                          servicesOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    )}
+                  </span>
+                </Link>
+
+                {/* Desktop mega-dropdown */}
+                {hasChildren && (
+                  <AnimatePresence>
+                    {servicesOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                        transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                        className="nav-dropdown absolute left-1/2 top-[calc(100%+12px)] z-20 w-[560px] -translate-x-1/2 rounded-3xl p-4"
+                        onMouseEnter={openDropdown}
+                        onMouseLeave={closeDropdownDelayed}
+                      >
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {link.children!.map((child) => {
+                            const ChildIcon = child.icon;
+                            const childActive = pathname?.startsWith(child.href);
+                            return (
+                              <Link
+                                key={child.href}
+                                href={child.href}
+                                className="nav-dropdown-item flex items-center gap-3 rounded-2xl p-2.5 transition-colors duration-200 hover:bg-orange-50"
+                              >
+                                <span
+                                  className={`nav-dropdown-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all duration-300 ${
+                                    childActive
+                                      ? "border-transparent bg-gradient-to-br from-[#ff8c42] to-[#e8445a] text-white"
+                                      : "border-orange-100 bg-orange-50 text-orange-500"
+                                  }`}
+                                >
+                                  <ChildIcon className="h-4 w-4" />
+                                </span>
+                                <span className="text-[13px] font-semibold leading-tight text-[#1d1d1f]">
+                                  {child.label}
+                                </span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                        <Link
+                          href="/services"
+                          className="mt-2 flex items-center justify-center gap-1.5 rounded-2xl bg-slate-50 px-4 py-2.5 text-xs font-black uppercase tracking-widest text-slate-600 transition-colors hover:bg-orange-50 hover:text-orange-600"
+                        >
+                          <LayoutGrid className="h-3.5 w-3.5" />
+                          View All Services
+                        </Link>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                )}
+              </div>
             );
           })}
         </div>
@@ -222,7 +371,7 @@ export function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 280, damping: 32 }}
-              className="fixed top-0 right-0 bottom-0 z-50 flex w-72 max-w-[80vw] flex-col justify-between overflow-hidden border-l border-white/50 bg-[rgba(255,255,255,0.94)] p-6 shadow-2xl backdrop-blur-2xl md:hidden"
+              className="fixed top-0 right-0 bottom-0 z-50 flex w-80 max-w-[85vw] flex-col justify-between overflow-hidden border-l border-white/50 bg-[rgba(255,255,255,0.94)] p-6 shadow-2xl backdrop-blur-2xl md:hidden"
             >
               <div className="drawer-wave" aria-hidden="true" />
 
@@ -242,9 +391,12 @@ export function Navbar() {
                     </button>
                   </div>
 
-                  <div className="flex max-h-[calc(100vh-200px)] flex-col gap-2 overflow-y-auto py-6">
+                  <div className="flex max-h-[calc(100vh-200px)] flex-col gap-1 overflow-y-auto py-6">
                     {links.map((link, i) => {
-                      const active = isActive(link.href);
+                      const active = isParentActive(link);
+                      const Icon = link.icon;
+                      const hasChildren = !!link.children?.length;
+
                       return (
                         <motion.div
                           key={link.href}
@@ -252,17 +404,74 @@ export function Navbar() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.05 + i * 0.04, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                         >
-                          <Link
-                            href={link.href}
-                            onClick={() => setOpen(false)}
-                            className={`block rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
-                              active
-                                ? "bg-gradient-to-r from-[#ff8c42] to-[#e8445a] text-white shadow-md shadow-orange-500/25"
-                                : "text-[#1d1d1f] hover:bg-orange-50 hover:text-[#e8445a]"
-                            }`}
-                          >
-                            {link.label}
-                          </Link>
+                          <div className="flex items-center gap-1">
+                            <Link
+                              href={link.href}
+                              onClick={() => !hasChildren && setOpen(false)}
+                              className={`flex flex-1 items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+                                active
+                                  ? "bg-gradient-to-r from-[#ff8c42] to-[#e8445a] text-white shadow-md shadow-orange-500/25"
+                                  : "text-[#1d1d1f] hover:bg-orange-50 hover:text-[#e8445a]"
+                              }`}
+                            >
+                              <Icon className="h-4 w-4 shrink-0" />
+                              {link.label}
+                            </Link>
+
+                            {hasChildren && (
+                              <button
+                                type="button"
+                                aria-label={`Toggle ${link.label} submenu`}
+                                onClick={() => setMobileServicesOpen((v) => !v)}
+                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors ${
+                                  active ? "text-[#e8445a]" : "text-[#1d1d1f]/50"
+                                } hover:bg-orange-50`}
+                              >
+                                <ChevronDown
+                                  className={`h-4 w-4 transition-transform duration-300 ${
+                                    mobileServicesOpen ? "rotate-180" : ""
+                                  }`}
+                                />
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Mobile accordion subpages */}
+                          {hasChildren && (
+                            <AnimatePresence initial={false}>
+                              {mobileServicesOpen && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                                  className="overflow-hidden pl-3"
+                                >
+                                  <div className="flex flex-col gap-0.5 border-l-2 border-orange-100 py-1 pl-3">
+                                    {link.children!.map((child) => {
+                                      const ChildIcon = child.icon;
+                                      const childActive = pathname?.startsWith(child.href);
+                                      return (
+                                        <Link
+                                          key={child.href}
+                                          href={child.href}
+                                          onClick={() => setOpen(false)}
+                                          className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
+                                            childActive
+                                              ? "bg-orange-50 text-[#e8445a]"
+                                              : "text-[#1d1d1f]/70 hover:bg-orange-50 hover:text-[#e8445a]"
+                                          }`}
+                                        >
+                                          <ChildIcon className="h-3.5 w-3.5 shrink-0" />
+                                          {child.label}
+                                        </Link>
+                                      );
+                                    })}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          )}
                         </motion.div>
                       );
                     })}

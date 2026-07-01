@@ -13,6 +13,8 @@ import { FAQSection } from "@/components/FAQSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { Footer } from "@/components/Footer";
 import { BiharServicesSEO } from "@/components/BiharServicesSEO";
+import { PortfolioShowcase } from "@/components/PortfolioShowcase";
+import { BrowserPortfolioShowcase } from "@/components/BrowserPortfolioShowcase";
 
 
 export const metadata: Metadata = {
@@ -63,13 +65,15 @@ export default function Home() {
       <StatsShowcase />
       <ProcessSection />
       <TechStack />
+      <PortfolioShowcase />
+      <BrowserPortfolioShowcase />
       <FounderSection />
       <FeaturesSection />
       
       
       {/* <TrustContent /> */}
       <TestimonialsSection />
-      <FAQSection />
+      {/* <FAQSection /> */}
     
       
       <ContactSection />

@@ -127,13 +127,13 @@ export default function ServicesPage() {
           <ProjectsShowcase />
         </section>
 
-        <FeaturesSection />
+        {/* <FeaturesSection /> */}
         
-        <div className="container mx-auto px-4">
+        {/* <div className="container mx-auto px-4">
             <ProcessSection />
-        </div>
-        
-        <ContactSection />
+        </div> */}
+{/*         
+        <ContactSection /> */}
       </main>
       <Footer />
     </div>

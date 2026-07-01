@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { 
-  ExternalLink, Sparkles, ChevronLeft, ChevronRight, 
+import {
+  Sparkles, ChevronLeft, ChevronRight,
   Wifi, Battery, Signal, Loader2
 } from "lucide-react";
 import Link from "next/link";
@@ -47,12 +47,6 @@ const phoneProjects = [
   }
 ];
 
-const ctaBackgrounds = [
-  "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200",
-  "https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1200",
-  "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=1200"
-];
-
 interface PhoneCardProps {
   project: typeof phoneProjects[0];
   isDragging: boolean;
@@ -63,27 +57,21 @@ function PhoneCard({ project, isDragging, isActive }: PhoneCardProps) {
   const [iframeLoading, setIframeLoading] = useState(true);
 
   return (
-    <div 
-      className="relative w-[270px] md:w-[280px] h-[570px] md:h-[590px] flex-shrink-0 snap-center transition-all duration-500 hover:scale-[1.02] select-none"
-    >
-      {/* Outer Phone Mockup Case */}
-      <div 
+    <div className="relative w-[250px] sm:w-[270px] md:w-[280px] h-[530px] sm:h-[570px] md:h-[590px] flex-shrink-0 snap-center transition-all duration-500 hover:scale-[1.02] select-none">
+      <div
         className="w-full h-full rounded-[2.8rem] md:rounded-[3.2rem] bg-slate-950 p-[8px] md:p-[10px] shadow-2xl border-4 md:border-8 border-slate-900 flex flex-col relative overflow-hidden transition-shadow duration-500"
         style={{
           boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 15px ${project.accentColor}15`
         }}
       >
-        {/* Screen Bezel Glass */}
         <div className="relative w-full h-full rounded-[2.2rem] md:rounded-[2.6rem] bg-slate-900 overflow-hidden flex flex-col">
-          
-          {/* Dynamic Island / Notch */}
+
           <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-20 h-4 bg-slate-950 rounded-full z-30 flex items-center justify-between px-2.5 pointer-events-none">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-800" />
             <span className="w-2.5 h-1 bg-slate-800 rounded-full" />
             <span className="w-1 h-1 rounded-full bg-blue-900/60" />
           </div>
 
-          {/* Status Bar */}
           <div className="absolute top-0 inset-x-0 h-8 px-5 pt-2 flex justify-between items-center text-[8px] md:text-[9px] font-bold z-20 pointer-events-none select-none text-slate-700">
             <span>09:41</span>
             <div className="flex items-center gap-1.5">
@@ -93,8 +81,7 @@ function PhoneCard({ project, isDragging, isActive }: PhoneCardProps) {
             </div>
           </div>
 
-          {/* Screen Viewport */}
-          <div className="relative w-full h-full pt-8 pb-3 bg-white overflow-hidden flex flex-col animate-fadeIn">
+          <div className="relative w-full h-full pt-8 pb-3 bg-white overflow-hidden flex flex-col">
             <div className="relative w-full h-full overflow-hidden bg-white">
               {isActive ? (
                 <>
@@ -104,7 +91,7 @@ function PhoneCard({ project, isDragging, isActive }: PhoneCardProps) {
                       <span className="text-[9px] uppercase font-bold tracking-widest text-slate-400">Loading Demo...</span>
                     </div>
                   )}
-                  
+
                   <iframe
                     src={project.url}
                     title={project.title}
@@ -129,7 +116,6 @@ function PhoneCard({ project, isDragging, isActive }: PhoneCardProps) {
             </div>
           </div>
 
-          {/* Bottom Home Indicator */}
           <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-24 h-1.5 bg-slate-800 rounded-full z-20 pointer-events-none" />
         </div>
       </div>
@@ -138,53 +124,54 @@ function PhoneCard({ project, isDragging, isActive }: PhoneCardProps) {
 }
 
 export function PortfolioShowcase() {
-  const [bgIndex, setBgIndex] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const [visibleIndex, setVisibleIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Throttling refs
   const dragTicking = useRef(false);
   const scrollTicking = useRef(false);
-  
-  // Drag states
+
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeftState, setScrollLeftState] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  
+
   const sliderRef = useRef<HTMLDivElement>(null);
   const [paddingStyle, setPaddingStyle] = useState({ paddingLeft: '20px', paddingRight: '20px' });
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setBgIndex((prev) => (prev + 1) % ctaBackgrounds.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
     const updatePadding = () => {
       const width = window.innerWidth;
-      if (width < 640) {
+      if (width < 380) {
+        setPaddingStyle({
+          paddingLeft: 'calc((100% - 250px) / 2)',
+          paddingRight: 'calc((100% - 250px) / 2)'
+        });
+      } else if (width < 640) {
         setPaddingStyle({
           paddingLeft: 'calc((100% - 270px) / 2)',
           paddingRight: 'calc((100% - 270px) / 2)'
         });
       } else if (width < 768) {
         setPaddingStyle({
-          paddingLeft: 'calc((100% - 270px) / 2)',
-          paddingRight: 'calc((100% - 270px) / 2)'
+          paddingLeft: 'calc((100% - 280px) / 2)',
+          paddingRight: 'calc((100% - 280px) / 2)'
         });
       } else if (width < 1024) {
         setPaddingStyle({
-          paddingLeft: 'calc((100% - 560px - 20px) / 2)', // 2 cards of 270px + 20px gap
+          paddingLeft: 'calc((100% - 560px - 20px) / 2)',
           paddingRight: 'calc((100% - 560px - 20px) / 2)'
         });
-      } else {
-        // Desktop: 3 cards of 280px + 2 gaps of 24px = 888px
+      } else if (width < 1440) {
         setPaddingStyle({
           paddingLeft: 'calc((100% - 888px) / 2)',
           paddingRight: 'calc((100% - 888px) / 2)'
+        });
+      } else {
+        setPaddingStyle({
+          paddingLeft: 'calc((100% - 1192px) / 2)',
+          paddingRight: 'calc((100% - 1192px) / 2)'
         });
       }
     };
@@ -193,9 +180,45 @@ export function PortfolioShowcase() {
     return () => window.removeEventListener('resize', updatePadding);
   }, []);
 
+  const triggerPause = () => {
+    setIsPaused(true);
+    if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+    pauseTimeoutRef.current = setTimeout(() => setIsPaused(false), 1200);
+  };
+
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    let animationFrameId: number;
+    let lastTime = 0;
+    const speed = 0.045;
+
+    const step = (timestamp: number) => {
+      if (!lastTime) lastTime = timestamp;
+      const elapsed = timestamp - lastTime;
+      lastTime = timestamp;
+
+      if (!isMouseDown && !isPaused && slider) {
+        const maxScroll = slider.scrollWidth - slider.clientWidth;
+        if (maxScroll > 0) {
+          let next = slider.scrollLeft + speed * elapsed;
+          if (next >= maxScroll) next = maxScroll;
+          slider.scrollLeft = next;
+        }
+      }
+      animationFrameId = requestAnimationFrame(step);
+    };
+    animationFrameId = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+    };
+  }, [isMouseDown, isPaused]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!sliderRef.current) return;
-    e.preventDefault(); // Prevents accidental text selection / image dragging
+    e.preventDefault();
     setIsMouseDown(true);
     setStartX(e.pageX - sliderRef.current.offsetLeft);
     setScrollLeftState(sliderRef.current.scrollLeft);
@@ -209,6 +232,7 @@ export function PortfolioShowcase() {
 
   const handleMouseUp = () => {
     setIsMouseDown(false);
+    triggerPause();
     setTimeout(() => {
       setIsDragging(false);
     }, 50);
@@ -217,7 +241,7 @@ export function PortfolioShowcase() {
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isMouseDown || !sliderRef.current) return;
     e.preventDefault();
-    
+
     const pageX = e.pageX;
     const offsetLeft = sliderRef.current.offsetLeft;
 
@@ -225,7 +249,7 @@ export function PortfolioShowcase() {
       requestAnimationFrame(() => {
         if (sliderRef.current && isMouseDown) {
           const x = pageX - offsetLeft;
-          const walk = x - startX; // 1:1 natural drag mapping
+          const walk = x - startX;
           sliderRef.current.scrollLeft = scrollLeftState - walk;
           if (Math.abs(walk) > 5) {
             setIsDragging(true);
@@ -258,7 +282,7 @@ export function PortfolioShowcase() {
               closestIndex = i;
             }
           }
-          
+
           if (closestIndex !== visibleIndex) {
             setVisibleIndex(closestIndex);
           }
@@ -273,6 +297,7 @@ export function PortfolioShowcase() {
   };
 
   const scroll = (direction: 'left' | 'right') => {
+    triggerPause();
     const targetIndex = direction === 'left' ? activeIndex - 1 : activeIndex + 1;
     if (targetIndex >= 0 && targetIndex < phoneProjects.length) {
       scrollToCard(targetIndex);
@@ -281,12 +306,13 @@ export function PortfolioShowcase() {
 
   const scrollToCard = (index: number) => {
     if (sliderRef.current) {
+      triggerPause();
       const cards = sliderRef.current.children;
       if (cards[index]) {
         const card = cards[index] as HTMLElement;
         const containerWidth = sliderRef.current.clientWidth;
         const targetScroll = card.offsetLeft - (containerWidth - card.clientWidth) / 2;
-        
+
         sliderRef.current.scrollTo({
           left: targetScroll,
           behavior: 'smooth',
@@ -298,9 +324,14 @@ export function PortfolioShowcase() {
 
   return (
     <section id="portfolio" className="py-16 md:py-24 relative overflow-hidden bg-white">
-      {/* Decorative Elements */}
-      <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-slate-50 rounded-full blur-[120px] -mr-1/4 -mt-1/4" />
-      
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
+        #portfolio, #portfolio * { font-family: 'DM Sans', sans-serif; }
+        #portfolio .slider-track::-webkit-scrollbar { display: none; }
+      `}</style>
+
+      <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-slate-50 rounded-full blur-[120px] -mr-48 -mt-48" />
+
       <div className="container mx-auto max-w-5xl px-4 relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div className="max-w-2xl">
@@ -318,29 +349,26 @@ export function PortfolioShowcase() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500 italic">Excellence.</span>
             </h2>
           </div>
-          <p className="text-slate-550 font-medium max-w-sm text-sm md:text-base leading-relaxed">
+          <p className="text-slate-500 font-medium max-w-sm text-sm md:text-base leading-relaxed">
             A curated selection of our most impactful digital transformations. We build products that define market standards.
           </p>
         </div>
 
-        {/* Premium Horizontal Phone Mockup Slider */}
         <div className="relative group/slider max-w-5xl mx-auto">
-          {/* Navigation Arrows */}
           <button
             onClick={() => scroll('left')}
-            className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md border border-slate-100 shadow-xl flex items-center justify-center text-slate-800 hover:text-orange-500 hover:scale-110 active:scale-95 transition-all opacity-0 group-hover/slider:opacity-100 hidden md:flex cursor-pointer"
+            className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md border border-slate-100 shadow-xl items-center justify-center text-slate-800 hover:text-orange-500 hover:scale-110 active:scale-95 transition-all opacity-0 group-hover/slider:opacity-100 hidden md:flex cursor-pointer"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          
+
           <button
             onClick={() => scroll('right')}
-            className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md border border-slate-100 shadow-xl flex items-center justify-center text-slate-800 hover:text-orange-500 hover:scale-110 active:scale-95 transition-all opacity-0 group-hover/slider:opacity-100 hidden md:flex cursor-pointer"
+            className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md border border-slate-100 shadow-xl items-center justify-center text-slate-800 hover:text-orange-500 hover:scale-110 active:scale-95 transition-all opacity-0 group-hover/slider:opacity-100 hidden md:flex cursor-pointer"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
 
-          {/* Slider Container - Added hardware acceleration styles */}
           <div
             ref={sliderRef}
             onMouseDown={handleMouseDown}
@@ -348,7 +376,12 @@ export function PortfolioShowcase() {
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
             onScroll={handleScroll}
-            className={`relative flex w-full gap-5 md:gap-6 overflow-x-auto snap-x snap-mandatory py-8 cursor-grab select-none ${
+            onTouchStart={() => setIsMouseDown(true)}
+            onTouchEnd={() => {
+              setIsMouseDown(false);
+              triggerPause();
+            }}
+            className={`slider-track relative flex w-full gap-5 md:gap-6 overflow-x-auto snap-x snap-mandatory py-8 cursor-grab select-none ${
               isMouseDown ? 'cursor-grabbing' : ''
             }`}
             style={{
@@ -370,7 +403,7 @@ export function PortfolioShowcase() {
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1, duration: 0.6 }}
+                  transition={{ delay: index * 0.08, duration: 0.5 }}
                   className="flex-shrink-0 snap-center flex flex-col items-center"
                   style={{
                     willChange: 'transform',
@@ -382,46 +415,30 @@ export function PortfolioShowcase() {
                     isDragging={isDragging}
                     isActive={isActive}
                   />
-                
-                {/* Meta details below phone card */}
-                <div className="text-center mt-4 select-none">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{project.category}</span>
-                  <h4 className="text-sm font-black text-slate-800 mt-0.5">{project.title}</h4>
-                  <a 
-                    href={project.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-[10px] font-extrabold hover:underline inline-flex items-center gap-1 mt-1"
-                    style={{ color: project.accentColor }}
-                  >
-                    Open Demo ↗
-                  </a>
-                </div>
-              </motion.div>
-            );
-          })}
+
+                  <div className="text-center mt-4 select-none">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{project.category}</span>
+                    <h4 className="text-sm font-black text-slate-800 mt-0.5">{project.title}</h4>
+                    <a
+                      href={project.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] font-extrabold hover:underline inline-flex items-center gap-1 mt-1"
+                      style={{ color: project.accentColor }}
+                    >
+                      Open Demo
+                      <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
+                        <path d="M3 9L9 3M9 3H4M9 3V8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </a>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
 
-          {/* Premium Clickable Pagination Dots */}
-          <div className="flex justify-center items-center gap-2.5 mt-6 relative z-20">
-            {phoneProjects.map((project, idx) => (
-              <button
-                key={project.id}
-                onClick={() => scrollToCard(idx)}
-                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                  activeIndex === idx 
-                    ? 'w-6' 
-                    : 'w-2 bg-slate-300 hover:bg-slate-400'
-                }`}
-                style={{
-                  backgroundColor: activeIndex === idx ? project.accentColor : undefined
-                }}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
-          </div>
+          
         </div>
-        {/* CTA Section has been moved below BrowserPortfolioShowcase */}
       </div>
     </section>
   );

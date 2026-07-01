@@ -17,7 +17,7 @@ export const processContent: Record<string, DetailedContent> = {
     slug: "discovery",
     title: "Discovery Phase",
     subtitle: "Requirement Analysis & Feasibility",
-    icon: "🧠",
+    icon: "Brain",
     description: "Deep dive into your business goals, target audience, and project feasibility.",
     longDescription: "The Discovery phase is the most critical part of our journey. It's where we move from a vague idea to a concrete technical roadmap. We conduct stakeholder interviews, analyze market competitors, and define the 'Minimum Viable Product' (MVP) that will bring maximum value to your business in the shortest time. We don't just ask what you want; we ask why you want it, ensuring every feature serves a business purpose.",
     features: [
@@ -41,7 +41,7 @@ export const processContent: Record<string, DetailedContent> = {
     slug: "strategy",
     title: "Strategy & Planning",
     subtitle: "Architecture & SEO Roadmap",
-    icon: "🧩",
+    icon: "PuzzleIcon",
     description: "Mapping the technical architecture and growth strategy for your product.",
     longDescription: "Strategic planning ensures your software is built to scale. We define the sitemap, choose the right technology stack (like Next.js vs. React), and map out the internal logic of the system. This phase also includes an 'SEO Roadmap'—planning the site's structure so it ranks on Google from Day 1. We treat your software not just as a code repository, but as a business growth engine.",
     features: [
@@ -65,7 +65,7 @@ export const processContent: Record<string, DetailedContent> = {
     slug: "ui-ux",
     title: "UI/UX Design",
     subtitle: "High-Fidelity Visual Identity",
-    icon: "🎨",
+    icon: "Palette",
     description: "Creating premium, intuitive user interfaces that convert users into loyal customers.",
     longDescription: "Design is more than just aesthetics; it's about the feeling of using your product. We follow a 'Mobile-First' approach, ensuring that your software looks stunning on every device. Our UI/UX designers create high-fidelity prototypes that allow you to virtually 'walk through' your app before we write a single line of code. We focus on accessibility, speed, and conversion-optimized layouts.",
     features: [
@@ -89,7 +89,7 @@ export const processContent: Record<string, DetailedContent> = {
     slug: "frontend",
     title: "Frontend Development",
     subtitle: "Interactive & Fast User Interface",
-    icon: "⚙️",
+    icon: "MonitorSmartphone",
     description: "Building ultra-fast, responsive interactive UIs with modern tech stacks.",
     longDescription: "We use Next.js—the gold standard of React frameworks—to build your frontend. This ensures your site is blazingly fast and SEO-friendly out of the box. Our frontend development focuses on 'UX Polish'—adding those subtle animations and micro-interactions that make your software feel like a premium product. We don't just build pages; we build experiences that load instantly and perform flawlessly.",
     features: [
@@ -113,7 +113,7 @@ export const processContent: Record<string, DetailedContent> = {
     slug: "backend",
     title: "Backend Development",
     subtitle: "Robust Systems & Secure Data",
-    icon: "🔧",
+    icon: "Wrench",
     description: "Architecting secure APIs and scalable database systems for high-traffic apps.",
     longDescription: "The backend is the engine of your application. We build robust, scalable server-side logic using Node.js and modern database systems like MongoDB or PostgreSQL. Security is our top priority—we implement advanced authentication systems, data encryption, and rate limiting to keep your business data safe. Our backends are designed to handle thousands of concurrent users without breaking a sweat.",
     features: [
@@ -137,7 +137,7 @@ export const processContent: Record<string, DetailedContent> = {
     slug: "integration",
     title: "System Integration",
     subtitle: "Unified Business Ecosystem",
-    icon: "🔗",
+    icon: "Link2",
     description: "Connecting your software with payments, emails, and third-party tools.",
     longDescription: "No software exists in a vacuum. We specialize in connecting your application to the tools your business already uses. From Razorpay/Stripe for payments to SendGrid for automated emails and AWS for storage, we handle all API integrations. We ensure that data flows seamlessly between your new platform and your existing business workflow, creating a unified ecosystem.",
     features: [
@@ -161,7 +161,7 @@ export const processContent: Record<string, DetailedContent> = {
     slug: "testing",
     title: "Testing & QA",
     subtitle: "Zero-Bugs Quality Guarantee",
-    icon: "🧪",
+    icon: "FlaskConical",
     description: "Rigorous automated and manual testing to ensure rock-solid stability.",
     longDescription: "We don't launch software; we launch polished products. Our Quality Assurance (QA) team runs your application through hundreds of test cases. We perform Unit Testing for code logic, Integration Testing for APIs, and User Acceptance Testing (UAT) to see how real people use the product. We also run stress tests to ensure the application stays fast even under heavy load.",
     features: [
@@ -185,7 +185,7 @@ export const processContent: Record<string, DetailedContent> = {
     slug: "deployment",
     title: "CI/CD & Deployment",
     subtitle: "Secure Cloud Launch",
-    icon: "🚀",
+    icon: "Rocket",
     description: "Launching your product on high-performance cloud servers with CI/CD.",
     longDescription: "Deployment is an art. We set up professional CI/CD (Continuous Integration / Continuous Deployment) pipelines so that your software can be updated instantly without downtime. We deploy on premium cloud providers like Vercel, AWS, or DigitalOcean, ensuring your app is served from the nearest server to your user. We also handle SSL certificates, domain configuration, and CDN setup.",
     features: [
@@ -209,7 +209,7 @@ export const processContent: Record<string, DetailedContent> = {
     slug: "crm-system",
     title: "CRM & Automation",
     subtitle: "The Business Growth Engine",
-    icon: "📊",
+    icon: "BarChart3",
     description: "Custom admin dashboards and automation tools to manage leads and revenue.",
     longDescription: "This is our 'Special Sauce'. Most agencies build a site and stop. We build a built-in CRM (Customer Relationship Management) system that allows you to manage your entire business from a single dashboard. Track leads, automate customer follow-ups, and see real-time revenue analytics. We turn your software into a 24/7 salesperson that never sleeps.",
     features: [
@@ -233,7 +233,7 @@ export const processContent: Record<string, DetailedContent> = {
     slug: "maintenance",
     title: "Maintenance & Scaling",
     subtitle: "Long-term Partnership",
-    icon: "🔄",
+    icon: "RefreshCw",
     description: "Ongoing support, security updates, and scaling your app as you grow.",
     longDescription: "Technology evolves, and so should your software. Our relationship doesn't end at launch. We provide ongoing maintenance to ensure your site stays up-to-date with the latest security patches. As your user base grows, we help you scale your infrastructure to handle the traffic. We are your long-term technology partner, here to help you upgrade and add new features whenever needed.",
     features: [
@@ -318,6 +318,27 @@ export const expertiseContent: Record<string, DetailedContent> = {
     ],
     technologies: ["Kotlin", "Java", "Android SDK", "Firebase", "SQLite"],
     gradient: "from-emerald-500 to-teal-400"
+  },
+  "ios-app": {
+    slug: "ios-app",
+    title: "iOS App Development",
+    subtitle: "Native Apple Ecosystem Apps",
+    icon: "IOS",
+    description: "Native, high-performance iOS applications built for the App Store ecosystem.",
+    longDescription: "We build native iOS applications using Swift and modern Apple frameworks, designed to feel completely at home on iPhone and iPad. From smooth SwiftUI interfaces to deep integration with Apple's ecosystem (Push Notifications, Face ID, Apple Pay), we deliver apps that meet Apple's strict App Store guidelines and your users' expectations for polish and reliability.",
+    features: [
+      "Native Swift & SwiftUI Development",
+      "App Store Review & Compliance",
+      "Apple Ecosystem Integrations (Apple Pay, Face ID)",
+      "Push Notifications & Background Tasks"
+    ],
+    benefits: [
+      "Buttery-Smooth Native Performance",
+      "Full App Store Compliance",
+      "Deep Integration with Apple Devices"
+    ],
+    technologies: ["Swift", "SwiftUI", "Xcode", "CoreData", "Firebase"],
+    gradient: "from-slate-700 to-slate-900"
   },
   "custom-software": {
     slug: "custom-software",
@@ -527,7 +548,7 @@ export const locationContent: Record<string, DetailedContent> = {
     slug: "bihar",
     title: "Software Company in Bihar",
     subtitle: "Leading Digital Growth in the East",
-    icon: "📍",
+    icon: "MapPin",
     description: "Expert software development services in Patna, Gaya, and across Bihar.",
     longDescription: "Bihar is emerging as a tech hub, and Sabka Saathi is at the forefront of this digital revolution. Based in Patna, we provide high-end software solutions to local businesses and government sectors. Our goal is to empower Bihar's entrepreneurs with technology that competes on a global scale.",
     features: ["Localized Support", "Patna Hub", "Government Projects", "Regional Talent"],
@@ -538,7 +559,7 @@ export const locationContent: Record<string, DetailedContent> = {
     slug: "gujarat",
     title: "Software Company in Gujarat",
     subtitle: "Innovation for India's Business Hub",
-    icon: "📍",
+    icon: "MapPin",
     description: "Premium tech solutions in Ahmedabad, Surat, and Gandhinagar.",
     longDescription: "Gujarat is the entrepreneurial heart of India. We serve the business community of Gujarat with custom ERPs, CRM systems, and e-commerce platforms designed for massive scale. From the diamond industry of Surat to the tech parks of Ahmedabad, we are Gujarat's trusted tech partner.",
     features: ["Business Automation", "Surat/Ahmedabad Network", "Industrial Tech", "SaaS Experts"],
@@ -549,7 +570,7 @@ export const locationContent: Record<string, DetailedContent> = {
     slug: "maharashtra",
     title: "Software Company in Maharashtra",
     subtitle: "Enterprise Solutions in Pune & Mumbai",
-    icon: "📍",
+    icon: "MapPin",
     description: "Modern software development in Pune, Mumbai, and Nagpur.",
     longDescription: "Serving the powerhouse of India's economy. In Maharashtra, we focus on enterprise-grade software and SaaS innovation. Whether you are a startup in Pune or a multinational in Mumbai, our technical expertise in Next.js and Cloud architecture ensures your business stays ahead.",
     features: ["Enterprise SaaS", "Pune Tech Reach", "Financial Systems", "Cloud Migration"],
