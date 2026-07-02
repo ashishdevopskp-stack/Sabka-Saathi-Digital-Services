@@ -312,7 +312,7 @@ const karnatakaCities: CityInfo[] = [
   { name: "Mysuru", slug: "mysuru", state: "Karnataka", type: "major", tagline: "a heritage city and growing IT and tourism hub of South Karnataka", context: "the tourism operators, IT ancillary firms, and heritage retail businesses", nearby: ["bengaluru", "davanagere", "shivamogga", "mangaluru"] },
   { name: "Hubballi-Dharwad", slug: "hubballi-dharwad", state: "Karnataka", type: "major", tagline: "the commercial and educational twin-city hub of North Karnataka", context: "the cotton and grain trading firms, educational institutions, and local retail", nearby: ["ballari", "belagavi", "davanagere", "bengaluru"] },
   { name: "Mangaluru", slug: "mangaluru", state: "Karnataka", type: "major", tagline: "a major port city and banking hub on the Karnataka coast", context: "the port logistics firms, banking institutions, and cashew and spice exporters", nearby: ["bengaluru", "mysuru", "shivamogga", "hubballi-dharwad"] },
-  { name: "Belagavi", slug: "belagavi", state: "Karnataka", type: "headquarters", tagline: "a border trade city linking Karnataka and Maharashtra with strong manufacturing", context: "the foundry industries, sugar cooperatives, and cross-border trading firms", nearby: ["hubballi-dharwad", "kolhapur", "ballari", "bengaluru"] },
+  { name: "Belagavi", slug: "belagavi", state: "Karnataka", type: "headquarters", tagline: "a border trade city linking Karnataka and Maharashtra with strong manufacturing", context: "the foundry industries, sugar cooperatives, and cross-border trading firms", nearby: ["hubballi-dharwad", "davanagere", "ballari", "bengaluru"] },
   { name: "Davanagere", slug: "davanagere", state: "Karnataka", type: "headquarters", tagline: "a central Karnataka trade hub known for its cotton and edible oil mills", context: "the cotton ginning mills, edible oil traders, and local wholesalers", nearby: ["bengaluru", "hubballi-dharwad", "shivamogga", "ballari"] },
   { name: "Ballari", slug: "ballari", state: "Karnataka", type: "growing", tagline: "an iron-ore mining hub and industrial trade center of North Karnataka", context: "the iron ore mining firms, steel ancillary units, and regional traders", nearby: ["hubballi-dharwad", "davanagere", "belagavi", "bengaluru"] },
   { name: "Shivamogga", slug: "shivamogga", state: "Karnataka", type: "growing", tagline: "the gateway to the Western Ghats and an areca nut trading center", context: "the areca nut traders, agro-processing units, and local wholesalers", nearby: ["mysuru", "mangaluru", "davanagere", "bengaluru"] }
@@ -473,13 +473,17 @@ export function getContentBySlug(slug: string): LocalPageData | null {
     }
   ];
 
-  const nearbySlugs = city.nearby.map((nearbySlug) => {
-    const nearbyCity = cities.find((c) => c.slug === nearbySlug)!;
-    return {
+  // Defensive: filter out any `nearby` slug that doesn't resolve to a real
+  // city, instead of crashing the whole static build if the data drifts
+  // out of sync (e.g. a nearby slug referencing a city that was never
+  // added to the `cities` array).
+  const nearbySlugs = city.nearby
+    .map((nearbySlug) => cities.find((c) => c.slug === nearbySlug))
+    .filter((c): c is CityInfo => Boolean(c))
+    .map((nearbyCity) => ({
       title: `${serviceName} in ${nearbyCity.name}`,
-      url: `/${generateSlug(page.serviceSlug, nearbySlug)}`
-    };
-  });
+      url: `/${generateSlug(page.serviceSlug, nearbyCity.slug)}`
+    }));
 
   const relatedServices = Object.keys(services)
     .filter((sSlug) => sSlug !== page.serviceSlug)
