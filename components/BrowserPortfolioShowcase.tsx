@@ -5,50 +5,7 @@ import { Sparkles, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/LiquidButton";
-
-const portfolioProjects = [
-  {
-    title: "Jewellery Website",
-    category: "E-commerce",
-    url: "https://jewellery-website-neon.vercel.app/",
-    year: "2026",
-    description: "A modern jewellery shopping experience with premium UI."
-  },
-  {
-    title: "Travel Vista",
-    category: "Travel",
-    url: "https://travelvista-website.vercel.app/",
-    year: "2026",
-    description: "A travel website designed for packages and bookings."
-  },
-  {
-    title: "The Sizzling Plate",
-    category: "Restaurant",
-    url: "https://thesizzlingplate.vercel.app/",
-    year: "2026",
-    description: "A restaurant website with menu and booking focused design."
-  },
-  {
-    title: "School Website",
-    category: "Education",
-    url: "https://school-website-aarvjs.vercel.app/",
-    year: "2026",
-    description: "A clean school website with modern sections and responsive UI."
-  },
-  {
-    title: "Salon Website",
-    category: "Beauty & Salon",
-    url: "https://salonaarvjs.vercel.app/",
-    year: "2026",
-    description: "A premium salon website for services, branding, and leads."
-  }
-];
-
-const infiniteProjects = [
-  ...portfolioProjects,
-  ...portfolioProjects,
-  ...portfolioProjects
-];
+import { fetchProjectsByType, Project } from "@/lib/project";
 
 const LockIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg width="8" height="8" viewBox="0 0 10 10" fill="none" {...props}>
@@ -58,7 +15,7 @@ const LockIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 interface LaptopCardProps {
-  project: typeof portfolioProjects[0];
+  project: Project;
   isDragging: boolean;
   isActive: boolean;
 }
@@ -143,8 +100,26 @@ function LaptopCard({ project, isDragging, isActive }: LaptopCardProps) {
 }
 
 export function BrowserPortfolioShowcase() {
+  const [portfolioProjects, setPortfolioProjects] = useState<Project[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await fetchProjectsByType("desktop");
+        setPortfolioProjects(data.sort((a, b) => a.order - b.order));
+      } catch (err) {
+        console.error("Failed to load desktop projects", err);
+      } finally {
+        setLoadingProjects(false);
+      }
+    })();
+  }, []);
+
+  const infiniteProjects = [...portfolioProjects, ...portfolioProjects, ...portfolioProjects];
+
   const [activeIndex, setActiveIndex] = useState(0);
-  const [visibleIndex, setVisibleIndex] = useState(5);
+  const [visibleIndex, setVisibleIndex] = useState(portfolioProjects.length);
   const [isPaused, setIsPaused] = useState(false);
   const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -169,15 +144,16 @@ export function BrowserPortfolioShowcase() {
   };
 
   useEffect(() => {
-    if (sliderRef.current) {
+    if (sliderRef.current && portfolioProjects.length > 0) {
       const singleSetWidth = sliderRef.current.scrollWidth / 3;
       sliderRef.current.scrollLeft = singleSetWidth;
+      setVisibleIndex(portfolioProjects.length);
     }
-  }, []);
+  }, [portfolioProjects.length]);
 
   useEffect(() => {
     const slider = sliderRef.current;
-    if (!slider) return;
+    if (!slider || portfolioProjects.length === 0) return;
 
     let animationFrameId: number;
     let lastTime = 0;
@@ -211,7 +187,7 @@ export function BrowserPortfolioShowcase() {
         clearTimeout(pauseTimeoutRef.current);
       }
     };
-  }, [isInteracting, isPaused]);
+  }, [isInteracting, isPaused, portfolioProjects.length]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!sliderRef.current) return;
@@ -265,7 +241,7 @@ export function BrowserPortfolioShowcase() {
   };
 
   const handleScroll = () => {
-    if (!sliderRef.current) return;
+    if (!sliderRef.current || portfolioProjects.length === 0) return;
     if (isInteracting) return;
 
     if (!scrollTicking.current) {
@@ -273,7 +249,7 @@ export function BrowserPortfolioShowcase() {
         if (sliderRef.current && !isInteracting) {
           const { scrollLeft, clientWidth } = sliderRef.current;
           const cards = sliderRef.current.children;
-          let closestIndex = 5;
+          let closestIndex = portfolioProjects.length;
           let closestDistance = Infinity;
           const containerCenter = scrollLeft + clientWidth / 2;
 
@@ -344,6 +320,18 @@ export function BrowserPortfolioShowcase() {
       }
     }
   };
+
+  if (loadingProjects) {
+    return (
+      <section className="py-24 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+      </section>
+    );
+  }
+
+  if (portfolioProjects.length === 0) {
+    return null;
+  }
 
   return (
     <section id="browser-portfolio" className="py-16 md:py-20 relative overflow-hidden bg-slate-50/50 border-t border-slate-100">
@@ -455,7 +443,7 @@ export function BrowserPortfolioShowcase() {
               const isActive = Math.abs(index - visibleIndex) <= 1;
               return (
                 <motion.div
-                  key={`${project.title}-${index}`}
+                  key={`${project.id}-${index}`}
                   className="flex-shrink-0 snap-center w-[88vw] sm:w-[62vw] lg:w-[42vw] 2xl:w-[34vw] flex flex-col items-center"
                   style={{
                     willChange: 'transform',
@@ -475,7 +463,7 @@ export function BrowserPortfolioShowcase() {
           <div className="flex justify-center items-center gap-2.5 mt-8 relative z-20">
             {portfolioProjects.map((project, idx) => (
               <button
-                key={`${project.title}-dot`}
+                key={`${project.id}-dot`}
                 onClick={() => scrollToCard(idx)}
                 className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                   activeIndex === idx

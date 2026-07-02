@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/LiquidButton";
 import Link from "next/link";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { ShareButton } from "@/components/ShareButton";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -214,13 +215,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                     ))}
                   </div>
                 </div>
-                <Button className="rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer">
-                  Share Post
-                </Button>
+               <ShareButton
+  title={post.title}
+  text={post.excerpt}
+  className="rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer"
+/>
              </div>
           </div>
 
-          <ContactSection />
         </article>
       </main>
 

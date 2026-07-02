@@ -6,23 +6,56 @@ import Link from "next/link";
 import { BlogPost } from "@/lib/blogs";
 
 const styles = `
-  .bc-link { font-family: 'DM Sans', sans-serif; }
+  .bc-link { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; }
 
-  .bc-card { display: flex; flex-direction: column; height: 100%; }
+  .bc-card {
+    display: flex; flex-direction: column; height: 100%;
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.03),
+      0 8px 24px rgba(0,0,0,0.06),
+      inset 0 1px 0 rgba(255,255,255,0.8);
+    transition: transform 0.45s cubic-bezier(0.25,1,0.5,1),
+                box-shadow 0.45s cubic-bezier(0.25,1,0.5,1),
+                border-color 0.45s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bc-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+  }
+
+  .bc-link:hover .bc-card {
+    transform: translateY(-6px) scale(1.012);
+    box-shadow:
+      0 2px 4px rgba(0,0,0,0.04),
+      0 20px 40px rgba(232,68,90,0.10),
+      inset 0 1px 0 rgba(255,255,255,0.9);
+    border-color: rgba(255,255,255,0.85);
+  }
 
   .bc-cat {
-    font-weight: 500; font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase;
-    border-radius: 999px; padding: 0.32rem 0.85rem;
-    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    font-weight: 600; font-size: 0.62rem; letter-spacing: 0.13em; text-transform: uppercase;
+    border-radius: 999px; padding: 0.35rem 0.9rem;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.04);
   }
-  .bc-cat.development { background: rgba(99,102,241,0.08); color: #6366f1; border: 1px solid rgba(99,102,241,0.14); }
-  .bc-cat.enterprise   { background: rgba(168,85,247,0.08); color: #a855f7; border: 1px solid rgba(168,85,247,0.14); }
-  .bc-cat.marketing    { background: rgba(255,140,66,0.10); color: #e8445a; border: 1px solid rgba(232,68,90,0.16); }
-  .bc-cat.strategy     { background: rgba(29,29,31,0.05);   color: rgba(29,29,31,0.6); border: 1px solid rgba(29,29,31,0.08); }
-  .bc-cat.default      { background: rgba(255,140,66,0.10); color: #e8445a; border: 1px solid rgba(232,68,90,0.16); }
+  .bc-cat.development { background: rgba(99,102,241,0.10); color: #4f46e5; border: 1px solid rgba(99,102,241,0.18); }
+  .bc-cat.enterprise   { background: rgba(168,85,247,0.10); color: #9333ea; border: 1px solid rgba(168,85,247,0.18); }
+  .bc-cat.marketing    { background: rgba(255,140,66,0.12); color: #e8445a; border: 1px solid rgba(232,68,90,0.20); }
+  .bc-cat.strategy     { background: rgba(29,29,31,0.06);   color: rgba(29,29,31,0.65); border: 1px solid rgba(29,29,31,0.10); }
+  .bc-cat.default      { background: rgba(255,140,66,0.12); color: #e8445a; border: 1px solid rgba(232,68,90,0.20); }
 
   .bc-title {
-    color: #1d1d1f; font-weight: 600; letter-spacing: -0.01em;
+    color: #1d1d1f; font-weight: 650; letter-spacing: -0.015em;
     transition: color 0.35s ease;
   }
   .bc-link:hover .bc-title {
@@ -30,25 +63,30 @@ const styles = `
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
 
-  .bc-excerpt { color: rgba(29,29,31,0.5); }
+  .bc-excerpt { color: rgba(29,29,31,0.52); }
 
   .bc-tag {
-    font-weight: 500; font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase;
-    color: rgba(29,29,31,0.4);
-    background: rgba(0,0,0,0.03);
+    font-weight: 600; font-size: 0.6rem; letter-spacing: 0.05em; text-transform: uppercase;
+    color: rgba(29,29,31,0.45);
+    background: rgba(0,0,0,0.035);
     border: 1px solid rgba(0,0,0,0.05);
-    border-radius: 8px; padding: 0.15rem 0.5rem;
+    border-radius: 8px; padding: 0.18rem 0.55rem;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  .bc-link:hover .bc-tag {
+    background: rgba(232,68,90,0.06);
+    color: rgba(232,68,90,0.75);
   }
 
-  .bc-footer { border-top: 1px solid rgba(0,0,0,0.06); }
-  .bc-date { color: rgba(29,29,31,0.38); font-weight: 500; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .bc-footer { border-top: 1px solid rgba(0,0,0,0.055); }
+  .bc-date { color: rgba(29,29,31,0.4); font-weight: 600; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; }
 
   .bc-read {
-    color: #e8445a; font-weight: 600; font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #e8445a; font-weight: 650; font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
     display: inline-flex; align-items: center; gap: 0.3rem;
   }
-  .bc-read svg { transition: transform 0.35s cubic-bezier(0.25,1,0.5,1); }
-  .bc-link:hover .bc-read svg { transform: translateX(3px); }
+  .bc-read svg { transition: transform 0.45s cubic-bezier(0.34,1.56,0.64,1); }
+  .bc-link:hover .bc-read svg { transform: translateX(4px); }
 `;
 
 interface BlogCardProps {
@@ -71,15 +109,16 @@ export function BlogCard({ post, index }: BlogCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.04 }}
+      transition={{ delay: index * 0.045, duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
+      whileHover={{ y: -2 }}
       className="h-full"
     >
       <style dangerouslySetInnerHTML={{ __html: styles }} />
       <Link href={`/blog/${post.slug}`} className="bc-link block group h-full">
-        <Card hoverable className="bc-card rounded-[1.75rem] p-6">
+        <Card hoverable className="bc-card rounded-[1.85rem] p-6">
 
           {/* Category */}
           <div className="flex items-center justify-between mb-4">

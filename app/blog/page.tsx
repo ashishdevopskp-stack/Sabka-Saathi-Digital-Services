@@ -29,16 +29,16 @@ async function getFirestoreBlogs(): Promise<BlogPost[]> {
     const q = query(collection(db, "blogs"), where("status", "==", "published"));
     const snapshot = await getDocs(q);
     const posts: BlogPost[] = [];
-    
+
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
       const cat = data.category || "Development";
       const assets = categoryAssets[cat] || { gradient: "from-orange-500 to-rose-500", icon: "📄" };
-      
+
       const wordCount = (data.content || "").split(/\s+/).length;
       const readTime = `${Math.max(1, Math.ceil(wordCount / 200))} min read`;
-      
-      const dateFormatted = data.createdAt 
+
+      const dateFormatted = data.createdAt
         ? new Date(data.createdAt).toLocaleDateString("en-US", {
             month: "long",
             day: "numeric",
@@ -92,25 +92,27 @@ export default async function BlogListingPage() {
     const validB = isNaN(timeB) ? 0 : timeB;
     return validB - validA;
   });
-  
+
   return (
-    <div className="flex min-h-screen flex-col selection:bg-orange-100 selection:text-orange-900">
+    <div className="flex min-h-screen flex-col selection:bg-orange-100 selection:text-orange-900 bg-[#f5f5f7]">
       <InteractiveBackground />
       <Navbar />
-      
+
       <main className="flex-1 pt-6 pb-24 relative z-10">
         <section className="container mx-auto px-4 max-w-7xl">
-          {/* Redesigned Premium Hero Section */}
-          <div className="relative py-12 md:py-20 mb-16 rounded-[2.5rem] bg-gradient-to-br from-white/70 to-white/30 backdrop-blur-xl border border-white/60 p-8 md:p-12 shadow-[0_10px_30px_rgba(255,237,213,0.02)] overflow-hidden">
-            {/* Soft decorative background highlight */}
-            <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-orange-200/10 to-amber-200/10 rounded-full blur-3xl pointer-events-none" />
-            
+          {/* iOS-style Hero: frosted glass slab, big rounded corners, soft depth */}
+          <div className="relative py-14 md:py-24 mb-16 rounded-[2.75rem] bg-white/55 backdrop-blur-2xl backdrop-saturate-150 border border-white/70 p-8 md:p-14 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_20px_50px_rgba(232,68,90,0.06),inset_0_1px_0_rgba(255,255,255,0.9)] overflow-hidden">
+            {/* Soft decorative background highlights, iOS wallpaper-style blobs */}
+            <div className="absolute -top-10 -right-10 w-96 h-96 bg-gradient-to-br from-orange-200/25 to-amber-200/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-16 -left-16 w-80 h-80 bg-gradient-to-tr from-indigo-200/15 to-pink-200/10 rounded-full blur-3xl pointer-events-none" />
+
             <div className="max-w-3xl relative z-10">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 border border-orange-100/50 text-orange-600 text-[10px] font-black uppercase tracking-[0.2em] mb-6 shadow-sm">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-white/80 text-orange-600 text-[10px] font-black uppercase tracking-[0.2em] mb-7 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
                 Sabka Saathi Knowledge Hub
               </div>
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-slate-950 mb-6 tracking-tight leading-[1.1]">
-                Insights & <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Digital Strategy</span>
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-slate-950 mb-6 tracking-tight leading-[1.08]">
+                Insights &amp; <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Digital Strategy</span>
               </h1>
               <p className="text-base md:text-lg text-slate-600 font-semibold max-w-2xl leading-relaxed">
                 Expert analysis, technical deep-dives, and strategic guides on modern web development, business automation, and digital marketing to scale your enterprise in India.

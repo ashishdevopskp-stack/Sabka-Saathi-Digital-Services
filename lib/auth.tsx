@@ -26,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+   
     const allowedEmailsStr = process.env.NEXT_PUBLIC_ADMIN_EMAILS || "";
     const allowedEmails = allowedEmailsStr
       .split(",")
@@ -34,10 +35,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setLoading(true);
-      
+
       if (firebaseUser) {
         const userEmail = firebaseUser.email?.toLowerCase() || "";
-        
+
         if (allowedEmails.includes(userEmail)) {
           setUser(firebaseUser);
           setError(null);

@@ -55,16 +55,21 @@ const serviceLinks: SubLink[] = [
   { label: "Cloud Solutions", href: "/expertise/cloud-solutions", icon: Cloud },
 ];
 
+// Grouped under "Company" so the top-level bar stays short and minimal
+const companyLinks: SubLink[] = [
+  { label: "About Us", href: "/about", icon: Info },
+  { label: "Trust & Security", href: "/trust", icon: ShieldCheck },
+  { label: "FAQ", href: "/faq", icon: HelpCircle },
+  { label: "SEO Services", href: "/seo", icon: SearchIcon },
+];
+
 const links: NavLink[] = [
   { label: "Home", href: "/", icon: Home },
-  { label: "About", href: "/about", icon: Info },
   { label: "Services", href: "/services", icon: LayoutGrid, children: serviceLinks },
   { label: "Industries", href: "/industries", icon: Building2 },
-  { label: "Trust", href: "/trust", icon: ShieldCheck },
+  { label: "Company", href: "/about", icon: Info, children: companyLinks },
   { label: "Blog", href: "/blog", icon: Newspaper },
   { label: "Contact", href: "/contact", icon: Mail },
-  { label: "FAQ", href: "/faq", icon: HelpCircle },
-  { label: "SEO", href: "/seo", icon: SearchIcon },
 ];
 
 interface BeforeInstallPromptEvent extends Event {
@@ -75,6 +80,25 @@ interface BeforeInstallPromptEvent extends Event {
   }>;
   prompt(): Promise<void>;
 }
+
+/* NOTE ON RESPONSIVE FIXES
+   1. Desktop nav now switches on `lg:` (1024px) instead of `md:` (768px).
+      9 links + logo + button never fit in a 768–1024px viewport — that
+      was the main cause of the "messy" overlap/wrap you were seeing.
+   2. Everything between the mobile burger and the full desktop nav
+      (i.e. 768–1024px, tablets/small laptops) now correctly shows the
+      mobile drawer instead of a half-squeezed desktop bar.
+   3. Link padding/gap/font-size scale down at `lg` and back up at `xl`
+      so the bar doesn't need horizontal scroll on 1024–1280px screens.
+   4. The mega-dropdown width is now viewport-aware (`w-[92vw]` capped
+      at 560px) and re-centers itself so it can never overflow off the
+      left/right edge of the screen.
+   5. Logo wordmark shrinks on small screens and the shell padding/
+      top-offset scales down on mobile so the pill doesn't look
+      oversized on narrow phones.
+   6. Services dropdown also opens on click/tap (not just hover), so it
+      works on touch/tablet devices where mouseEnter never fires.
+*/
 
 const navStyles = `
   /* ── Liquid glass shell ─────────────────────────────────── */
@@ -118,6 +142,7 @@ const navStyles = `
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
     animation: navWordShine 6s ease-in-out infinite;
+    white-space: nowrap;
   }
   @keyframes navWordShine {
     0%, 100% { background-position: 0% 50%; }
@@ -153,6 +178,7 @@ const navStyles = `
     box-shadow:
       0 20px 50px rgba(29,29,31,0.12),
       0 4px 12px rgba(232,68,90,0.08);
+    max-width: calc(100vw - 2rem);
   }
   .nav-dropdown-item:hover .nav-dropdown-icon {
     background: linear-gradient(135deg, #ff8c42 0%, #e8445a 100%);
@@ -167,11 +193,13 @@ const navStyles = `
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
-  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  // Which dropdown is open, keyed by the parent link's href. `null` = none open.
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [openMobileGroup, setOpenMobileGroup] = useState<string | null>(null);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const pathname = usePathname();
   const closeTimer = useRef<NodeJS.Timeout | null>(null);
+  const navRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -185,8 +213,8 @@ export function Navbar() {
   // Close mobile drawer automatically on route change
   useEffect(() => {
     setOpen(false);
-    setMobileServicesOpen(false);
-    setServicesOpen(false);
+    setOpenMobileGroup(null);
+    setOpenDropdown(null);
   }, [pathname]);
 
   // Lock body scroll while the drawer is open
@@ -196,6 +224,18 @@ export function Navbar() {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  // Close the desktop dropdown on outside click (covers touch/tablet)
+  useEffect(() => {
+    if (!openDropdown) return;
+    const handleClick = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [openDropdown]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) {
@@ -215,49 +255,65 @@ export function Navbar() {
   const isParentActive = (link: NavLink) =>
     isActive(link.href) || (link.children?.some((c) => pathname?.startsWith(c.href)) ?? false);
 
-  const openDropdown = () => {
+  // Don't render the public site navbar inside the admin panel —
+  // change "/admin" below if your admin routes live under a different prefix.
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
+  const openDropdownFor = (key: string) => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    setServicesOpen(true);
+    setOpenDropdown(key);
   };
   const closeDropdownDelayed = () => {
-    closeTimer.current = setTimeout(() => setServicesOpen(false), 160);
+    closeTimer.current = setTimeout(() => setOpenDropdown(null), 160);
   };
 
   return (
-    <header className="fixed top-4 left-0 right-0 z-50 px-4">
+    <header className="fixed top-2 left-0 right-0 z-50 px-3 sm:top-4 sm:px-4">
       <style dangerouslySetInnerHTML={{ __html: navStyles }} />
 
-      <nav className="nav-shell mx-auto flex w-full max-w-7xl items-center justify-between rounded-full px-5 py-3 md:px-7">
-        <Link href="/" className="relative z-10 flex items-center gap-3">
+      <nav
+        ref={navRef}
+        className="nav-shell mx-auto flex w-full max-w-7xl items-center justify-between rounded-full px-3 py-2 sm:px-5 sm:py-3 lg:px-6"
+      >
+        <Link href="/" className="relative z-10 flex shrink-0 items-center gap-2 sm:gap-3">
           <Image
             src="/logo.png"
             alt="Sabka Saathi - Professional Software Development Logo"
             width={40}
             height={40}
-            className="h-10 w-auto object-contain scale-110"
+            className="h-8 w-auto object-contain scale-110 sm:h-9 lg:h-10"
             priority
           />
-          <span className="nav-word text-xl font-bold tracking-tight uppercase">
+          <span className="nav-word text-base font-bold tracking-tight uppercase sm:text-lg lg:text-xl">
             SABKA-SAATHI
           </span>
         </Link>
 
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="hidden items-center gap-0.5 lg:flex xl:gap-1">
           {links.map((link) => {
             const active = isParentActive(link);
             const Icon = link.icon;
             const hasChildren = !!link.children?.length;
+            const isOpen = openDropdown === link.href;
 
             return (
               <div
                 key={link.href}
                 className="relative"
-                onMouseEnter={hasChildren ? openDropdown : undefined}
+                onMouseEnter={hasChildren ? () => openDropdownFor(link.href) : undefined}
                 onMouseLeave={hasChildren ? closeDropdownDelayed : undefined}
               >
                 <Link
                   href={link.href}
-                  className="relative flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium"
+                  onClick={(e) => {
+                    if (hasChildren) {
+                      e.preventDefault();
+                      setOpenDropdown((prev) => (prev === link.href ? null : link.href));
+                    }
+                  }}
+                  className="relative flex items-center gap-1 px-2 py-2 text-xs font-medium xl:gap-1.5 xl:px-3.5 xl:text-sm"
                 >
                   {active && (
                     <motion.span
@@ -267,7 +323,7 @@ export function Navbar() {
                     />
                   )}
                   <span
-                    className={`nav-link flex items-center gap-1.5 transition-colors duration-300 ${
+                    className={`nav-link flex items-center gap-1 whitespace-nowrap transition-colors duration-300 xl:gap-1.5 ${
                       active ? "text-white" : "text-[#1d1d1f]/70 hover:text-[#e8445a]"
                     }`}
                   >
@@ -276,7 +332,7 @@ export function Navbar() {
                     {hasChildren && (
                       <ChevronDown
                         className={`h-3 w-3 shrink-0 transition-transform duration-300 ${
-                          servicesOpen ? "rotate-180" : ""
+                          isOpen ? "rotate-180" : ""
                         }`}
                       />
                     )}
@@ -286,17 +342,22 @@ export function Navbar() {
                 {/* Desktop mega-dropdown */}
                 {hasChildren && (
                   <AnimatePresence>
-                    {servicesOpen && (
+                    {isOpen && (
                       <motion.div
                         initial={{ opacity: 0, y: 8, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8, scale: 0.98 }}
                         transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                        className="nav-dropdown absolute left-1/2 top-[calc(100%+12px)] z-20 w-[560px] -translate-x-1/2 rounded-3xl p-4"
-                        onMouseEnter={openDropdown}
+                        className="nav-dropdown absolute left-1/2 top-[calc(100%+12px)] z-20 w-[92vw] -translate-x-1/2 rounded-3xl p-3 sm:w-[560px] sm:p-4"
+                        style={{
+                          // keeps the panel from ever clipping off the left/right
+                          // edge of the viewport regardless of which link it hangs from
+                          maxWidth: "calc(100vw - 1.5rem)",
+                        }}
+                        onMouseEnter={() => openDropdownFor(link.href)}
                         onMouseLeave={closeDropdownDelayed}
                       >
-                        <div className="grid grid-cols-2 gap-1.5">
+                        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                           {link.children!.map((child) => {
                             const ChildIcon = child.icon;
                             const childActive = pathname?.startsWith(child.href);
@@ -304,6 +365,7 @@ export function Navbar() {
                               <Link
                                 key={child.href}
                                 href={child.href}
+                                onClick={() => setOpenDropdown(null)}
                                 className="nav-dropdown-item flex items-center gap-3 rounded-2xl p-2.5 transition-colors duration-200 hover:bg-orange-50"
                               >
                                 <span
@@ -323,11 +385,12 @@ export function Navbar() {
                           })}
                         </div>
                         <Link
-                          href="/services"
+                          href={link.href}
+                          onClick={() => setOpenDropdown(null)}
                           className="mt-2 flex items-center justify-center gap-1.5 rounded-2xl bg-slate-50 px-4 py-2.5 text-xs font-black uppercase tracking-widest text-slate-600 transition-colors hover:bg-orange-50 hover:text-orange-600"
                         >
                           <LayoutGrid className="h-3.5 w-3.5" />
-                          View All Services
+                          {link.label === "Services" ? "View All Services" : "View All"}
                         </Link>
                       </motion.div>
                     )}
@@ -338,7 +401,7 @@ export function Navbar() {
           })}
         </div>
 
-        <div className="relative z-10 hidden md:block">
+        <div className="relative z-10 hidden shrink-0 lg:block">
           <Button onClick={handleInstall}>Download App</Button>
         </div>
 
@@ -346,7 +409,7 @@ export function Navbar() {
           type="button"
           aria-label="Toggle menu"
           aria-expanded={open}
-          className="nav-burger relative z-10 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/70 text-[#1d1d1f] md:hidden"
+          className="nav-burger relative z-10 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/70 text-[#1d1d1f] sm:h-10 sm:w-10 lg:hidden"
           onClick={() => setOpen(true)}
         >
           <Menu className="relative z-10 h-5 w-5" />
@@ -362,7 +425,7 @@ export function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="fixed inset-0 z-40 bg-[#1d1d1f]/35 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-40 bg-[#1d1d1f]/35 backdrop-blur-sm lg:hidden"
             />
 
             {/* Sliding liquid-glass drawer */}
@@ -371,7 +434,7 @@ export function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 280, damping: 32 }}
-              className="fixed top-0 right-0 bottom-0 z-50 flex w-80 max-w-[85vw] flex-col justify-between overflow-hidden border-l border-white/50 bg-[rgba(255,255,255,0.94)] p-6 shadow-2xl backdrop-blur-2xl md:hidden"
+              className="fixed top-0 right-0 bottom-0 z-50 flex w-[85vw] max-w-sm flex-col justify-between overflow-hidden border-l border-white/50 bg-[rgba(255,255,255,0.94)] p-5 shadow-2xl backdrop-blur-2xl sm:w-80 sm:p-6 lg:hidden"
             >
               <div className="drawer-wave" aria-hidden="true" />
 
@@ -422,14 +485,16 @@ export function Navbar() {
                               <button
                                 type="button"
                                 aria-label={`Toggle ${link.label} submenu`}
-                                onClick={() => setMobileServicesOpen((v) => !v)}
+                                onClick={() =>
+                                  setOpenMobileGroup((prev) => (prev === link.href ? null : link.href))
+                                }
                                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors ${
                                   active ? "text-[#e8445a]" : "text-[#1d1d1f]/50"
                                 } hover:bg-orange-50`}
                               >
                                 <ChevronDown
                                   className={`h-4 w-4 transition-transform duration-300 ${
-                                    mobileServicesOpen ? "rotate-180" : ""
+                                    openMobileGroup === link.href ? "rotate-180" : ""
                                   }`}
                                 />
                               </button>
@@ -439,7 +504,7 @@ export function Navbar() {
                           {/* Mobile accordion subpages */}
                           {hasChildren && (
                             <AnimatePresence initial={false}>
-                              {mobileServicesOpen && (
+                              {openMobileGroup === link.href && (
                                 <motion.div
                                   initial={{ height: 0, opacity: 0 }}
                                   animate={{ height: "auto", opacity: 1 }}

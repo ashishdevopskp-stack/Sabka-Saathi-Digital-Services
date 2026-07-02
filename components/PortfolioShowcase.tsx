@@ -8,60 +8,24 @@ import {
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/LiquidButton";
-
-const phoneProjects = [
-  {
-    id: 1,
-    title: "Jewellery Website",
-    url: "https://jewellery-website-neon.vercel.app/",
-    category: "E-commerce",
-    accentColor: "#f59e0b"
-  },
-  {
-    id: 2,
-    title: "Travel Vista",
-    url: "https://travelvista-website.vercel.app/",
-    category: "Travel",
-    accentColor: "#3b82f6"
-  },
-  {
-    id: 3,
-    title: "The Sizzling Plate",
-    url: "https://thesizzlingplate.vercel.app/",
-    category: "Restaurant",
-    accentColor: "#ef4444"
-  },
-  {
-    id: 4,
-    title: "School Website",
-    url: "https://school-website-aarvjs.vercel.app/",
-    category: "Education",
-    accentColor: "#8b5cf6"
-  },
-  {
-    id: 5,
-    title: "Salon Website",
-    url: "https://salonaarvjs.vercel.app/",
-    category: "Beauty & Salon",
-    accentColor: "#ec4899"
-  }
-];
+import { fetchProjectsByType, Project } from "@/lib/project";
 
 interface PhoneCardProps {
-  project: typeof phoneProjects[0];
+  project: Project;
   isDragging: boolean;
   isActive: boolean;
 }
 
 function PhoneCard({ project, isDragging, isActive }: PhoneCardProps) {
   const [iframeLoading, setIframeLoading] = useState(true);
+  const accentColor = project.accentColor ?? "#f59e0b";
 
   return (
     <div className="relative w-[250px] sm:w-[270px] md:w-[280px] h-[530px] sm:h-[570px] md:h-[590px] flex-shrink-0 snap-center transition-all duration-500 hover:scale-[1.02] select-none">
       <div
         className="w-full h-full rounded-[2.8rem] md:rounded-[3.2rem] bg-slate-950 p-[8px] md:p-[10px] shadow-2xl border-4 md:border-8 border-slate-900 flex flex-col relative overflow-hidden transition-shadow duration-500"
         style={{
-          boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 15px ${project.accentColor}15`
+          boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 15px ${accentColor}15`
         }}
       >
         <div className="relative w-full h-full rounded-[2.2rem] md:rounded-[2.6rem] bg-slate-900 overflow-hidden flex flex-col">
@@ -124,6 +88,22 @@ function PhoneCard({ project, isDragging, isActive }: PhoneCardProps) {
 }
 
 export function PortfolioShowcase() {
+  const [phoneProjects, setPhoneProjects] = useState<Project[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await fetchProjectsByType("mobile");
+        setPhoneProjects(data.sort((a, b) => a.order - b.order));
+      } catch (err) {
+        console.error("Failed to load mobile projects", err);
+      } finally {
+        setLoadingProjects(false);
+      }
+    })();
+  }, []);
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [visibleIndex, setVisibleIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -188,7 +168,7 @@ export function PortfolioShowcase() {
 
   useEffect(() => {
     const slider = sliderRef.current;
-    if (!slider) return;
+    if (!slider || phoneProjects.length === 0) return;
 
     let animationFrameId: number;
     let lastTime = 0;
@@ -214,7 +194,7 @@ export function PortfolioShowcase() {
       cancelAnimationFrame(animationFrameId);
       if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
     };
-  }, [isMouseDown, isPaused]);
+  }, [isMouseDown, isPaused, phoneProjects.length]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!sliderRef.current) return;
@@ -322,6 +302,18 @@ export function PortfolioShowcase() {
     }
   };
 
+  if (loadingProjects) {
+    return (
+      <section className="py-24 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+      </section>
+    );
+  }
+
+  if (phoneProjects.length === 0) {
+    return null;
+  }
+
   return (
     <section id="portfolio" className="py-16 md:py-24 relative overflow-hidden bg-white">
       <style jsx global>{`
@@ -424,7 +416,7 @@ export function PortfolioShowcase() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[10px] font-extrabold hover:underline inline-flex items-center gap-1 mt-1"
-                      style={{ color: project.accentColor }}
+                      style={{ color: project.accentColor ?? "#f59e0b" }}
                     >
                       Open Demo
                       <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
