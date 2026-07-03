@@ -21,6 +21,108 @@ export interface ContactInfo {
   hours: string;
 }
 
+export interface PricingTier {
+  name: string;
+  priceRange: string;
+  highlight: boolean;
+  scope: string;
+  features: string[];
+  support: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// VERBATIM MOBILE APP LANDING COPY
+// Word-for-word content block (only the city name is substituted) used on
+// every /mobile-app-development-company-in-{city} page. Kept separate from
+// the templated ServiceInfo/LocalPageData fields above so it can be edited
+// as a single source of truth without touching the generic page-building
+// logic used by the other two services.
+// ─────────────────────────────────────────────────────────────────────────
+export interface MobileAppFullCopy {
+  seoTitle: string;
+  metaIntro: string;
+  branding: { company: string; tagline: string };
+  navigation: string[];
+  cta: { callNow: string; quoteButton: string };
+  marquee: string[];
+  completeServicesSection: {
+    heading: string;
+    paragraphs: string[];
+    features: { title: string; desc: string }[];
+  };
+  servicesSection: {
+    heading: string;
+    subheading: string;
+    blocks: { title: string; badge: string; desc: string; bullets: string[]; cta: string }[];
+  };
+  processSection: {
+    heading: string;
+    subheading: string;
+    steps: { step: number; title: string; desc: string; bullets: string[] }[];
+  };
+  pricingSection: {
+    heading: string;
+    subheading: string;
+    tiers: { name: string; price: string; badge?: string; items: string[]; cta: string }[];
+  };
+  whyChooseUsSection: {
+    heading: string;
+    subheading: string;
+    items: { title: string; desc: string }[];
+  };
+  cityDigitalHubSection: {
+    heading: string;
+    subheading: string;
+    intro: string[];
+    points: { title: string; desc: string }[];
+  };
+  quoteFormSection: {
+    heading: string;
+    subheading: string;
+    fields: string[];
+  };
+  whyChooseCompanySection: {
+    heading: string;
+    paragraphs: string[];
+  };
+  faqsSection: {
+    heading: string;
+    subheading: string;
+    items: { q: string; a: string }[];
+  };
+  leadingItCompanySection: {
+    heading: string;
+    subheading: string;
+    paragraph: string;
+    keywords: string;
+  };
+  contactSection: {
+    heading: string;
+    subheading: string;
+    call: string;
+    callNote: string;
+    email: string;
+    emailNote: string;
+    address: string;
+    addressNote: string;
+  };
+  successMetricsSection: {
+    heading: string;
+    subheading: string;
+    metrics: { value: string; label: string }[];
+  };
+  footer: {
+    company: string;
+    tagline: string;
+    description: string;
+    quickLinks: string[];
+    servicesList: string[];
+    contact: { address: string; phone: string; email: string; hours: string };
+    copyright: string;
+    legalLinks: string[];
+  };
+}
+
 export interface ServiceInfo {
   name: string;
   slug: string;
@@ -36,6 +138,8 @@ export interface ServiceInfo {
   timeline: string;
   idealFor: string[];
   industries: string[];
+  pricing: PricingTier[];
+  marqueeBase: string[];
 }
 
 // Fill in your real business details once here — every generated page pulls from this.
@@ -49,6 +153,17 @@ export const contactInfo: ContactInfo = {
   email: "TODO: your email address",
   address: "TODO: your real business address (single HQ)",
   hours: "TODO: your business hours"
+};
+
+// Global trust metrics shown across every generated page (footer strip,
+// hero stats bar, etc.). Keep these true and update as real numbers grow —
+// don't inflate stats on a business/service schema page, that's a common
+// trigger for manual review.
+export const stats = {
+  yearsExperience: "5+",
+  projectsDelivered: "50+",
+  clientSatisfaction: "100%",
+  supportAvailability: "24/7"
 };
 
 export const services: Record<string, ServiceInfo> = {
@@ -96,7 +211,40 @@ export const services: Record<string, ServiceInfo> = {
     ],
     timeline: "4–8 weeks depending on feature scope",
     idealFor: ["Retail chains", "Service businesses", "Delivery & logistics", "Local marketplaces"],
-    industries: ["Education", "Healthcare", "E-commerce & retail", "Real estate", "Local services & field teams"]
+    industries: ["Education", "Healthcare", "E-commerce & retail", "Real estate", "Local services & field teams"],
+    pricing: [
+      {
+        name: "Starter",
+        priceRange: "₹25,000 – ₹45,000",
+        highlight: false,
+        scope: "Simple single-purpose app",
+        features: ["3–5 screens", "Basic UI/UX design", "Core feature set only", "Single platform (Android or iOS)"],
+        support: "1 month support"
+      },
+      {
+        name: "Growth",
+        priceRange: "₹45,000 – ₹90,000",
+        highlight: true,
+        scope: "Medium complexity, cross-platform app",
+        features: ["8–12 screens", "Advanced UI/UX design", "Push notifications & deep linking", "Android + iOS from one codebase"],
+        support: "3 months support"
+      },
+      {
+        name: "Enterprise",
+        priceRange: "₹90,000+",
+        highlight: false,
+        scope: "Complex, multi-role app with backend automation",
+        features: ["Unlimited screens", "Custom feature engineering", "Payment gateway + admin panel", "Offline sync & role-based access"],
+        support: "6 months support"
+      }
+    ],
+    marqueeBase: [
+      "High-Performance Mobile App Development",
+      "Native Android & iOS Development",
+      "Cross-Platform Apps with React Native & Flutter",
+      "Secure Payment Gateway Integration",
+      "24/7 App Support & Maintenance"
+    ]
   },
   "website-development": {
     name: "Website Development",
@@ -142,7 +290,40 @@ export const services: Record<string, ServiceInfo> = {
     ],
     timeline: "1–3 weeks for standard sites, longer for custom builds",
     idealFor: ["Local businesses", "Startups", "Retailers", "Service providers"],
-    industries: ["Local services", "Retail & e-commerce", "Hospitality & tourism", "Education", "Professional services"]
+    industries: ["Local services", "Retail & e-commerce", "Hospitality & tourism", "Education", "Professional services"],
+    pricing: [
+      {
+        name: "Starter",
+        priceRange: "₹10,000 – ₹20,000",
+        highlight: false,
+        scope: "Single-page or brochure-style site",
+        features: ["Up to 5 pages", "Mobile-responsive layout", "Basic on-page SEO", "Contact form integration"],
+        support: "1 month support"
+      },
+      {
+        name: "Growth",
+        priceRange: "₹20,000 – ₹50,000",
+        highlight: true,
+        scope: "Multi-page business or lead-gen site",
+        features: ["Up to 12 pages", "Custom design & animations", "Full technical SEO setup", "Analytics + Search Console setup"],
+        support: "3 months support"
+      },
+      {
+        name: "Enterprise",
+        priceRange: "₹50,000+",
+        highlight: false,
+        scope: "E-commerce or multi-location SEO site",
+        features: ["Unlimited pages", "E-commerce / booking functionality", "Multi-location landing pages", "Priority hosting & CDN setup"],
+        support: "6 months support"
+      }
+    ],
+    marqueeBase: [
+      "Blazing-Fast Next.js Websites",
+      "Mobile-First Responsive Design",
+      "Built for Google Search Rankings",
+      "Free SSL & Managed Hosting",
+      "24/7 Website Support & Maintenance"
+    ]
   },
   "software-development": {
     name: "Software Development",
@@ -188,7 +369,40 @@ export const services: Record<string, ServiceInfo> = {
     ],
     timeline: "4–8 weeks depending on complexity",
     idealFor: ["Growing businesses", "Multi-branch operations", "Agencies", "Distributors & wholesalers"],
-    industries: ["Distribution & wholesale", "Agencies", "Multi-branch retail", "Manufacturing", "Professional services"]
+    industries: ["Distribution & wholesale", "Agencies", "Multi-branch retail", "Manufacturing", "Professional services"],
+    pricing: [
+      {
+        name: "Starter",
+        priceRange: "₹30,000 – ₹60,000",
+        highlight: false,
+        scope: "Single-workflow automation tool",
+        features: ["One core workflow automated", "Basic admin dashboard", "Single-user role", "Standard database setup"],
+        support: "1 month support"
+      },
+      {
+        name: "Growth",
+        priceRange: "₹60,000 – ₹1,20,000",
+        highlight: true,
+        scope: "Multi-module CRM or ERP system",
+        features: ["Multiple automated workflows", "Role-based access control", "WhatsApp / SMS integration", "Real-time analytics dashboard"],
+        support: "3 months support"
+      },
+      {
+        name: "Enterprise",
+        priceRange: "₹1,20,000+",
+        highlight: false,
+        scope: "Full custom ERP / SaaS platform",
+        features: ["Unlimited modules & users", "Multi-branch data architecture", "Custom API & third-party integrations", "Dedicated onboarding & training"],
+        support: "6 months support"
+      }
+    ],
+    marqueeBase: [
+      "Custom CRM & ERP Automation",
+      "Secure Node.js Backend Engineering",
+      "WhatsApp API Business Integration",
+      "Role-Based Admin Dashboards",
+      "24/7 System Support & Maintenance"
+    ]
   }
 };
 
@@ -351,11 +565,230 @@ export interface LocalPageData {
   timeline: string;
   idealFor: string[];
   industries: string[];
+  pricing: PricingTier[];
+  marquee: string[];
+  stats: typeof stats;
+  // Word-for-word landing page copy — populated only for the Mobile App
+  // Development service (that's the only copy provided verbatim so far).
+  // Null for other services until matching verbatim copy is supplied.
+  landingCopy: MobileAppFullCopy | null;
   contactInfo: ContactInfo;
   faqs: { q: string; a: string }[];
   nearbySlugs: { title: string; url: string }[];
   relatedServices: { title: string; url: string }[];
   schemas: any[];
+}
+
+// Builds the word-for-word Mobile App Development landing copy for a given
+// city. Only the city name (and the dynamic phone/email/address/state) is
+// substituted — every other sentence matches the source copy exactly.
+export function buildMobileAppFullCopy(cityName: string, state: string): MobileAppFullCopy {
+  const c = cityName;
+
+  return {
+    seoTitle: `App Development in ${c} | Best Mobile App Development Services`,
+
+    metaIntro: `Looking for app development in ${c}? Sabka Saathi - High-Performance Software Development & CRM Automation is the leading mobile app development company in ${c}, ${state}. We specialize in professional app development in ${c} including Android app development in ${c}, iOS app development in ${c}, and cross-platform solutions. Our expert team delivers innovative mobile apps that drive business growth for ${c} businesses. Whether you need custom mobile app development in ${c}, React Native app development in ${c}, or Flutter app development in ${c}, we provide comprehensive app development services in ${c} with affordable pricing and 24/7 support.`,
+
+    branding: {
+      company: "Sabka Saathi - High-Performance Software Development & CRM Automation",
+      tagline: "Empowering Businesses Digitally"
+    },
+
+    navigation: ["Home", "Services", "About", "Projects", "Internship", "Blog", "Get Quote"],
+
+    cta: {
+      callNow: contactInfo.phone,
+      quoteButton: "Get Free Quote"
+    },
+
+    marquee: [
+      `🚀 Mobile App Development in ${c}`,
+      "💻 Professional Mobile App Development Solutions",
+      `📱 Mobile-First Mobile App Development in ${c}`,
+      "⚡ High-Performance Mobile App Development",
+      "💰 Affordable Mobile App Development Experts",
+      `🎯 Top Mobile App Development Developers in ${c}`,
+      "🔧 24/7 Mobile App Development Support",
+      `🏆 Leading Mobile App Development Agency in ${c}`,
+      `📞 Call: ${contactInfo.phone}`
+    ],
+
+    completeServicesSection: {
+      heading: `App Development in ${c} - Complete Services`,
+      paragraphs: [
+        `When it comes to app development in ${c}, Sabka Saathi - High-Performance Software Development & CRM Automation stands out as the premier choice. We specialize in comprehensive app development services in ${c} including Android app development in ${c}, iOS app development in ${c}, and cross-platform solutions. Our expert team of app developers in ${c} delivers cutting-edge mobile applications using the latest technologies and best practices.`,
+        `Whether you're a startup or an established business looking for app development in ${c}, we provide end-to-end solutions from concept to deployment. Our app development services in ${c} include custom mobile app development, React Native app development in ${c}, Flutter app development in ${c}, UI/UX design, app maintenance, and 24/7 support.`,
+        `With 5+ years of experience in app development in ${c}, we understand the unique needs of ${c} businesses. Our team combines technical expertise with local market knowledge to deliver apps that drive business growth and enhance user engagement. Choose us for professional app development in ${c} and transform your business with innovative mobile solutions.`
+      ],
+      features: [
+        { title: "Native Android & iOS Development", desc: `Professional native mobile app development in ${c} using the latest technologies and frameworks for optimal performance and user experience.` },
+        { title: "Cross-Platform App Development", desc: `Cost-effective cross-platform mobile app development in ${c} using React Native and Flutter for both Android and iOS platforms.` },
+        { title: "Secure & Scalable Solutions", desc: `Robust and secure mobile app development solutions in ${c} with enterprise-grade security and scalability for business growth.` },
+        { title: "24/7 Support & Maintenance", desc: `Round-the-clock technical support and maintenance services for mobile apps in ${c}, ensuring optimal performance and reliability.` }
+      ]
+    },
+
+    servicesSection: {
+      heading: `Our Mobile App Development Services in ${c}`,
+      subheading: "Comprehensive mobile app development solutions tailored for businesses in " + c,
+      blocks: [
+        {
+          title: "Android App Development",
+          badge: "Native Development",
+          desc: `Professional Android app development in ${c} using Kotlin and Java. We create high-performance, user-friendly Android applications that work seamlessly across all Android devices.`,
+          bullets: ["Native Android Development (Kotlin/Java)", "Material Design Implementation", "Google Play Store Optimization", "Performance Optimization"],
+          cta: "Get Android App Quote"
+        },
+        {
+          title: "iOS App Development",
+          badge: "Native Development",
+          desc: `Expert iOS app development in ${c} using Swift and Objective-C. We build elegant, high-performance iOS applications that meet Apple's strict quality standards.`,
+          bullets: ["Native iOS Development (Swift/Objective-C)", "iOS Design Guidelines Compliance", "App Store Optimization", "iOS Version Compatibility"],
+          cta: "Get iOS App Quote"
+        },
+        {
+          title: "Cross-Platform Development",
+          badge: "React Native & Flutter",
+          desc: `Cost-effective cross-platform mobile app development in ${c} using React Native and Flutter. Single codebase for both Android and iOS platforms.`,
+          bullets: ["React Native Development", "Flutter Development", "Single Codebase for Both Platforms", "Faster Development & Lower Costs"],
+          cta: "Get Cross-Platform Quote"
+        },
+        {
+          title: "UI/UX Design",
+          badge: "Design Services",
+          desc: `Professional mobile app UI/UX design in ${c}. We create intuitive, engaging, and user-friendly interfaces that enhance user experience and drive engagement.`,
+          bullets: ["User Research & Analysis", "Wireframing & Prototyping", "Visual Design & Branding", "User Testing & Optimization"],
+          cta: "Get Design Quote"
+        }
+      ]
+    },
+
+    processSection: {
+      heading: `Our Mobile App Development Process in ${c}`,
+      subheading: "Transparent and efficient development process for successful mobile app delivery",
+      steps: [
+        { step: 1, title: "Discovery & Planning", desc: "We start by understanding your business requirements, target audience, and project goals. Our team conducts thorough research and creates a comprehensive project plan.", bullets: ["Business Analysis", "Market Research", "Technical Feasibility", "Project Timeline"] },
+        { step: 2, title: "Design & Prototyping", desc: "Our designers create wireframes, mockups, and interactive prototypes. We focus on creating intuitive user experiences and engaging visual designs.", bullets: ["Wireframing", "UI/UX Design", "Interactive Prototypes", "Design Reviews"] },
+        { step: 3, title: "Development & Testing", desc: "Our developers build your mobile app using the latest technologies and best practices. We conduct rigorous testing to ensure quality and performance.", bullets: ["Agile Development", "Code Quality Standards", "Comprehensive Testing", "Performance Optimization"] },
+        { step: 4, title: "Deployment & Support", desc: "We deploy your app to app stores and provide ongoing support and maintenance. Our team ensures your app runs smoothly and stays updated.", bullets: ["App Store Deployment", "Post-Launch Support", "Regular Updates", "24/7 Maintenance"] }
+      ]
+    },
+
+    pricingSection: {
+      heading: `Mobile App Development Pricing in ${c}`,
+      subheading: `Transparent pricing for all our mobile app development services across ${c}`,
+      tiers: [
+        { name: "Basic Package", price: "₹8K - 15K", items: ["Simple Mobile App", "Basic UI/UX Design", "3-5 Screens", "Basic Features", "1 Month Support"], cta: "Call Now" },
+        { name: "Standard Package", price: "₹15K - 25K", badge: "Most Popular", items: ["Medium Complexity App", "Advanced UI/UX Design", "8-12 Screens", "Advanced Features", "3 Months Support"], cta: "Call Now" },
+        { name: "Premium Package", price: "₹25K - 1L", items: ["Complex Enterprise App", "Premium UI/UX Design", "Unlimited Screens", "Custom Features", "6 Months Support"], cta: "Call Now" }
+      ]
+    },
+
+    whyChooseUsSection: {
+      heading: "Why Choose Sabka Saathi - High-Performance Software Development & CRM Automation in " + c + "?",
+      subheading: `We are the trusted choice for mobile app development in ${c}`,
+      items: [
+        { title: "Expert Team", desc: `Our team of experienced developers and designers in ${c} ensures high-quality mobile app development services.` },
+        { title: "Timely Delivery", desc: "We commit to delivering your mobile app on time without compromising on quality or features." },
+        { title: "Affordable Pricing", desc: `Get professional mobile app development services in ${c} at competitive and transparent pricing.` },
+        { title: "24/7 Support", desc: "Round-the-clock technical support and maintenance services for your mobile applications." }
+      ]
+    },
+
+    cityDigitalHubSection: {
+      heading: `Mobile App Development in ${c}, ${state}`,
+      subheading: `Empowering businesses in ${c} with innovative mobile app solutions`,
+      intro: [
+        `${c} is rapidly emerging as a digital hub in ${state}, with growing businesses and educational institutions embracing mobile technology. Our expertise in local market dynamics ensures your app succeeds in this evolving landscape.`,
+        `We understand the unique challenges and opportunities in ${c}, from supporting educational excellence to driving business innovation. Partner with us to transform your vision into a powerful mobile solution.`
+      ],
+      points: [
+        { title: "Educational Excellence", desc: `Help educational institutions in ${c} embrace digital transformation with custom mobile applications that enhance learning experiences and streamline administrative processes.` },
+        { title: "Business Solutions", desc: `Transform your business operations in ${c} with innovative mobile apps that improve efficiency, customer engagement, and market reach.` },
+        { title: "Digital Transformation", desc: `Lead ${c}'s digital revolution with cutting-edge mobile applications that modernize business operations and enhance customer experiences.` },
+        { title: "Local Market Expertise", desc: `We understand the unique business landscape and customer preferences in ${c}, enabling us to create apps that resonate with local users.` }
+      ]
+    },
+
+    quoteFormSection: {
+      heading: `Get Your Free Mobile App Development Quote in ${c}`,
+      subheading: "Contact us today for a free consultation and quote for your mobile app development project",
+      fields: ["Full Name *", "Phone Number *", "Select Service *", "Message * — Please describe your project requirements..."]
+    },
+
+    whyChooseCompanySection: {
+      heading: `Why Choose App Development in ${c} with Sabka Saathi - High-Performance Software Development & CRM Automation?`,
+      paragraphs: [
+        `When searching for app development in ${c}, businesses trust Sabka Saathi - High-Performance Software Development & CRM Automation as the premier choice. We are the leading provider of app development services in ${c}, specializing in professional Android app development in ${c}, expert iOS app development in ${c}, and innovative cross-platform app development in ${c}. Our experienced app developers in ${c} have delivered 50+ successful mobile applications for businesses across ${c}, ${state}.`,
+        `We are recognized as the best app development company in ${c}, offering affordable app development in ${c} without compromising on quality. Our comprehensive app development services in ${c} include React Native app development in ${c}, Flutter app development in ${c}, native app development in ${c}, UI/UX design, and 24/7 app maintenance in ${c}. Whether you need custom mobile app development in ${c}, enterprise app solutions, or startup app development, we provide end-to-end app development in ${c} that drives business growth and digital transformation.`,
+        `Looking for other IT services in ${c}? We also provide website development in ${c} and software development in ${c} to help your business establish a complete digital presence.`
+      ]
+    },
+
+    faqsSection: {
+      heading: "Frequently Asked Questions",
+      subheading: `Common questions about mobile app development in ${c}`,
+      items: [
+        { q: `How much does mobile app development cost in ${c}?`, a: `Mobile app development costs in ${c} vary based on complexity, features, and platform. Our basic packages start from ₹8,000, while complex enterprise apps can cost up to ₹1,00,000. We provide transparent pricing with no hidden costs.` },
+        { q: `How long does it take to develop a mobile app in ${c}?`, a: "Development time depends on app complexity. Simple apps take 2-4 weeks, medium complexity apps take 6-8 weeks, and complex enterprise apps take 12-16 weeks. We ensure timely delivery without compromising quality." },
+        { q: `Do you provide post-launch support for mobile apps in ${c}?`, a: "Yes, we provide comprehensive post-launch support including bug fixes, updates, maintenance, and 24/7 technical support. Our support packages ensure your app runs smoothly and stays updated with the latest features." },
+        { q: `Can you develop apps for both Android and iOS in ${c}?`, a: `Absolutely! We specialize in both Android and iOS app development in ${c}. We also offer cross-platform development using React Native and Flutter, which allows us to create apps for both platforms from a single codebase.` },
+        { q: `What technologies do you use for mobile app development in ${c}?`, a: `We use the latest technologies including React Native, Flutter, Kotlin, Java, Swift, Objective-C, Firebase, Node.js, and MongoDB. Our technology stack ensures high-performance, scalable, and secure mobile applications for businesses in ${c}.` },
+        { q: `Do you provide UI/UX design services for mobile apps in ${c}?`, a: "Yes, we provide comprehensive UI/UX design services including wireframing, prototyping, user research, visual design, and user testing. Our designers create intuitive and engaging interfaces that enhance user experience and drive app adoption." },
+        { q: `Can you help with app store submission and optimization in ${c}?`, a: "Absolutely! We handle complete app store submission for both Google Play Store and Apple App Store. Our services include app store optimization (ASO), metadata optimization, screenshot design, and compliance with store guidelines to ensure successful app launch." },
+        { q: `What industries do you serve for mobile app development in ${c}?`, a: `We serve various industries including education, healthcare, e-commerce, finance, real estate, tourism, agriculture, manufacturing, and local businesses. Our expertise allows us to create industry-specific solutions that meet unique business requirements in ${c}.` },
+        { q: `Do you offer mobile app maintenance and updates in ${c}?`, a: "Yes, we provide comprehensive maintenance services including bug fixes, security updates, performance optimization, feature additions, OS compatibility updates, and 24/7 technical support to ensure your app runs smoothly and stays current with the latest standards." },
+        { q: `Can you integrate third-party services in mobile apps developed in ${c}?`, a: "Yes, we can integrate various third-party services including payment gateways, social media APIs, Google Maps, analytics tools, push notification services, cloud storage, CRM systems, and other business tools to enhance app functionality and user experience." },
+        { q: `What is your mobile app development process in ${c}?`, a: "Our process includes: 1) Discovery & Planning, 2) UI/UX Design & Prototyping, 3) Development & Testing, 4) Deployment & Launch, 5) Post-launch Support & Maintenance. We follow agile methodology with regular client communication and milestone deliveries throughout the project." }
+      ]
+    },
+
+    leadingItCompanySection: {
+      heading: `Leading IT Company in ${c} - Sabka Saathi - High-Performance Software Development & CRM Automation`,
+      subheading: `Comprehensive IT solutions and software development services for businesses in ${c}`,
+      paragraph: `For any assistance in IT, we at Sabka Saathi - High-Performance Software Development & CRM Automation, have a solution for you. We provide the Best IT Software Development Services in ${c} ${state}. Whether it is related to the development of customized software, development of a best Responsive website or E-Commerce Website, or development of Customized Mobile Application for Android or any type of Web Application, we have a vast experience of more than 5 years in development. With 100% Clients satisfaction, we are the leading IT Company in ${c}, ${state}, India. Contact Sabka Saathi - High-Performance Software Development & CRM Automation for any software related business assistance for your Business.`,
+      keywords: `software services & solutions ${c} ${state}, website development company in ${c} ${state}, software companies in ${c}, it companies in ${c}, it companies in ${state}, software development company in ${c} ${state}, top it companies in ${c}, software development company ${c} ${state}, it company in ${c}, Patna software company list, web design company in ${c}, website designing company in ${c}, website company in ${c} ${state}, website design in ${c}, list of web design company in ${c}, software development company in ${c}, app developer in ${c}, mobile app development company in ${c}, android app development in ${c}, website company in ${c}, seo company in ${c}, seo company in ${c} ${state}, digital marketing company in ${c}, seo services in ${c}, seo training in ${c}, digital marketing course in ${c}, seo experts in ${c}, software jobs in ${c} for freshers, list of software company in ${c}, software developer in ${c}, computer & software developer ${c} ${state}, it job in ${c}, java developer jobs in ${c}, new dot net developer job in ${c}, software developer salary`
+    },
+
+    contactSection: {
+      heading: `Contact Us for Mobile App Development in ${c}`,
+      subheading: "Get in touch with our team for professional mobile app development services",
+      call: contactInfo.phone,
+      callNote: "Available 24/7",
+      email: contactInfo.email,
+      emailNote: "Quick Response",
+      address: contactInfo.address,
+      addressNote: "Main Office"
+    },
+
+    successMetricsSection: {
+      heading: `Our Success Metrics in ${c}`,
+      subheading: `Trusted by businesses across ${c} for mobile app development`,
+      metrics: [
+        { value: stats.projectsDelivered, label: "Apps Developed" },
+        { value: stats.clientSatisfaction, label: "Client Satisfaction" },
+        { value: stats.supportAvailability, label: "Support Available" },
+        { value: stats.yearsExperience, label: "Years Experience" }
+      ]
+    },
+
+    footer: {
+      company: "Sabka Saathi - High-Performance Software Development & CRM Automation",
+      tagline: "Digital Solutions Provider",
+      description: "Empowering businesses with cutting-edge digital solutions. We specialize in building premium mobile apps, websites, and custom software tailored to your needs.",
+      quickLinks: ["Home", "Services", "Products", "Projects", "About", "Internship", "Contact"],
+      servicesList: ["App Dev", "Web Design", "Web App", "Software", "SEO Services"],
+      contact: {
+        address: contactInfo.address,
+        phone: contactInfo.phone,
+        email: contactInfo.email,
+        hours: contactInfo.hours
+      },
+      copyright: "© 2025 Sabka Saathi - High-Performance Software Development & CRM Automation. All rights reserved.",
+      legalLinks: ["Privacy Policy", "Terms of Service", "Sitemap"]
+    }
+  };
 }
 
 export function getPagesList() {
@@ -419,6 +852,21 @@ export function getContentBySlug(slug: string): LocalPageData | null {
     }
   ];
 
+  // Marquee/banner strip content — combines the service's base taglines
+  // with two city-specific lines, so the scrolling banner isn't identical
+  // across every single page in the sitemap.
+  const marquee = [
+    ...service.marqueeBase,
+    `${serviceName} Company in ${cityName}`,
+    `Trusted by Businesses Across ${state}`
+  ];
+
+  const landingCopy =
+    page.serviceSlug === "mobile-app-development"
+      ? buildMobileAppFullCopy(cityName, state)
+      : null;
+
+
   const faqs = [
     {
       q: `Why should I choose Sabka Saathi for ${serviceName} in ${cityName}?`,
@@ -426,7 +874,7 @@ export function getContentBySlug(slug: string): LocalPageData | null {
     },
     {
       q: `What is the estimated cost of ${serviceName} in ${cityName}?`,
-      a: `Our pricing is transparent and based on project scope. We construct custom minimum viable products (MVPs) designed for ${cityName} businesses, ensuring you only pay for features that add business value. Get in touch with us for a free technical estimation.`
+      a: `Our pricing for ${cityName} clients starts at ${service.pricing[0].priceRange} for a ${service.pricing[0].scope.toLowerCase()}, going up to ${service.pricing[2].priceRange} for a ${service.pricing[2].scope.toLowerCase()}. We construct custom minimum viable products (MVPs) designed for ${cityName} businesses, ensuring you only pay for features that add business value. Get in touch with us for a free technical estimation.`
     },
     {
       q: `How long will it take to build a ${serviceName} system?`,
@@ -434,7 +882,7 @@ export function getContentBySlug(slug: string): LocalPageData | null {
     },
     {
       q: `Do you provide support and maintenance for clients in ${cityName}?`,
-      a: `Yes! Every client gets 1 year of complimentary high-speed hosting and 1 year of active software maintenance to apply security updates, resolve minor bugs, and keep systems online.`
+      a: `Yes! Depending on your package, you get ${service.pricing[0].support.toLowerCase()} up to ${service.pricing[2].support.toLowerCase()}, plus ${stats.supportAvailability} support availability for critical issues.`
     },
     {
       q: `Can you integrate local payment processors like Razorpay for ${cityName} projects?`,
@@ -462,11 +910,11 @@ export function getContentBySlug(slug: string): LocalPageData | null {
     },
     {
       q: `What does the ${serviceName.toLowerCase()} package for ${cityName} businesses include?`,
-      a: `Every project includes ${service.deliverables.slice(0, 3).join(", ").toLowerCase()}, and more — see the deliverables list on this page for the full scope.`
+      a: `Our ${service.pricing[1].name} package (${service.pricing[1].priceRange}) — the most popular for ${cityName} clients — includes ${service.pricing[1].features.slice(0, 3).join(", ").toLowerCase()}, and more. See the pricing table on this page for the full breakdown across all three tiers.`
     },
     {
       q: `Is ${serviceName} in ${cityName} suitable for a small or early-stage business?`,
-      a: `Yes. We scope every project to the client's stage — ${service.idealFor.slice(0, 2).join(" and ").toLowerCase()} are among the businesses we work with most, and we're happy to start small and grow the system with you.`
+      a: `Yes. We scope every project to the client's stage — our ${service.pricing[0].name} package starts at ${service.pricing[0].priceRange} for a ${service.pricing[0].scope.toLowerCase()}, and ${service.idealFor.slice(0, 2).join(" and ").toLowerCase()} are among the businesses we work with most. We're happy to start small and grow the system with you.`
     }
   ];
 
@@ -528,7 +976,13 @@ export function getContentBySlug(slug: string): LocalPageData | null {
         "name": state
       }
     },
-    "serviceType": serviceName
+    "serviceType": serviceName,
+    "offers": service.pricing.map((tier) => ({
+      "@type": "Offer",
+      "name": tier.name,
+      "priceCurrency": "INR",
+      "description": `${tier.scope} — ${tier.priceRange}`
+    }))
   };
 
   const breadcrumbSchema = {
@@ -573,6 +1027,10 @@ export function getContentBySlug(slug: string): LocalPageData | null {
     timeline: service.timeline,
     idealFor: service.idealFor,
     industries: service.industries,
+    pricing: service.pricing,
+    marquee,
+    stats,
+    landingCopy,
     contactInfo,
     faqs,
     nearbySlugs,

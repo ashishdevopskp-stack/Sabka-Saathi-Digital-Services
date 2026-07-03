@@ -15,6 +15,7 @@ import { Footer } from "@/components/Footer";
 import { BiharServicesSEO } from "@/components/BiharServicesSEO";
 import { PortfolioShowcase } from "@/components/PortfolioShowcase";
 import { BrowserPortfolioShowcase } from "@/components/BrowserPortfolioShowcase";
+import { RecentProjectsShowcase } from "@/components/RecentProjectsShowcase";
 
 
 export const metadata: Metadata = {
@@ -65,6 +66,7 @@ export default function Home() {
       <StatsShowcase />
       <ProcessSection />
       <TechStack />
+      <RecentProjectsShowcase />
       <PortfolioShowcase />
       <BrowserPortfolioShowcase />
       <FounderSection />

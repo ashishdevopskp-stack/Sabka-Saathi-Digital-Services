@@ -1,19 +1,29 @@
 "use client";
 
+import { JSX, useMemo, useState } from "react";
 import Link from "next/link";
-import { cities, services, generateSlug } from "@/lib/localSeo";
+import { cities, services, stats, generateSlug } from "@/lib/localSeo";
 
 const seoStyles = `
-  .seo-card {
+  .seo-panel {
     position: relative;
-    background: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.9);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(255,255,255,0.7);
     box-shadow: 0 2px 16px rgba(232,68,90,0.06), 0 1px 3px rgba(29,29,31,0.04);
-    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease;
   }
-  .seo-card::before {
+
+  .seo-service-card {
+    position: relative;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.7);
+    box-shadow: 0 2px 16px rgba(232,68,90,0.06), 0 1px 3px rgba(29,29,31,0.04);
+    transition: box-shadow 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  .seo-service-card::before {
     content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1.3px;
     pointer-events: none;
     background: linear-gradient(140deg,
@@ -24,120 +34,304 @@ const seoStyles = `
       rgba(255,255,255,0.75) 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor; mask-composite: exclude;
-    opacity: 0.7; transition: opacity 0.4s ease;
+    opacity: 0.6; transition: opacity 0.4s ease;
   }
-  .seo-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 30px rgba(232,68,90,0.12), 0 2px 8px rgba(29,29,31,0.06);
-  }
-  .seo-card:hover::before { opacity: 1; }
+  .seo-service-card:hover { box-shadow: 0 10px 30px rgba(232,68,90,0.12), 0 2px 8px rgba(29,29,31,0.06); }
+  .seo-service-card:hover::before { opacity: 1; }
+  .seo-service-card[data-open="true"] { box-shadow: 0 12px 34px rgba(232,68,90,0.14), 0 2px 8px rgba(29,29,31,0.06); }
 
-  .seo-liquid-btn {
-    position: relative; overflow: hidden; z-index: 0;
-    transition: color 0.35s ease, border-color 0.35s ease, transform 0.3s ease;
+  .seo-icon-badge {
+    background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 45%, #e8445a 100%);
   }
-  .seo-liquid-btn::before {
+
+  .seo-expand-btn {
+    position: relative; overflow: hidden; z-index: 0;
+    transition: color 0.3s ease, border-color 0.3s ease;
+  }
+  .seo-expand-btn::before {
     content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
     background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 45%, #e8445a 100%);
     transform: scaleX(0); transform-origin: left center;
-    transition: transform 0.42s cubic-bezier(0.16,1,0.3,1);
+    transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
   }
-  .seo-liquid-btn:hover {
-    color: #fff !important;
-    border-color: transparent !important;
-  }
-  .seo-liquid-btn:hover::before { transform: scaleX(1); }
+  .seo-expand-btn:hover { color: #fff !important; border-color: transparent !important; }
+  .seo-expand-btn:hover::before { transform: scaleX(1); }
+  .seo-expand-btn[data-open="true"] { color: #fff; border-color: transparent; }
+  .seo-expand-btn[data-open="true"]::before { transform: scaleX(1); }
 
-  .seo-cat-title {
+  .seo-chip {
+    position: relative; overflow: hidden; z-index: 0;
+    transition: color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+  }
+  .seo-chip::before {
+    content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+    background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 45%, #e8445a 100%);
+    transform: scaleX(0); transform-origin: left center;
+    transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  }
+  .seo-chip:hover { color: #fff !important; border-color: transparent !important; transform: translateY(-1px); }
+  .seo-chip:hover::before { transform: scaleX(1); }
+
+  .seo-search {
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .seo-search:focus-within {
+    border-color: rgba(232,68,90,0.5);
+    box-shadow: 0 0 0 3px rgba(232,68,90,0.08);
+  }
+
+  .seo-state-label {
     background: linear-gradient(100deg, #1d1d1f 0%, #ff6b35 40%, #1d1d1f 60%);
     background-size: 220% auto;
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
+  .seo-panel-enter {
+    animation: seoPanelIn 0.35s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes seoPanelIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .seo-card, .seo-liquid-btn, .seo-liquid-btn::before { transition: none; }
+    .seo-service-card, .seo-service-card::before, .seo-expand-btn, .seo-expand-btn::before,
+    .seo-chip, .seo-chip::before, .seo-search, .seo-panel-enter { transition: none; animation: none; }
   }
 `;
 
-export function BiharServicesSEO() {
-  const majorCities = cities.filter((c) => c.type === "major");
-  const hqCities = cities.filter((c) => c.type === "headquarters");
-  const growingCities = cities.filter((c) => c.type === "growing");
-  const districtCities = cities.filter((c) => c.type === "district");
+const serviceIcons: Record<string, JSX.Element> = {
+  "mobile-app-development": (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="6" y="2" width="12" height="20" rx="2.5" />
+      <path d="M11 18h2" />
+    </svg>
+  ),
+  "website-development": (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="M2 9h20" />
+      <circle cx="5.5" cy="6.5" r="0.6" fill="#fff" />
+      <circle cx="7.5" cy="6.5" r="0.6" fill="#fff" />
+    </svg>
+  ),
+  "software-development": (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+      <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+      <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+      <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+      <path d="m9 9 3 3-3 3" />
+      <path d="M13 15h2" />
+    </svg>
+  )
+};
 
-  const categories = [
-    { title: "Major Cities", list: majorCities },
-    { title: "District Capitals", list: hqCities },
-    { title: "Other Important Cities", list: growingCities },
-    { title: "Nearby Districts", list: districtCities }
-  ];
+function ServiceDirectory({ serviceKey }: { serviceKey: string }) {
+  const [query, setQuery] = useState("");
+  const service = services[serviceKey]!;
+
+  const states = useMemo(() => {
+    const order: string[] = [];
+    cities.forEach((c) => {
+      if (!order.includes(c.state)) order.push(c.state);
+    });
+    return order;
+  }, []);
+
+  const q = query.trim().toLowerCase();
+
+  const grouped = useMemo(() => {
+    return states
+      .map((state) => ({
+        state,
+        list: cities
+          .filter((c) => c.state === state)
+          .filter((c) => (q ? c.name.toLowerCase().includes(q) : true))
+          .sort((a, b) => a.name.localeCompare(b.name))
+      }))
+      .filter((g) => g.list.length > 0);
+  }, [states, q]);
+
+  const visibleCount = grouped.reduce((sum, g) => sum + g.list.length, 0);
 
   return (
-    <section className="bg-[#f2f2f4] border-t border-black/5 py-16 md:py-24 relative overflow-hidden select-none">
-      <style dangerouslySetInnerHTML={{ __html: seoStyles }} />
+    <div className="seo-panel-enter pt-5 mt-5 border-t border-black/5">
+      <label className="seo-search flex items-center gap-2 w-full bg-white border border-black/10 rounded-full px-4 py-2.5 mb-4">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#1d1d1f]/40 shrink-0" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={`Search ${cities.length}+ cities`}
+          className="w-full text-xs bg-transparent outline-none placeholder:text-[#1d1d1f]/35 text-[#1d1d1f]"
+          aria-label={`Search cities for ${service.name}`}
+        />
+      </label>
 
-      {/* Decorative background glow — matches hero accent gradient */}
-      <div className="absolute bottom-0 right-0 w-80 h-80 bg-gradient-to-br from-[#ff8c42]/10 to-[#e8445a]/10 blur-3xl rounded-full -mr-40 -mb-40 pointer-events-none" />
-      <div className="absolute top-0 left-0 w-80 h-80 bg-gradient-to-br from-[#ff8c42]/10 to-[#e8445a]/10 blur-3xl rounded-full -ml-40 -mt-40 pointer-events-none" />
-
-      <div className="container mx-auto px-4 max-w-5xl relative z-10">
-        <div className="mb-12 text-center">
-          <span className="text-xs font-black uppercase tracking-[0.3em] text-[#e8445a] block mb-2">
-            Local Reach
-          </span>
-          <h2 className="text-3xl font-black text-[#1d1d1f] mb-4">
-            Our Services Across{" "}
-            <span className="bg-gradient-to-r from-[#ff8c42] to-[#e8445a] bg-clip-text text-transparent">
-              Bihar
-            </span>
-          </h2>
-          <div className="w-12 h-1 bg-gradient-to-r from-[#ff8c42] to-[#e8445a] mx-auto rounded-full mb-4" />
-          <p className="text-xs md:text-sm text-[#1d1d1f]/55 font-medium max-w-2xl mx-auto leading-relaxed">
-            We provide premium website development, mobile app development, and custom software
-            automation across all 36 major cities and districts of Bihar, driving regional digital
-            transformation.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {categories.map((cat) => (
-            <div
-              key={cat.title}
-              className="seo-card p-6 rounded-[2rem] flex flex-col h-fit"
-            >
-              <div className="text-center mb-6">
-                <h3 className="seo-cat-title text-xs md:text-sm font-black tracking-wider uppercase inline-block pb-1">
-                  {cat.title}
-                </h3>
-                <div className="w-8 h-0.5 bg-gradient-to-r from-[#ff8c42] to-[#e8445a] mx-auto mt-1" />
+      {visibleCount === 0 ? (
+        <p className="text-xs font-semibold text-[#1d1d1f]/50 text-center py-6">
+          No cities match "{query}".{" "}
+          <button type="button" onClick={() => setQuery("")} className="text-[#e8445a] underline underline-offset-2">
+            Clear search
+          </button>
+        </p>
+      ) : (
+        <div className="flex flex-col gap-4 max-h-[420px] overflow-y-auto pr-1">
+          {grouped.map(({ state, list }) => (
+            <div key={state}>
+              <div className="flex items-baseline justify-between mb-2">
+                <h4 className="seo-state-label text-[11px] font-black uppercase tracking-wider">{state}</h4>
+                <span className="text-[10px] font-semibold text-[#1d1d1f]/35">{list.length}</span>
               </div>
-              <div className="flex flex-col gap-6">
-                {cat.list.map((city) => (
-                  <div key={city.slug} className="flex flex-col gap-2">
-                    {Object.keys(services).map((sKey) => {
-                      const service = services[sKey]!;
-                      const slug = generateSlug(sKey, city.slug);
-                      return (
-                        <Link
-                          key={sKey}
-                          href={`/${slug}`}
-                          className="seo-liquid-btn w-full text-center py-2.5 px-3 rounded-xl border border-black/10 text-[11px] font-semibold text-[#1d1d1f]/75 bg-white block"
-                          title={`${service.name} Company in ${city.name}`}
-                        >
-                          {service.name} in {city.name}
-                        </Link>
-                      );
-                    })}
-                  </div>
+              <div className="flex flex-wrap gap-1.5">
+                {list.map((city) => (
+                  <Link
+                    key={city.slug}
+                    href={`/${generateSlug(serviceKey, city.slug)}`}
+                    title={`${service.name} Company in ${city.name}`}
+                    className="seo-chip px-3 py-1.5 rounded-lg border border-black/10 bg-white text-[11px] font-semibold text-[#1d1d1f]/75"
+                  >
+                    {city.name}
+                  </Link>
                 ))}
               </div>
             </div>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+export function BiharServicesSEO() {
+  const serviceKeys = Object.keys(services);
+  const [openService, setOpenService] = useState<string | null>(null);
+
+  const totalPages = cities.length * serviceKeys.length;
+  const stateCount = useMemo(() => new Set(cities.map((c) => c.state)).size, []);
+
+  const heroStats = [
+    { value: stats.yearsExperience, label: "Years Experience" },
+    { value: stats.projectsDelivered, label: "Projects Delivered" },
+    { value: stats.clientSatisfaction, label: "Client Satisfaction" },
+    { value: stats.supportAvailability, label: "Support Available" }
+  ];
+
+  return (
+    <section className="bg-[#f2f2f4] border-t border-black/5 py-16 md:py-24 relative overflow-hidden">
+      <style dangerouslySetInnerHTML={{ __html: seoStyles }} />
+
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-br from-[#ff8c42]/10 to-[#e8445a]/10 blur-3xl rounded-full -mr-48 -mb-48 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-[#ff8c42]/10 to-[#e8445a]/10 blur-3xl rounded-full -ml-48 -mt-48 pointer-events-none" />
+
+      <div className="container mx-auto px-4 max-w-6xl relative z-10">
+        {/* Header */}
+        <div className="mb-10 text-center">
+          <span className="text-xs font-black uppercase tracking-[0.3em] text-[#e8445a] block mb-2">
+            Local Reach
+          </span>
+          <h2 className="text-3xl md:text-4xl font-black text-[#1d1d1f] mb-4">
+            Our Services Across{" "}
+            <span className="bg-gradient-to-r from-[#ff8c42] to-[#e8445a] bg-clip-text text-transparent">
+              India
+            </span>
+          </h2>
+          <div className="w-12 h-1 bg-gradient-to-r from-[#ff8c42] to-[#e8445a] mx-auto rounded-full mb-4" />
+          <p className="text-xs md:text-sm text-[#1d1d1f]/55 font-medium max-w-2xl mx-auto leading-relaxed">
+            Premium website development, mobile app development, and custom software automation —
+            delivered remotely to businesses across {cities.length}+ cities in {stateCount} states.
+          </p>
+        </div>
+
+        {/* Big stats strip */}
+        <div className="seo-panel rounded-[2rem] grid grid-cols-2 md:grid-cols-4 divide-x divide-black/5 mb-10 overflow-hidden">
+          {heroStats.map((s) => (
+            <div key={s.label} className="px-4 py-6 text-center">
+              <div className="text-2xl md:text-3xl font-black bg-gradient-to-r from-[#ff8c42] to-[#e8445a] bg-clip-text text-transparent">
+                {s.value}
+              </div>
+              <div className="text-[10px] md:text-xs font-semibold text-[#1d1d1f]/50 uppercase tracking-wide mt-1">
+                {s.label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Service cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+          {serviceKeys.map((key) => {
+            const service = services[key]!;
+            const isOpen = openService === key;
+            const startingPrice = service.pricing[0]?.priceRange;
+
+            return (
+              <div
+                key={key}
+                data-open={isOpen}
+                className={`seo-service-card rounded-[2rem] p-6 flex flex-col ${isOpen ? "md:col-span-3" : ""}`}
+              >
+                <div className={isOpen ? "md:grid md:grid-cols-[280px_1fr] md:gap-8" : ""}>
+                  <div>
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className="seo-icon-badge w-12 h-12 rounded-2xl flex items-center justify-center shrink-0">
+                        {serviceIcons[key]}
+                      </div>
+                      {startingPrice && (
+                        <div className="text-right">
+                          <div className="text-[9px] font-bold uppercase tracking-wide text-[#1d1d1f]/35">Starting at</div>
+                          <div className="text-sm font-black text-[#1d1d1f]">{startingPrice.split("–")[0].split("-")[0].trim()}</div>
+                        </div>
+                      )}
+                    </div>
+
+                    <h3 className="text-lg font-black text-[#1d1d1f] mb-1.5">{service.name}</h3>
+                    <p className="text-xs text-[#1d1d1f]/60 leading-relaxed mb-4">{service.tagline}</p>
+
+                    <ul className="flex flex-col gap-1.5 mb-5">
+                      {service.features.slice(0, 3).map((f) => (
+                        <li key={f} className="flex items-start gap-2 text-[11px] font-medium text-[#1d1d1f]/70">
+                          <span className="w-1 h-1 rounded-full bg-gradient-to-r from-[#ff8c42] to-[#e8445a] mt-1.5 shrink-0" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <button
+                      type="button"
+                      data-open={isOpen}
+                      onClick={() => setOpenService(isOpen ? null : key)}
+                      className="seo-expand-btn w-full text-center py-2.5 px-4 rounded-xl border border-black/10 text-xs font-bold text-[#1d1d1f]/80"
+                    >
+                      {isOpen ? "Hide locations" : `Explore ${cities.length}+ locations`}
+                    </button>
+                  </div>
+
+                  {isOpen && (
+                    <div className="md:mt-0">
+                      <ServiceDirectory serviceKey={key} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="text-center text-[10px] font-semibold text-[#1d1d1f]/35 mt-8">
+          {totalPages}+ location pages across {serviceKeys.length} services
+        </p>
       </div>
     </section>
   );
 }
 
-export default BiharServicesSEO;
+/* Required by Next.js: app/seo/page.tsx must have exactly one default export
+   that is a React component. This wraps the named component above. */
+export default function SeoPage() {
+  return <BiharServicesSEO />;
+}

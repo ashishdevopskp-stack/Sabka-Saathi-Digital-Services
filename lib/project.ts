@@ -4,7 +4,6 @@ import {
   query,
   where,
   orderBy,
-  limit as fbLimit,
   doc,
   addDoc,
   updateDoc,
@@ -57,21 +56,6 @@ export async function fetchProjectsByType(type: ProjectType): Promise<Project[]>
     where("type", "==", type),
     where("active", "==", true),
     orderBy("order", "asc")
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Project, "id">) }));
-}
-
-/**
- * PUBLIC. Returns the most recently created active projects, across both
- * types, newest first. Used by the "Recent Projects" homepage section.
- */
-export async function fetchRecentProjects(count = 6): Promise<Project[]> {
-  const q = query(
-    collection(db, COLLECTION),
-    where("active", "==", true),
-    orderBy("createdAt", "desc"),
-    fbLimit(count)
   );
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Project, "id">) }));

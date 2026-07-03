@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Search, Plus, Edit, Trash2, Loader2, Monitor, Smartphone,
-  CheckCircle, XCircle, ExternalLink, AlertCircle, Briefcase,
+  CheckCircle, XCircle, ExternalLink, AlertCircle, Briefcase, Sparkles,
 } from "lucide-react";
 import { fetchAllProjects, deleteProject, updateProject, Project, ProjectType } from "@/lib/project";
 
@@ -108,13 +108,22 @@ export default function AdminProjectsPage() {
             Manage portfolio showcase entries — {activeCount} live, {draftCount} draft
           </p>
         </div>
-        <Link
-          href="/admin/projects/add"
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all duration-300 shadow-md shadow-orange-500/10 max-w-max"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Add New Project
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/recent-projects"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs uppercase tracking-wider hover:bg-slate-50 transition-all duration-300 max-w-max"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Recent Projects
+          </Link>
+          <Link
+            href="/admin/projects/add"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all duration-300 shadow-md shadow-orange-500/10 max-w-max"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add New Project
+          </Link>
+        </div>
       </div>
 
       {/* Stats Cards */}

@@ -4,7 +4,7 @@ import React from "react";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, FileText, PlusCircle, LogOut, ArrowLeft, Menu, X, Loader2, Users, Briefcase, ExternalLink } from "lucide-react";
+import { LayoutDashboard, FileText, PlusCircle, LogOut, ArrowLeft, Menu, X, Loader2, Users, Briefcase, Sparkles, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -16,6 +16,9 @@ function getPageTitle(pathname: string): { title: string; subtitle: string } {
   if (pathname === "/admin/projects") return { title: "Projects", subtitle: "Manage portfolio showcase entries" };
   if (pathname === "/admin/projects/add") return { title: "Add Project", subtitle: "Create a new showcase entry" };
   if (pathname.startsWith("/admin/projects/edit")) return { title: "Edit Project", subtitle: "Update showcase entry details" };
+  if (pathname === "/admin/recent-projects") return { title: "Recent Projects", subtitle: "Manually curated homepage highlights" };
+  if (pathname === "/admin/recent-projects/add") return { title: "Add Recent Project", subtitle: "Feature an existing project on the homepage" };
+  if (pathname.startsWith("/admin/recent-projects/edit")) return { title: "Edit Recent Project", subtitle: "Adjust its position in the homepage feed" };
   if (pathname === "/admin/developers") return { title: "Developers", subtitle: "Manage team profiles" };
   return { title: "Admin", subtitle: "" };
 }
@@ -65,8 +68,13 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     { label: "Blogs Management", href: "/admin/blogs", icon: FileText },
     { label: "Add New Blog", href: "/admin/blogs/add", icon: PlusCircle },
     { label: "Projects", href: "/admin/projects", icon: Briefcase },
+    { label: "Recent Projects", href: "/admin/recent-projects", icon: Sparkles },
     { label: "Developers", href: "/admin/developers", icon: Users },
   ];
+
+  // Sub-routes (add/edit) should still highlight their parent nav item.
+  const isNavActive = (href: string) =>
+    pathname === href || (href !== "/admin/dashboard" && pathname.startsWith(`${href}/`));
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-[#fffdf5] via-[#fff9e6] to-[#fffcf0] text-slate-800">
@@ -84,7 +92,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 space-y-1.5">
           {navLinks.map((link) => {
             const Icon = link.icon;
-            const isActive = pathname === link.href;
+            const isActive = isNavActive(link.href);
             return (
               <Link
                 key={link.href}
@@ -175,7 +183,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                   <nav className="flex flex-col gap-2 py-6">
                     {navLinks.map((link) => {
                       const Icon = link.icon;
-                      const isActive = pathname === link.href;
+                      const isActive = isNavActive(link.href);
                       return (
                         <Link
                           key={link.href}
