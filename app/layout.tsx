@@ -56,7 +56,7 @@ const jsonLd = {
 };
 
 import { FloatingContact } from "@/components/FloatingContact";
-import { Preloader } from "@/components/Preloader";
+
 import { Navbar } from "@/components/Navbar";
 import ChatWidget from "@/components/ChatWidget";
 
@@ -81,7 +81,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <Preloader />
+       
         <Script
           id="schema-org"
           type="application/ld+json"

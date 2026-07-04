@@ -15,6 +15,62 @@ const LockIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+const recentProjectsStyles = `
+  .rp-card-shell {
+    position: relative;
+    background: #fff;
+    border: 1px solid rgba(15,23,42,0.06);
+    box-shadow: 0 2px 16px rgba(232,68,90,0.05), 0 1px 3px rgba(15,23,42,0.04);
+    transition: box-shadow 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  .rp-card-shell::before {
+    content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1.3px;
+    pointer-events: none;
+    background: linear-gradient(140deg,
+      rgba(255,255,255,0.9) 0%,
+      rgba(255,140,66,0.30) 30%,
+      rgba(232,68,90,0.08) 55%,
+      rgba(232,68,90,0.30) 80%,
+      rgba(255,255,255,0.8) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    opacity: 0; transition: opacity 0.4s ease;
+  }
+  .rp-card-shell:hover { box-shadow: 0 20px 44px rgba(232,68,90,0.14), 0 4px 12px rgba(15,23,42,0.06); transform: translateY(-5px); }
+  .rp-card-shell:hover::before { opacity: 1; }
+
+  .rp-nav-btn {
+    transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease, color 0.25s ease;
+  }
+  .rp-nav-btn:hover { transform: translateY(-50%) scale(1.08); }
+  .rp-nav-btn:active { transform: translateY(-50%) scale(0.96); }
+
+  .rp-dot { transition: width 0.3s cubic-bezier(0.16,1,0.3,1), background-color 0.3s ease; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rp-card-shell, .rp-card-shell::before, .rp-nav-btn, .rp-dot { transition: none; }
+  }
+`;
+
+// Fixed "virtual viewport" the live site renders at before being scaled
+// down to fit the card — this is what makes the iframe preview look like a
+// shrunk desktop screenshot instead of a huge zoomed-in crop of the page.
+const IFRAME_VIEWPORT_WIDTH = 1440;
+const IFRAME_VIEWPORT_HEIGHT = 900;
+
+// Image previews are static screenshots — they use object-cover, so any
+// aspect ratio is safe (it just crops). Tune this freely.
+const IMAGE_PREVIEW_ASPECT_RATIO = "aspect-[4/3]";
+
+// Live iframe previews MUST stay at 8:5 (== 1440:900, the virtual viewport
+// above). If this ever drifts from the viewport's own ratio, the scaled
+// iframe will be a different shape than its box — leaving a gap on one
+// side instead of filling it edge-to-edge.
+const IFRAME_PREVIEW_ASPECT_RATIO = "aspect-[8/5]";
+
+// Fallback used for the "no image yet" placeholder state.
+const PLACEHOLDER_ASPECT_RATIO = "aspect-[8/5]";
+
 interface RecentCardProps {
   project: RecentProject;
   isDragging: boolean;
@@ -23,8 +79,24 @@ interface RecentCardProps {
 
 function RecentCard({ project, isDragging, isActive }: RecentCardProps) {
   const [iframeLoading, setIframeLoading] = useState(true);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [previewWidth, setPreviewWidth] = useState(0);
+  const previewRef = useRef<HTMLDivElement>(null);
   const isMobile = project.type === "mobile";
   const accent = project.accentColor || "#f59e0b";
+  const hasImage = Boolean(project.imageUrl);
+
+  useEffect(() => {
+    const el = previewRef.current;
+    if (!el) return;
+    const update = () => setPreviewWidth(el.offsetWidth);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const iframeScale = previewWidth ? previewWidth / IFRAME_VIEWPORT_WIDTH : 0;
 
   return (
     <a
@@ -34,55 +106,112 @@ function RecentCard({ project, isDragging, isActive }: RecentCardProps) {
       onClick={(e) => {
         if (isDragging) e.preventDefault();
       }}
-      className="group relative flex-shrink-0 w-[280px] sm:w-[320px] snap-center select-none"
+      className="group relative flex-shrink-0 w-[290px] sm:w-[340px] snap-center select-none"
     >
-      <div className="relative rounded-2xl border border-slate-200/70 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
+      <div className="rp-card-shell relative rounded-[1.75rem] overflow-hidden">
         {/* Chrome bar */}
-        <div className="h-7 sm:h-8 bg-slate-50 border-b border-slate-200/70 flex items-center px-3 justify-between shrink-0">
-          <div className="flex gap-1 sm:gap-1.5 shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+        <div className="h-8 sm:h-9 bg-slate-50 border-b border-slate-200/70 flex items-center px-3.5 justify-between shrink-0">
+          <div className="flex gap-1.5 shrink-0">
+            <span className="w-2 h-2 rounded-full bg-rose-400" />
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
           </div>
-          <div className="bg-white border border-slate-200/60 rounded px-2 py-0.5 text-[8px] sm:text-[9px] text-slate-400 font-medium truncate max-w-[150px] flex items-center justify-center gap-1">
+          <div className="bg-white border border-slate-200/60 rounded-md px-2.5 py-1 text-[9px] sm:text-[10px] text-slate-400 font-semibold truncate max-w-[160px] flex items-center justify-center gap-1.5">
             <LockIcon />
             <span className="truncate">{project.url.replace("https://", "")}</span>
           </div>
           <div className="w-6 sm:w-8" />
         </div>
 
-        {/* Preview */}
-        <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
-          {isActive ? (
+        {/* Preview — image and iframe modes each get their own aspect
+            ratio (see constants above), since only the iframe has a hard
+            requirement to match its 1440x900 virtual viewport.
+            NOTE: overflow-hidden + border-radius + a transformed <iframe>
+            is a known Safari/WebKit clipping bug — the iframe's content can
+            render at full, unscaled size outside this box instead of being
+            clipped (this is what caused the huge unclipped page bleeding
+            through under the card). `isolation: isolate` + a forced
+            compositing layer (`translateZ(0)`) make Safari actually respect
+            the clip. The other half of the fix is below: the scale
+            transform now lives on a wrapper <div>, not the <iframe> itself. */}
+        <div
+          ref={previewRef}
+          className={`relative w-full ${
+            hasImage
+              ? IMAGE_PREVIEW_ASPECT_RATIO
+              : isActive
+              ? IFRAME_PREVIEW_ASPECT_RATIO
+              : PLACEHOLDER_ASPECT_RATIO
+          } bg-white overflow-hidden`}
+          style={{ isolation: "isolate", transform: "translateZ(0)" }}
+        >
+          {hasImage ? (
+            <>
+              {imageLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-50 z-10 pointer-events-none">
+                  <Loader2 className="w-5 h-5 text-orange-500 animate-spin" />
+                </div>
+              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={project.imageUrl}
+                alt={project.title}
+                className="w-full h-full object-cover object-top block transition-transform duration-500 group-hover:scale-[1.04]"
+                loading="lazy"
+                onLoad={() => setImageLoading(false)}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/15 via-transparent to-transparent pointer-events-none" />
+            </>
+          ) : isActive ? (
             <>
               {iframeLoading && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 z-10 pointer-events-none">
                   <Loader2 className="w-5 h-5 text-orange-500 animate-spin mb-2" />
-                  <span className="text-[8px] uppercase font-bold tracking-widest text-slate-400">
+                  <span className="text-[9px] uppercase font-bold tracking-widest text-slate-400">
                     Loading Preview...
                   </span>
                 </div>
               )}
-              <iframe
-                src={project.url}
-                title={project.title}
-                className="w-full h-full border-0 block bg-white"
-                loading="lazy"
-                onLoad={() => setIframeLoading(false)}
-                style={{ pointerEvents: "none" }}
-              />
+              {previewWidth > 0 && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: `${IFRAME_VIEWPORT_WIDTH}px`,
+                    height: `${IFRAME_VIEWPORT_HEIGHT}px`,
+                    transform: `scale(${iframeScale})`,
+                    transformOrigin: "top left",
+                  }}
+                >
+                  <iframe
+                    src={project.url}
+                    title={project.title}
+                    loading="lazy"
+                    onLoad={() => setIframeLoading(false)}
+                    style={{
+                      pointerEvents: "none",
+                      border: 0,
+                      display: "block",
+                      background: "#fff",
+                      width: `${IFRAME_VIEWPORT_WIDTH}px`,
+                      height: `${IFRAME_VIEWPORT_HEIGHT}px`,
+                    }}
+                  />
+                </div>
+              )}
               {/* transparent overlay so the card, not the iframe, receives drag/click */}
               <div className="absolute inset-0 z-10" />
             </>
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-slate-50 to-orange-50/20 flex flex-col items-center justify-center p-4 text-center">
+            <div className="w-full h-full bg-gradient-to-br from-slate-50 to-orange-50/30 flex flex-col items-center justify-center p-4 text-center">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center mb-2"
+                className="w-10 h-10 rounded-2xl flex items-center justify-center mb-2.5"
                 style={{ backgroundColor: `${accent}1a`, color: accent }}
               >
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-4.5 h-4.5" />
               </div>
-              <h5 className="text-[10px] sm:text-xs font-black text-slate-800 tracking-tight">
+              <h5 className="text-xs sm:text-sm font-black text-slate-800 tracking-tight">
                 {project.title}
               </h5>
             </div>
@@ -90,27 +219,32 @@ function RecentCard({ project, isDragging, isActive }: RecentCardProps) {
         </div>
 
         {/* Type badge */}
-        <div className="absolute top-9 sm:top-10 right-2.5 z-20">
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/95 backdrop-blur-sm border border-slate-200/70 text-[8px] font-black uppercase tracking-widest text-slate-500 shadow-sm">
-            {isMobile ? <Smartphone className="w-2.5 h-2.5" /> : <Monitor className="w-2.5 h-2.5" />}
+        <div className="absolute top-11 sm:top-12 right-3 z-20">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/95 backdrop-blur-sm border border-slate-200/70 text-[9px] font-black uppercase tracking-widest text-slate-500 shadow-sm">
+            {isMobile ? <Smartphone className="w-3 h-3" /> : <Monitor className="w-3 h-3" />}
             {project.type}
           </span>
         </div>
-      </div>
 
-      {/* Meta */}
-      <div className="flex items-start justify-between mt-3.5 px-0.5">
-        <div className="min-w-0">
-          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-            {project.category}
-          </span>
-          <h4 className="text-sm font-black text-slate-800 mt-0.5 truncate">{project.title}</h4>
-        </div>
-        <div
-          className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-transform duration-300 group-hover:rotate-45"
-          style={{ backgroundColor: `${accent}14`, color: accent }}
-        >
-          <ArrowUpRight className="w-3.5 h-3.5" />
+        {/* Meta */}
+        <div className="flex items-start justify-between p-5 pt-4">
+          <div className="min-w-0">
+            <span
+              className="text-[10px] font-black uppercase tracking-widest"
+              style={{ color: accent }}
+            >
+              {project.category}
+            </span>
+            <h4 className="text-base font-black text-slate-900 mt-1 leading-snug truncate">
+              {project.title}
+            </h4>
+          </div>
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5 ml-3 transition-transform duration-300 group-hover:rotate-45"
+            style={{ backgroundColor: `${accent}16`, color: accent }}
+          >
+            <ArrowUpRight className="w-4 h-4" />
+          </div>
         </div>
       </div>
     </a>
@@ -269,32 +403,38 @@ export function RecentProjectsShowcase() {
   if (loadError || recentProjects.length === 0) return null;
 
   return (
-    <section id="recent-projects" className="py-16 md:py-24 relative overflow-hidden bg-white">
+    <section id="recent-projects" className="py-20 md:py-28 relative overflow-hidden bg-white">
+      <style dangerouslySetInnerHTML={{ __html: recentProjectsStyles }} />
       <style jsx global>{`
-        @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap");
+        @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap");
         #recent-projects, #recent-projects * { font-family: "DM Sans", sans-serif; }
         #recent-projects .slider-track::-webkit-scrollbar { display: none; }
       `}</style>
 
-      <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-orange-50/60 rounded-full blur-[120px] -ml-48 -mt-48 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-[32rem] h-[32rem] bg-orange-50/70 rounded-full blur-[130px] -ml-56 -mt-56 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[28rem] h-[28rem] bg-rose-50/60 rounded-full blur-[120px] -mr-48 -mb-48 pointer-events-none" />
 
       <div className="container mx-auto max-w-6xl px-4 relative z-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-7">
           <div>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-600 text-[10px] font-black uppercase tracking-widest mb-4"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-100 text-orange-600 text-xs font-black uppercase tracking-widest mb-5"
             >
-              <Sparkles className="w-3 h-3" />
+              <Sparkles className="w-3.5 h-3.5" />
               Fresh Off the Build
             </motion.div>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-              Recent <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500 italic">Projects.</span>
+            <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-[1.05]">
+              Recent{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500 italic">
+                Projects.
+              </span>
             </h2>
+            <div className="w-14 h-1.5 bg-gradient-to-r from-orange-500 to-rose-500 rounded-full mt-5" />
           </div>
-          <p className="text-slate-500 font-medium max-w-sm text-sm md:text-base leading-relaxed">
+          <p className="text-slate-500 font-medium max-w-sm text-base md:text-lg leading-relaxed">
             A hand-picked selection of our favorite work across desktop and mobile.
           </p>
         </div>
@@ -303,7 +443,7 @@ export function RecentProjectsShowcase() {
           <button
             onClick={() => scroll("left")}
             disabled={activeIndex === 0}
-            className="absolute left-[-14px] top-[38%] -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md border border-slate-100 shadow-xl items-center justify-center text-slate-800 hover:text-orange-500 hover:scale-110 active:scale-95 transition-all opacity-0 group-hover/slider:opacity-100 hidden md:flex cursor-pointer disabled:opacity-0"
+            className="rp-nav-btn absolute left-[-18px] top-[42%] -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white/95 backdrop-blur-md border border-slate-100 shadow-xl items-center justify-center text-slate-800 hover:text-orange-500 hover:shadow-2xl active:scale-95 opacity-0 group-hover/slider:opacity-100 hidden md:flex cursor-pointer disabled:opacity-0"
             aria-label="Previous project"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -312,7 +452,7 @@ export function RecentProjectsShowcase() {
           <button
             onClick={() => scroll("right")}
             disabled={activeIndex === recentProjects.length - 1}
-            className="absolute right-[-14px] top-[38%] -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md border border-slate-100 shadow-xl items-center justify-center text-slate-800 hover:text-orange-500 hover:scale-110 active:scale-95 transition-all opacity-0 group-hover/slider:opacity-100 hidden md:flex cursor-pointer disabled:opacity-0"
+            className="rp-nav-btn absolute right-[-18px] top-[42%] -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white/95 backdrop-blur-md border border-slate-100 shadow-xl items-center justify-center text-slate-800 hover:text-orange-500 hover:shadow-2xl active:scale-95 opacity-0 group-hover/slider:opacity-100 hidden md:flex cursor-pointer disabled:opacity-0"
             aria-label="Next project"
           >
             <ChevronRight className="w-5 h-5" />
@@ -330,7 +470,7 @@ export function RecentProjectsShowcase() {
               setIsMouseDown(false);
               triggerPause();
             }}
-            className={`slider-track relative flex w-full gap-5 md:gap-6 overflow-x-auto snap-x snap-mandatory py-4 cursor-grab select-none px-1 ${
+            className={`slider-track relative flex w-full gap-6 md:gap-7 overflow-x-auto snap-x snap-mandatory py-4 cursor-grab select-none px-1 ${
               isMouseDown ? "cursor-grabbing" : ""
             }`}
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
@@ -351,13 +491,13 @@ export function RecentProjectsShowcase() {
             })}
           </div>
 
-          <div className="flex justify-center items-center gap-2 mt-8">
+          <div className="flex justify-center items-center gap-2.5 mt-10">
             {recentProjects.map((project, idx) => (
               <button
                 key={`${project.id}-dot`}
                 onClick={() => scrollToCard(idx)}
-                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                  activeIndex === idx ? "w-5 bg-orange-500" : "w-1.5 bg-slate-300 hover:bg-slate-400"
+                className={`rp-dot h-2 rounded-full cursor-pointer ${
+                  activeIndex === idx ? "w-6 bg-orange-500" : "w-2 bg-slate-300 hover:bg-slate-400"
                 }`}
                 aria-label={`Go to project ${idx + 1}`}
               />

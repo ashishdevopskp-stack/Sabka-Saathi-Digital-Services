@@ -22,6 +22,10 @@ const seoStyles = `
     border: 1px solid rgba(255,255,255,0.7);
     box-shadow: 0 2px 16px rgba(232,68,90,0.06), 0 1px 3px rgba(29,29,31,0.04);
     transition: box-shadow 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1);
+    aspect-ratio: 1 / 1;
+  }
+  .seo-service-card[data-open="true"] {
+    aspect-ratio: auto;
   }
   .seo-service-card::before {
     content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1.3px;
@@ -36,9 +40,9 @@ const seoStyles = `
     -webkit-mask-composite: xor; mask-composite: exclude;
     opacity: 0.6; transition: opacity 0.4s ease;
   }
-  .seo-service-card:hover { box-shadow: 0 10px 30px rgba(232,68,90,0.12), 0 2px 8px rgba(29,29,31,0.06); }
+  .seo-service-card:hover { box-shadow: 0 10px 30px rgba(232,68,90,0.12), 0 2px 8px rgba(29,29,31,0.06); transform: translateY(-3px); }
   .seo-service-card:hover::before { opacity: 1; }
-  .seo-service-card[data-open="true"] { box-shadow: 0 12px 34px rgba(232,68,90,0.14), 0 2px 8px rgba(29,29,31,0.06); }
+  .seo-service-card[data-open="true"] { box-shadow: 0 12px 34px rgba(232,68,90,0.14), 0 2px 8px rgba(29,29,31,0.06); transform: none; }
 
   .seo-icon-badge {
     background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 45%, #e8445a 100%);
@@ -103,13 +107,13 @@ const seoStyles = `
 
 const serviceIcons: Record<string, JSX.Element> = {
   "mobile-app-development": (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="6" y="2" width="12" height="20" rx="2.5" />
       <path d="M11 18h2" />
     </svg>
   ),
   "website-development": (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="4" width="20" height="16" rx="2" />
       <path d="M2 9h20" />
       <circle cx="5.5" cy="6.5" r="0.6" fill="#fff" />
@@ -117,7 +121,7 @@ const serviceIcons: Record<string, JSX.Element> = {
     </svg>
   ),
   "software-development": (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M8 3H5a2 2 0 0 0-2 2v3" />
       <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
       <path d="M3 16v3a2 2 0 0 0 2 2h3" />
@@ -126,6 +130,17 @@ const serviceIcons: Record<string, JSX.Element> = {
       <path d="M13 15h2" />
     </svg>
   )
+};
+
+// Fuller, plain-English explanation for each service so the card content
+// stands on its own even before someone expands it.
+const serviceExplainers: Record<string, string> = {
+  "website-development":
+    "We design and build fast, responsive websites — from marketing sites to full web platforms — that load quickly, rank well on Google, and turn visitors into customers.",
+  "mobile-app-development":
+    "We build native and cross-platform mobile apps for iOS and Android, covering everything from UI/UX design to launch on the App Store and Play Store.",
+  "software-development":
+    "We build custom software and automation tools tailored to how your business actually works, replacing manual processes with reliable, scalable systems."
 };
 
 function ServiceDirectory({ serviceKey }: { serviceKey: string }) {
@@ -157,9 +172,9 @@ function ServiceDirectory({ serviceKey }: { serviceKey: string }) {
   const visibleCount = grouped.reduce((sum, g) => sum + g.list.length, 0);
 
   return (
-    <div className="seo-panel-enter pt-5 mt-5 border-t border-black/5">
-      <label className="seo-search flex items-center gap-2 w-full bg-white border border-black/10 rounded-full px-4 py-2.5 mb-4">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#1d1d1f]/40 shrink-0" aria-hidden="true">
+    <div className="seo-panel-enter pt-6 mt-6 border-t border-black/5">
+      <label className="seo-search flex items-center gap-2 w-full bg-white border border-black/10 rounded-full px-5 py-3 mb-5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#1d1d1f]/40 shrink-0" aria-hidden="true">
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" />
         </svg>
@@ -168,33 +183,33 @@ function ServiceDirectory({ serviceKey }: { serviceKey: string }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={`Search ${cities.length}+ cities`}
-          className="w-full text-xs bg-transparent outline-none placeholder:text-[#1d1d1f]/35 text-[#1d1d1f]"
+          className="w-full text-sm bg-transparent outline-none placeholder:text-[#1d1d1f]/35 text-[#1d1d1f]"
           aria-label={`Search cities for ${service.name}`}
         />
       </label>
 
       {visibleCount === 0 ? (
-        <p className="text-xs font-semibold text-[#1d1d1f]/50 text-center py-6">
+        <p className="text-sm font-semibold text-[#1d1d1f]/50 text-center py-6">
           No cities match "{query}".{" "}
           <button type="button" onClick={() => setQuery("")} className="text-[#e8445a] underline underline-offset-2">
             Clear search
           </button>
         </p>
       ) : (
-        <div className="flex flex-col gap-4 max-h-[420px] overflow-y-auto pr-1">
+        <div className="flex flex-col gap-5 max-h-[420px] overflow-y-auto pr-1">
           {grouped.map(({ state, list }) => (
             <div key={state}>
-              <div className="flex items-baseline justify-between mb-2">
-                <h4 className="seo-state-label text-[11px] font-black uppercase tracking-wider">{state}</h4>
-                <span className="text-[10px] font-semibold text-[#1d1d1f]/35">{list.length}</span>
+              <div className="flex items-baseline justify-between mb-2.5">
+                <h4 className="seo-state-label text-sm font-black uppercase tracking-wider">{state}</h4>
+                <span className="text-xs font-semibold text-[#1d1d1f]/35">{list.length}</span>
               </div>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {list.map((city) => (
                   <Link
                     key={city.slug}
                     href={`/${generateSlug(serviceKey, city.slug)}`}
                     title={`${service.name} Company in ${city.name}`}
-                    className="seo-chip px-3 py-1.5 rounded-lg border border-black/10 bg-white text-[11px] font-semibold text-[#1d1d1f]/75"
+                    className="seo-chip px-3.5 py-2 rounded-lg border border-black/10 bg-white text-sm font-semibold text-[#1d1d1f]/75"
                   >
                     {city.name}
                   </Link>
@@ -231,39 +246,39 @@ export function BiharServicesSEO() {
 
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* Header */}
-        <div className="mb-10 text-center">
-          <span className="text-xs font-black uppercase tracking-[0.3em] text-[#e8445a] block mb-2">
+        <div className="mb-12 text-center">
+          <span className="text-sm font-black uppercase tracking-[0.3em] text-[#e8445a] block mb-3">
             Local Reach
           </span>
-          <h2 className="text-3xl md:text-4xl font-black text-[#1d1d1f] mb-4">
+          <h2 className="text-4xl md:text-5xl font-black text-[#1d1d1f] mb-5">
             Our Services Across{" "}
             <span className="bg-gradient-to-r from-[#ff8c42] to-[#e8445a] bg-clip-text text-transparent">
               India
             </span>
           </h2>
-          <div className="w-12 h-1 bg-gradient-to-r from-[#ff8c42] to-[#e8445a] mx-auto rounded-full mb-4" />
-          <p className="text-xs md:text-sm text-[#1d1d1f]/55 font-medium max-w-2xl mx-auto leading-relaxed">
+          <div className="w-16 h-1.5 bg-gradient-to-r from-[#ff8c42] to-[#e8445a] mx-auto rounded-full mb-5" />
+          <p className="text-base md:text-lg text-[#1d1d1f]/60 font-medium max-w-2xl mx-auto leading-relaxed">
             Premium website development, mobile app development, and custom software automation —
             delivered remotely to businesses across {cities.length}+ cities in {stateCount} states.
           </p>
         </div>
 
         {/* Big stats strip */}
-        <div className="seo-panel rounded-[2rem] grid grid-cols-2 md:grid-cols-4 divide-x divide-black/5 mb-10 overflow-hidden">
+        <div className="seo-panel rounded-[2rem] grid grid-cols-2 md:grid-cols-4 divide-x divide-black/5 mb-12 overflow-hidden">
           {heroStats.map((s) => (
-            <div key={s.label} className="px-4 py-6 text-center">
-              <div className="text-2xl md:text-3xl font-black bg-gradient-to-r from-[#ff8c42] to-[#e8445a] bg-clip-text text-transparent">
+            <div key={s.label} className="px-4 py-7 text-center">
+              <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-[#ff8c42] to-[#e8445a] bg-clip-text text-transparent">
                 {s.value}
               </div>
-              <div className="text-[10px] md:text-xs font-semibold text-[#1d1d1f]/50 uppercase tracking-wide mt-1">
+              <div className="text-xs md:text-sm font-semibold text-[#1d1d1f]/50 uppercase tracking-wide mt-1.5">
                 {s.label}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Service cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        {/* Service cards — square 1:1 tiles that explain each service */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
           {serviceKeys.map((key) => {
             const service = services[key]!;
             const isOpen = openService === key;
@@ -273,29 +288,31 @@ export function BiharServicesSEO() {
               <div
                 key={key}
                 data-open={isOpen}
-                className={`seo-service-card rounded-[2rem] p-6 flex flex-col ${isOpen ? "md:col-span-3" : ""}`}
+                className={`seo-service-card rounded-[2rem] p-8 flex flex-col ${isOpen ? "md:col-span-3" : ""}`}
               >
-                <div className={isOpen ? "md:grid md:grid-cols-[280px_1fr] md:gap-8" : ""}>
-                  <div>
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div className="seo-icon-badge w-12 h-12 rounded-2xl flex items-center justify-center shrink-0">
+                <div className={isOpen ? "md:grid md:grid-cols-[320px_1fr] md:gap-10" : "flex flex-col h-full"}>
+                  <div className="flex flex-col h-full">
+                    <div className="flex items-start justify-between gap-3 mb-5">
+                      <div className="seo-icon-badge w-16 h-16 rounded-2xl flex items-center justify-center shrink-0">
                         {serviceIcons[key]}
                       </div>
                       {startingPrice && (
                         <div className="text-right">
-                          <div className="text-[9px] font-bold uppercase tracking-wide text-[#1d1d1f]/35">Starting at</div>
-                          <div className="text-sm font-black text-[#1d1d1f]">{startingPrice.split("–")[0].split("-")[0].trim()}</div>
+                          <div className="text-xs font-bold uppercase tracking-wide text-[#1d1d1f]/40">Starting at</div>
+                          <div className="text-xl font-black text-[#1d1d1f]">{startingPrice.split("–")[0].split("-")[0].trim()}</div>
                         </div>
                       )}
                     </div>
 
-                    <h3 className="text-lg font-black text-[#1d1d1f] mb-1.5">{service.name}</h3>
-                    <p className="text-xs text-[#1d1d1f]/60 leading-relaxed mb-4">{service.tagline}</p>
+                    <h3 className="text-2xl font-black text-[#1d1d1f] mb-3">{service.name}</h3>
+                    <p className="text-base text-[#1d1d1f]/70 leading-relaxed mb-5">
+                      {serviceExplainers[key] ?? service.tagline}
+                    </p>
 
-                    <ul className="flex flex-col gap-1.5 mb-5">
+                    <ul className="flex flex-col gap-2.5 mb-6">
                       {service.features.slice(0, 3).map((f) => (
-                        <li key={f} className="flex items-start gap-2 text-[11px] font-medium text-[#1d1d1f]/70">
-                          <span className="w-1 h-1 rounded-full bg-gradient-to-r from-[#ff8c42] to-[#e8445a] mt-1.5 shrink-0" />
+                        <li key={f} className="flex items-start gap-2.5 text-sm font-medium text-[#1d1d1f]/75">
+                          <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-[#ff8c42] to-[#e8445a] mt-2 shrink-0" />
                           {f}
                         </li>
                       ))}
@@ -305,7 +322,7 @@ export function BiharServicesSEO() {
                       type="button"
                       data-open={isOpen}
                       onClick={() => setOpenService(isOpen ? null : key)}
-                      className="seo-expand-btn w-full text-center py-2.5 px-4 rounded-xl border border-black/10 text-xs font-bold text-[#1d1d1f]/80"
+                      className="seo-expand-btn mt-auto w-full text-center py-3.5 px-4 rounded-xl border border-black/10 text-sm font-bold text-[#1d1d1f]/80"
                     >
                       {isOpen ? "Hide locations" : `Explore ${cities.length}+ locations`}
                     </button>
@@ -322,7 +339,7 @@ export function BiharServicesSEO() {
           })}
         </div>
 
-        <p className="text-center text-[10px] font-semibold text-[#1d1d1f]/35 mt-8">
+        <p className="text-center text-sm font-semibold text-[#1d1d1f]/40 mt-10">
           {totalPages}+ location pages across {serviceKeys.length} services
         </p>
       </div>

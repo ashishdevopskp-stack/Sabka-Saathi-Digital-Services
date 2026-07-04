@@ -3,11 +3,13 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Monitor, Smartphone, Loader2, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, Monitor, Smartphone, Loader2, Save, Trash2, ImagePlus, X } from "lucide-react";
 import {
   fetchRecentProjectById,
   updateRecentProject,
   deleteRecentProject,
+  uploadRecentProjectImage,
+  deleteRecentProjectImage,
 } from "@/lib/recentProject";
 import { ProjectType } from "@/lib/project";
 
@@ -34,6 +36,38 @@ export default function EditRecentProjectPage() {
   const [position, setPosition] = useState(0);
   const [active, setActive] = useState(true);
 
+  // --- Showcase image (optional) --------------------------------------
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [existingImagePath, setExistingImagePath] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose an image file.");
+      return;
+    }
+    setError(null);
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    setRemoveImage(false);
+  };
+
+  const clearNewImage = () => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const handleRemoveExistingImage = () => {
+    setRemoveImage(true);
+    setExistingImageUrl(null);
+  };
+
   useEffect(() => {
     (async () => {
       const p = await fetchRecentProjectById(id);
@@ -47,6 +81,8 @@ export default function EditRecentProjectPage() {
         setAccentColor(p.accentColor || ACCENT_SWATCHES[0]);
         setPosition(p.position ?? 0);
         setActive(p.active);
+        setExistingImageUrl(p.imageUrl ?? null);
+        setExistingImagePath(p.imagePath ?? null);
       } else {
         setNotFound(true);
       }
@@ -63,6 +99,25 @@ export default function EditRecentProjectPage() {
     setSaving(true);
     setError(null);
     try {
+      let imageUrl: string | undefined = existingImageUrl ?? undefined;
+      let imagePath: string | undefined = existingImagePath ?? undefined;
+
+      if (imageFile) {
+        setUploadingImage(true);
+        // Replace: clean up the old file first if there was one.
+        if (existingImagePath) {
+          await deleteRecentProjectImage(existingImagePath);
+        }
+        const uploaded = await uploadRecentProjectImage(imageFile);
+        imageUrl = uploaded.imageUrl;
+        imagePath = uploaded.imagePath;
+        setUploadingImage(false);
+      } else if (removeImage && existingImagePath) {
+        await deleteRecentProjectImage(existingImagePath);
+        imageUrl = undefined;
+        imagePath = undefined;
+      }
+
       await updateRecentProject(id, {
         title: title.trim(),
         url: url.trim(),
@@ -73,11 +128,14 @@ export default function EditRecentProjectPage() {
         year,
         position: Number(position) || 0,
         active,
-      });
+        imageUrl: imageUrl ?? null,
+        imagePath: imagePath ?? null,
+      } as never);
       router.push("/admin/recent-projects");
     } catch (err) {
       console.error("Update failed", err);
       setError("Failed to update.");
+      setUploadingImage(false);
     } finally {
       setSaving(false);
     }
@@ -87,6 +145,9 @@ export default function EditRecentProjectPage() {
     if (!confirm("Delete this recent-project entry permanently?")) return;
     setDeleting(true);
     try {
+      if (existingImagePath) {
+        await deleteRecentProjectImage(existingImagePath);
+      }
       await deleteRecentProject(id);
       router.push("/admin/recent-projects");
     } catch (err) {
@@ -224,6 +285,57 @@ export default function EditRecentProjectPage() {
           />
         </div>
 
+        {/* Showcase image upload */}
+        <div>
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">
+            Showcase Image (optional)
+          </label>
+          <p className="text-[10px] text-slate-400 font-semibold mb-3">
+            If set, the homepage card shows this image instead of a live preview of the URL.
+          </p>
+
+          {imagePreview ? (
+            <div className="relative w-full max-w-xs rounded-2xl overflow-hidden border border-slate-200">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imagePreview} alt="New showcase preview" className="w-full aspect-[4/3] object-cover" />
+              <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-slate-900/70 text-white text-[9px] font-black uppercase tracking-wider">
+                New
+              </span>
+              <button
+                type="button"
+                onClick={clearNewImage}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-900/70 hover:bg-rose-600 text-white flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Cancel new image"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : existingImageUrl ? (
+            <div className="relative w-full max-w-xs rounded-2xl overflow-hidden border border-slate-200">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={existingImageUrl} alt="Current showcase" className="w-full aspect-[4/3] object-cover" />
+              <button
+                type="button"
+                onClick={handleRemoveExistingImage}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-900/70 hover:bg-rose-600 text-white flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Remove image"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+              <label className="absolute bottom-2 left-2 right-2 text-center py-1.5 rounded-lg bg-white/90 backdrop-blur-sm text-[10px] font-black uppercase tracking-wider text-slate-600 hover:bg-white cursor-pointer transition-colors">
+                Replace image
+                <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
+              </label>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center gap-2 w-full max-w-xs aspect-[4/3] rounded-2xl border-2 border-dashed border-slate-200 hover:border-orange-300 bg-slate-50/50 hover:bg-orange-50/30 text-slate-400 hover:text-orange-500 cursor-pointer transition-all">
+              <ImagePlus className="w-6 h-6" />
+              <span className="text-[10px] font-black uppercase tracking-wider">Click to upload</span>
+              <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
+            </label>
+          )}
+        </div>
+
         {type === "desktop" ? (
           <div>
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Year</label>
@@ -305,7 +417,7 @@ export default function EditRecentProjectPage() {
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all shadow-md shadow-orange-500/10 disabled:opacity-50 cursor-pointer"
           >
             {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-            {saving ? "Saving..." : "Update Entry"}
+            {uploadingImage ? "Uploading image..." : saving ? "Saving..." : "Update Entry"}
           </button>
         </div>
       </form>

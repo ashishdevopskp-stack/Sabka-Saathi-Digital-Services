@@ -11,6 +11,13 @@ import {
   deleteDoc,
   getDoc,
 } from "firebase/firestore";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 import { db } from "@/lib/firebase";
 import { ProjectType } from "@/lib/project";
 
@@ -36,11 +43,20 @@ export interface RecentProject {
   /** Left-to-right position within the Recent Projects carousel. */
   position: number;
   active: boolean;
+  /**
+   * Optional static showcase image (Firebase Storage download URL).
+   * When present, the homepage card shows this image instead of a live
+   * iframe preview of `url`.
+   */
+  imageUrl?: string;
+  /** Storage path for the uploaded image, kept so we can clean it up later. */
+  imagePath?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 const COLLECTION = "recentProjects";
+const STORAGE_FOLDER = "recent-projects";
 
 /**
  * ADMIN ONLY. Returns every recent-project entry regardless of `active`
@@ -93,4 +109,38 @@ export async function updateRecentProject(id: string, data: Partial<RecentProjec
 export async function deleteRecentProject(id: string) {
   const ref = doc(db, COLLECTION, id);
   return deleteDoc(ref);
+}
+
+// ---------------------------------------------------------------------
+// Image upload helpers (Firebase Storage)
+// ---------------------------------------------------------------------
+
+/**
+ * Uploads a showcase image for a recent project and returns both the
+ * public download URL and the storage path (so it can be deleted later).
+ * Call this before create/update, then pass `imageUrl` + `imagePath`
+ * into the Firestore document.
+ */
+export async function uploadRecentProjectImage(
+  file: File
+): Promise<{ imageUrl: string; imagePath: string }> {
+  const storage = getStorage();
+  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+  const path = `${STORAGE_FOLDER}/${Date.now()}-${safeName}`;
+  const ref = storageRef(storage, path);
+  await uploadBytes(ref, file);
+  const imageUrl = await getDownloadURL(ref);
+  return { imageUrl, imagePath: path };
+}
+
+/** Deletes a previously uploaded showcase image from Storage, if any. */
+export async function deleteRecentProjectImage(imagePath: string) {
+  const storage = getStorage();
+  const ref = storageRef(storage, imagePath);
+  try {
+    await deleteObject(ref);
+  } catch (err) {
+    // Non-fatal — the file may already be gone.
+    console.warn("Failed to delete recent project image", err);
+  }
 }

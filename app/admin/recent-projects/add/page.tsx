@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Monitor, Smartphone, Loader2, Save, Wand2 } from "lucide-react";
-import { createRecentProject } from "@/lib/recentProject";
+import { ArrowLeft, Monitor, Smartphone, Loader2, Save, Wand2, ImagePlus, X } from "lucide-react";
+import { createRecentProject, uploadRecentProjectImage } from "@/lib/recentProject";
 import { fetchAllProjects, Project, ProjectType } from "@/lib/project";
 
 const ACCENT_SWATCHES = ["#f59e0b", "#3b82f6", "#ef4444", "#8b5cf6", "#ec4899", "#10b981"];
@@ -23,6 +23,29 @@ export default function AddRecentProjectPage() {
   const [active, setActive] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // --- Showcase image (optional) --------------------------------------
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose an image file.");
+      return;
+    }
+    setError(null);
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const clearImage = () => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImageFile(null);
+    setImagePreview(null);
+  };
 
   // --- Optional convenience: prefill the form from an existing Project ---
   // This is a one-time copy, not a link. After saving, the new
@@ -64,6 +87,17 @@ export default function AddRecentProjectPage() {
     setSaving(true);
     setError(null);
     try {
+      let imageUrl: string | undefined;
+      let imagePath: string | undefined;
+
+      if (imageFile) {
+        setUploadingImage(true);
+        const uploaded = await uploadRecentProjectImage(imageFile);
+        imageUrl = uploaded.imageUrl;
+        imagePath = uploaded.imagePath;
+        setUploadingImage(false);
+      }
+
       await createRecentProject({
         title: title.trim(),
         url: url.trim(),
@@ -74,11 +108,13 @@ export default function AddRecentProjectPage() {
         year,
         position: Number(position) || 0,
         active,
+        ...(imageUrl ? { imageUrl, imagePath } : {}),
       });
       router.push("/admin/recent-projects");
     } catch (err) {
       console.error("Create recent project failed", err);
       setError("Failed to save. Check console / Firestore permissions.");
+      setUploadingImage(false);
     } finally {
       setSaving(false);
     }
@@ -206,6 +242,37 @@ export default function AddRecentProjectPage() {
           />
         </div>
 
+        {/* Showcase image upload */}
+        <div>
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">
+            Showcase Image (optional)
+          </label>
+          <p className="text-[10px] text-slate-400 font-semibold mb-3">
+            If you upload an image, the homepage card shows this instead of a live preview of the URL.
+          </p>
+
+          {imagePreview ? (
+            <div className="relative w-full max-w-xs rounded-2xl overflow-hidden border border-slate-200 group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imagePreview} alt="Showcase preview" className="w-full aspect-[4/3] object-cover" />
+              <button
+                type="button"
+                onClick={clearImage}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-900/70 hover:bg-rose-600 text-white flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Remove image"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center gap-2 w-full max-w-xs aspect-[4/3] rounded-2xl border-2 border-dashed border-slate-200 hover:border-orange-300 bg-slate-50/50 hover:bg-orange-50/30 text-slate-400 hover:text-orange-500 cursor-pointer transition-all">
+              <ImagePlus className="w-6 h-6" />
+              <span className="text-[10px] font-black uppercase tracking-wider">Click to upload</span>
+              <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
+            </label>
+          )}
+        </div>
+
         {type === "desktop" ? (
           <div>
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Year</label>
@@ -288,7 +355,7 @@ export default function AddRecentProjectPage() {
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all shadow-md shadow-orange-500/10 disabled:opacity-50 cursor-pointer"
           >
             {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-            {saving ? "Saving..." : "Save Recent Project"}
+            {uploadingImage ? "Uploading image..." : saving ? "Saving..." : "Save Recent Project"}
           </button>
         </div>
       </form>

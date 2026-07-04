@@ -62,6 +62,7 @@ const styles = `
      HERO WRAPPER
   ══════════════════════════════════════════════ */
   .hr-wrap {
+  padding-top: 5.8rem; ;
     position: relative; min-height: 100vh; overflow: hidden;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -679,6 +680,7 @@ export default function Hero() {
           </div>
 
         </main>
+        <br /><br />
 
         {/* Scroll hint */}
         <div className={`hr-scroll${scroll ? " show" : ""}`} aria-hidden="true">
