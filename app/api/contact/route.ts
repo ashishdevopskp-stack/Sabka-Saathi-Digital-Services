@@ -7,7 +7,7 @@ type ContactBody = {
   phone?: string;
   service?: string;
   message?: string;
-};
+}; 
 
 async function sendWhatsAppNotification(data: {
   name: string;

@@ -58,6 +58,7 @@ const jsonLd = {
 import { FloatingContact } from "@/components/FloatingContact";
 import { Preloader } from "@/components/Preloader";
 import { Navbar } from "@/components/Navbar";
+import ChatWidget from "@/components/ChatWidget";
 
 export default function RootLayout({
   children,
@@ -89,6 +90,7 @@ export default function RootLayout({
         <Navbar />
         {children}
         <FloatingContact />
+        <ChatWidget />
         <Script
           id="service-worker-registration"
           strategy="afterInteractive"
