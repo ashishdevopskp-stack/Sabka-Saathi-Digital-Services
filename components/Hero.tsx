@@ -679,7 +679,7 @@ export default function Hero() {
             </a>
           </div>
 
-        </main>
+        </main> 
         <br /><br />
 
         {/* Scroll hint */}
